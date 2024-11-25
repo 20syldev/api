@@ -1,0 +1,30 @@
+{
+    "name": "api",
+    "version": "0.1.0",
+    "description": "Personnal API",
+    "main": "app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "canvas": "^2.11.2",
+        "cors": "2.8.5",
+        "dotenv": "^16.1.4",
+        "express": "^4.18.2",
+        "mathjs": "^11.10.0",
+        "prettier": "^3.3.3",
+        "qrcode": "^1.5.1",
+        "random": "^3.0.6",
+        "uuid": "^9.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/20syldev/api.git"
+    },
+    "author": "Sylvain L.",
+    "license": "BSD 3-Clause",
+    "bugs": {
+        "url": "https://github.com/20syldev/api/issues"
+    },
+    "homepage": "https://api.sylvain.pro"
+}
