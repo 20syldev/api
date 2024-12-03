@@ -91,8 +91,8 @@ app.get('/v1', async (req, res) => {
         version: 'v1',
         endpoints: {
             algorithm: '/v1/algorithms?tool={algorithm}&value={value}{&value2={value2}}',
-            color: '/v1/color',
             captcha: '/v1/captcha?text={text}',
+            color: '/v1/color',
             domain: '/v1/domain',
             infos: '/v1/infos',
             personal: '/v1/personal',
