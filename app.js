@@ -224,6 +224,7 @@ app.get('/:version/infos', async (req, res) => {
 
 // Generate personal data
 app.get('/:version/personal', (req, res) => {
+    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const data = [
         { name: 'John Doe', email: 'john@example.com' },
         { name: 'Jane Martin', email: 'jane@example.com' },
@@ -240,14 +241,11 @@ app.get('/:version/personal', (req, res) => {
     ];
     const jobs = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Doctor'];
 
-    const user = data[Math.floor(Math.random() * data.length)];
-    const localisation = localisations[Math.floor(Math.random() * localisations.length)];
-    const job = jobs[Math.floor(Math.random() * jobs.length)];
     const card = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9000) + 1000).join(' ');
     const cvc = Math.floor(Math.random() * 900) + 100;
-    const expirationDate = `${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}/${(new Date().getFullYear() + Math.floor(Math.random() * 3)).toString().slice(-2)}`;
+    const expiration = `${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}/${(new Date().getFullYear() + Math.floor(Math.random() * 3)).toString().slice(-2)}`;
 
-    res.jsonResponse({ ...user, ...localisation, job, card, cvc, expiration: expirationDate });
+    res.jsonResponse({ ...random(data), ...random(localisations), job: random(jobs), card, cvc, expiration });
 });
 
 // Generate QR Code
