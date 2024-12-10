@@ -33,6 +33,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Logs
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 // Internal Server Error
 app.use((err, req, res, next) => {
     console.error(err.stack);
