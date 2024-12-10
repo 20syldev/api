@@ -109,18 +109,47 @@ app.get('/v1', async (req, res) => {
 // Algorithms tool
 app.get('/:version/algorithms', (req, res) => {
     const { tool, value, value2 } = req.query;
-    if (!['anagram', 'factorial', 'fibonacci', 'palindrome', 'reverse'].includes(tool)) return res.jsonResponse({ error: 'Invalid algorithm.' });
-    if (!value) return res.jsonResponse({ error: 'Please provide a value.' });
+    if (!['anagram', 'factorial', 'fibonacci', 'palindrome', 'reverse', 'bubblesort', 'gcd', 'isprime', 'primelist', 'primefactors'].includes(tool) || !value) 
+        return res.jsonResponse({ error: 'Invalid or missing input.' });
 
     if (tool === 'anagram') {
         if (!value2) return res.jsonResponse({ error: 'Please provide a second input.' });
         return res.jsonResponse({ answer: value.split('').sort().join('') === value2.split('').sort().join('') });
     }
 
+    if (tool === 'bubblesort') {
+        const arr = value.split(',').map(Number);
+        const n = arr.length;
+        for (let i = 0; i < n-1; i++) {
+            for (let j = 0; j < n-i-1; j++) {
+                if (arr[j] > arr[j + 1]) [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]; 
+            }
+        }
+        return res.jsonResponse({ answer: arr });
+    }
+
     if (tool === 'factorial') {
         if (isNaN(value) || value < 0 || value > 170) return res.jsonResponse({ error: 'Please provide a valid number between 0 and 170.' });
         return res.jsonResponse({ answer: math.factorial(value) });
     }
+
+    if (tool === 'gcd') {
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+        if (!value2) return res.jsonResponse({ error: 'Please provide a second input.' });
+        if (isNaN(value) || isNaN(value2)) return res.jsonResponse({ error: 'Invalid numbers.' });
+        return res.jsonResponse({ answer: gcd(value, value2) });
+    }
+
+    if (tool === 'isprime') {
+        let isPrime = true;
+        if (isNaN(value) || value < 1) return res.jsonResponse({ error: 'Please provide a valid number greater than or equal to 1.' });
+        for (let i = 2; i <= Math.sqrt(value); i++) {
+            if (value % i === 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        return res.jsonResponse({ answer: isPrime });
     }
 
     if (tool === 'fibonacci') {
@@ -130,6 +159,35 @@ app.get('/:version/algorithms', (req, res) => {
     }
 
     if (tool === 'palindrome') return res.jsonResponse({ answer: value === value.split('').reverse().join('') });
+
+    if (tool === 'primelist') {
+        const primes = [];
+        if (isNaN(value) || value < 2 || value > 10000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 10 000.' });
+        for (let i = 2; i <= value; i++) {
+            let isPrime = true;
+            for (let j = 2; j <= Math.sqrt(i); j++) {
+                if (i % j === 0) {
+                    isPrime = false;
+                    break;
+                }
+            }
+            if (isPrime) primes.push(i);
+        }
+        return res.jsonResponse({ answer: primes });
+    }
+
+    if (tool === 'primefactors') {
+        let num = value;
+        let factors = [];
+        if (isNaN(num) || num < 2 || num > 100000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 100 000.' });
+        for (let i = 2; i <= num; i++) {
+            while (num % i === 0) {
+                factors.push(i);
+                num /= i;
+            }
+        }
+        return res.jsonResponse({ answer: factors });
+    }
 
     if (tool === 'reverse') return res.jsonResponse({ answer: value.split('').reverse().join('') });
 });
