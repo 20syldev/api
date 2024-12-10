@@ -253,12 +253,8 @@ app.get('/:version/qrcode', async (req, res) => {
     const { url } = req.query;
     if (!url) return res.jsonResponse({ error: 'Please provide a valid url (?url={URL})' });
 
-    try {
-        const qr = await qrcode.toDataURL(url);
-        res.jsonResponse({ qr });
-    } catch (err) {
-        res.jsonResponse({ error: 'Error generating QR code.' });
-    }
+    try { res.jsonResponse({ qr: await qrcode.toDataURL(url) }); }
+    catch { res.jsonResponse({ error: 'Error generating QR code.' }); }
 });
 
 // GET token error
