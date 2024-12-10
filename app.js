@@ -91,14 +91,14 @@ app.get('/v1', async (req, res) => {
     res.jsonResponse({
         version: 'v1',
         endpoints: {
-            algorithm: '/v1/algorithms?tool={algorithm}&value={value}{&value2={value2}}',
+            algorithm: '/v1/algorithms?tool={algorithm}&value={value}(&value2={value2})',
             captcha: '/v1/captcha?text={text}',
             color: '/v1/color',
             domain: '/v1/domain',
             infos: '/v1/infos',
             personal: '/v1/personal',
             qrcode: '/v1/qrcode?url={URL}',
-            token: '/v1/token{?len={length}&type={type}}',
+            token: '/v1/token(?len={length}&type={type})',
             username: '/v1/username'
         }
     });
