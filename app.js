@@ -275,43 +275,9 @@ app.get('/:version/qrcode', async (req, res) => {
     }
 });
 
-// Generate Token
+// GET token error
 app.get('/:version/token', (req, res) => {
-    const { len: length = 24, type = 'alpha' } = req.query;
-    let token = '';
-
-    if (isNaN(length) || length < 0) return res.jsonResponse({ error: 'Invalid number.' });
-    if (length > 4096) return res.jsonResponse({ error: 'Length cannot exceed 4096.' });
-    if (length < 12) return res.jsonResponse({ error: 'Length cannot be less than 12.' });
-    switch (type) {
-        case 'alpha':
-            token = Array.from({ length }, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 52)]).join('');
-            break;
-        case 'alphanum':
-            token = Array.from({ length }, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 62)]).join('');
-            break;
-        case 'base64':
-            token = crypto.randomBytes(length).toString('base64').slice(0, length);
-            break;
-        case 'hex':
-            token = crypto.randomBytes(length).toString('hex').slice(0, length);
-            break;
-        case 'num':
-            token = Array.from({ length }, () => '0123456789'[Math.floor(Math.random() * 10)]).join('');
-            break;
-        case 'punct':
-            token = Array.from({ length }, () => '!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'[Math.floor(Math.random() * 32)]).join('');
-            break;
-        case 'urlsafe':
-            token = Array.from({ length }, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'.charAt(Math.floor(Math.random() * 64))).join('');
-            break;
-        case 'uuid':
-            token = uuid.v4().replace(/-/g, '').slice(0, length);
-            break;
-        default:
-            token = Array.from({ length }, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 62)]).join('');
-    }
-    res.jsonResponse({ token });
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
 });
 
 // Generate username
@@ -360,6 +326,32 @@ app.get('/:version/username', (req, res) => {
     };
 
     res.status(200).jsonResponse(response);
+});
+
+// ----------- ----------- POST ENDPOINTS ----------- ----------- //
+
+// Generate Token
+app.post('/:version/token', (req, res) => {
+    const length = parseInt(req.body.len || 24, 10);
+    const type = req.body.type || 'alpha';
+
+    if (isNaN(length) || length < 0) return res.jsonResponse({ error: 'Invalid number.' });
+    if (length > 4096) return res.jsonResponse({ error: 'Length cannot exceed 4096.' });
+    if (length < 12) return res.jsonResponse({ error: 'Length cannot be less than 12.' });
+
+    const generateToken = (chars) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const token = {
+        alpha: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+        alphanum: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'),
+        base64: crypto.randomBytes(length).toString('base64').slice(0, length),
+        hex: crypto.randomBytes(length).toString('hex').slice(0, length),
+        num: generateToken('0123456789'),
+        punct: generateToken('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'),
+        urlsafe: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'),
+        uuid: uuid.v4().replace(/-/g, '').slice(0, length)
+    }[type] || generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+
+    res.jsonResponse({ token });
 });
 
 // ----------- ----------- SERVER SETUP ----------- ----------- //
