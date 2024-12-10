@@ -20,8 +20,9 @@ const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'persona
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
-// CORS setup
+// CORS & Express setup
 app.use(cors({ methods: ['GET', 'POST'] }));
+app.use(express.urlencoded({ extended: true }));
 
 // Return formatted JSON
 app.use((req, res, next) => {
