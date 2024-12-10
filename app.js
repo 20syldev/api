@@ -190,13 +190,14 @@ app.get('/:version/color', (req, res) => {
 
 // Generate domain informations
 app.get('/:version/domain', (req, res) => {
+    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const subdomains = ['fr.', 'en.', 'docs.', 'api.', 'projects.', 'app.', 'web.', 'info.', 'dev.'];
     const domainNames = ['example', 'site', 'test', 'demo', 'page'];
     const tlds = ['.com', '.fr', '.eu', '.dev', '.net', '.org', '.io', '.tech', '.biz', '.info', '.co', '.app'];
 
-    const randomSubdomain = subdomains[Math.floor(math.random() * subdomains.length)];
-    const randomDomainName = domainNames[Math.floor(math.random() * domainNames.length)];
-    const randomTld = tlds[Math.floor(math.random() * tlds.length)];
+    const randomSubdomain = random(subdomains);
+    const randomDomainName = random(domainNames);
+    const randomTld = random(tlds);
 
     const fullDomain = `${randomDomainName}${randomTld}`;
     const fullSubdomainDomain = `${randomSubdomain}${randomDomainName}${randomTld}`;
