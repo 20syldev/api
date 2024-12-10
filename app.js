@@ -203,8 +203,8 @@ app.get('/:version/captcha', (req, res) => {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, width, height);
 
-    for (let i = 0; i < 5; i++) {
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+    for (let i = 0; i < 20; i++) {
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
         ctx.moveTo(Math.random() * width, Math.random() * height);
         ctx.lineTo(Math.random() * width, Math.random() * height);
@@ -228,9 +228,9 @@ app.get('/:version/captcha', (req, res) => {
         x += size;
     }
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
         ctx.fillStyle = 'black';
-        ctx.fillRect(Math.floor(Math.random() * width), Math.floor(Math.random() * height), 1, 1);
+        ctx.fillRect(Math.floor(Math.random() * width), Math.floor(Math.random() * height), 1.2, 1.2);
     }
 
     res.set('Content-Type', 'image/png');
