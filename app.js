@@ -137,16 +137,10 @@ app.get('/:version/algorithms', (req, res) => {
 // Generate captcha
 app.get('/:version/captcha', (req, res) => {
     const captcha = req.query.text;
+    if (!captcha) return res.jsonResponse({ error: 'Please provide a valid argument (?text={text})' });
 
-    if (!captcha) return res.status(200).json({ error: 'Please provide a valid argument (?text={text})' });
-
-    const size = 60;
-    const font = '60px Comic Sans Ms';
-    const width = captcha.length * size;
-    const height = 120;
-
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
+    const size = 60, font = '60px Comic Sans Ms', width = captcha.length * size, height = 120;
+    const canvas = createCanvas(width, height), ctx = canvas.getContext('2d');
 
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, width, height);
@@ -161,13 +155,11 @@ app.get('/:version/captcha', (req, res) => {
     }
 
     let x = (canvas.width + 20 - width) / 2;
-
     for (let i = 0; i < captcha.length; i++) {
+        const offsetX = Math.cos(i * 0.3) * 10, y = height / 2.5 + Math.floor(Math.random() * (height / 2));
+
         ctx.font = font;
         ctx.fillStyle = `rgb(${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)})`;
-
-        const offsetX = Math.cos(i * 0.3) * 10;
-        const y = ((height - size) / 2) + Math.floor(Math.random() * (height - size / 2));
 
         ctx.save();
         ctx.translate(x + size / 2, y);
