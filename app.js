@@ -118,17 +118,14 @@ app.get('/:version/algorithms', (req, res) => {
     }
 
     if (tool === 'factorial') {
-        const num = parseInt(value);
-        if (isNaN(num) || num < 0) return res.jsonResponse({ error: 'Invalid number.' });
-        if (num > 170) return res.jsonResponse({ error: 'Value cannot exceed 170.' });
-        return res.jsonResponse({ answer: math.factorial(num) });
+        if (isNaN(value) || value < 0 || value > 170) return res.jsonResponse({ error: 'Please provide a valid number between 0 and 170.' });
+        return res.jsonResponse({ answer: math.factorial(value) });
+    }
     }
 
     if (tool === 'fibonacci') {
         let fib = [0, 1];
-        for (let i = 2; i < parseInt(value); i++) {
-            fib.push(fib[i - 1] + fib[i - 2]);
-        }
+        for (let i = 2; i < parseInt(value); i++) fib.push(fib[i - 1] + fib[i - 2]);
         return res.jsonResponse({ answer: fib.slice(0, parseInt(value)) });
     }
 
