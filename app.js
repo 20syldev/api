@@ -268,46 +268,21 @@ app.get('/:version/username', (req, res) => {
     const ani = ['Cat', 'Dog', 'Tiger', 'Elephant', 'Monkey', 'Penguin', 'Dolphin', 'Lion', 'Bear', 'Fox', 'Owl', 'Giraffe', 'Zebra', 'Koala', 'Rabbit', 'Squirrel', 'Panda', 'Horse', 'Wolf', 'Eagle'];
     const job = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Chef', 'Doctor', 'Teacher', 'Lawyer', 'Entrepreneur', 'Actor', 'Dancer', 'Photographer', 'Architect', 'Pilot', 'Designer', 'Journalist', 'Veterinarian'];
 
-    const choix = ['adj_num', 'ani_num', 'pro_num', 'adj_ani', 'adj_ani_num', 'adj_pro', 'pro_ani', 'pro_ani_num'][Math.floor(Math.random() * 8)];
-    const nombre = Math.floor(Math.random() * 100).toString();
-    let username = '';
-
-    switch (choix) {
-        case 'adj_num':
-            username = adj[Math.floor(Math.random() * adj.length)] + nombre;
-            break;
-        case 'ani_num':
-            username = ani[Math.floor(Math.random() * ani.length)] + nombre;
-            break;
-        case 'pro_num':
-            username = job[Math.floor(Math.random() * job.length)] + nombre;
-            break;
-        case 'adj_ani':
-            username = adj[Math.floor(Math.random() * adj.length)] + ani[Math.floor(Math.random() * ani.length)];
-            break;
-        case 'adj_ani_num':
-            username = adj[Math.floor(Math.random() * adj.length)] + ani[Math.floor(Math.random() * ani.length)] + nombre;
-            break;
-        case 'adj_pro':
-            username = adj[Math.floor(Math.random() * adj.length)] + job[Math.floor(Math.random() * job.length)];
-            break;
-        case 'pro_ani':
-            username = job[Math.floor(Math.random() * job.length)] + ani[Math.floor(Math.random() * ani.length)];
-            break;
-        case 'pro_ani_num':
-            username = job[Math.floor(Math.random() * job.length)] + ani[Math.floor(Math.random() * ani.length)] + nombre;
-            break;
-    }
-
-    const response = {
-        adjective: adj,
-        animal: ani,
-        job: job,
-        number: nombre,
-        username: username
+    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const nombre = Math.floor(Math.random() * 100);
+    const choix = {
+        adj_num: () => random(adj) + nombre,
+        ani_num: () => random(ani) + nombre,
+        pro_num: () => random(job) + nombre,
+        adj_ani: () => random(adj) + random(ani),
+        adj_ani_num: () => random(adj) + random(ani) + nombre,
+        adj_pro: () => random(adj) + random(job),
+        pro_ani: () => random(job) + random(ani),
+        pro_ani_num: () => random(job) + random(ani) + nombre
     };
 
-    res.status(200).jsonResponse(response);
+    const username = choix[random(Object.keys(choix))]();
+    res.jsonResponse({ adjective: adj, animal: ani, job, number: nombre, username });
 });
 
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
