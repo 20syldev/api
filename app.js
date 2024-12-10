@@ -181,11 +181,9 @@ app.get('/:version/captcha', (req, res) => {
 
 // Generate color
 app.get('/:version/color', (req, res) => {
-    const r = random.int(0, 255);
-    const g = random.int(0, 255);
-    const b = random.int(0, 255);
+    const r = random.int(0, 255), g = random.int(0, 255), b = random.int(0, 255);
     res.jsonResponse({ 
-        hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`,
+        hex: `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`,
         rgb: `rgb(${r}, ${g}, ${b})`
     });
 });
