@@ -113,7 +113,7 @@ app.get('/v1', async (req, res) => {
 // Algorithms tool
 app.get('/:version/algorithms', (req, res) => {
     const { tool, value, value2 } = req.query;
-    if (!['anagram', 'factorial', 'fibonacci', 'palindrome', 'reverse', 'bubblesort', 'gcd', 'isprime', 'primelist', 'primefactors'].includes(tool) || !value) 
+    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'reverse', 'primelist', 'primefactors'].includes(tool) || !value) 
         return res.jsonResponse({ error: 'Invalid or missing input.' });
 
     if (tool === 'anagram') {
