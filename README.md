@@ -2,44 +2,30 @@
   <a href="https://api.sylvain.pro"><img src="https://github.com/20syldev/api/blob/master/src/logo.png" alt="Logo" width="25%" height="auto"></a>
 
   # API Personnelle - Sylvain
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v0.4.0-ee6464?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
-  [![Statut](https://img.shields.io/badge/Statut%20:-En%20ligne-42b85f?labelColor=23272A)](https://api.sylvain.pro)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v0.5.0-ee6464?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
 
 ## À propos de l'API
 Voici mon API personnelle, disponible sur le domaine [api.sylvain.pro](https://api.sylvain.pro).
-L'API est développée en Node.js, hébergée **24h/7j**, elle est **simple d'utilisation** et a une **[documentation](https://docs.sylvain.pro)** !
-> *Une limite de requêtes sera bientôt fixée, en fonction du nombre de requêtes par minute.* 
+L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.pro](https://docs.sylvain.pro) !
+> *Une limite de **1000** requêtes maximum chaque **10 secondes** est fixée.* 
 
-## Récupérer une donnée
-### Python
-```py
-import requests
+## Tester l'API localement
+```console
+$ npm run build
 
-print(requests.get('https://api.sylvain.pro/<version>/token').json()['token'])
+> api@0.5.0 build
+> npm install && node app.js
+
+added 167 packages, and audited 168 packages in 34s
+
+26 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+Server running on http://localhost:3000
 ```
 
-### JavaScript
-```js
-fetch('https://api.sylvain.pro/<version>/token')
-  .then(response => response.json())
-  .then(data => console.log(data.token));
-```
-
-### Node.js
-```
-npm install https
-```
-```js
-const https = require('https');
-
-https.get('https://api.sylvain.pro/<version>/token', (res) => {
-    let data = '';
-    res.on('data', chunk => data += chunk);
-    res.on('end', () => {
-        console.log(JSON.parse(data).token);
-    });
-});
-```
+*Visitez la [documentation](https://docs.sylvain.pro) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.pro) !*
