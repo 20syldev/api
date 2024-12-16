@@ -15,6 +15,8 @@ const app = express();
 const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username'];
 
+// Define global variables
+let requests = 0, resetTime = Date.now() + 10000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
@@ -28,6 +30,13 @@ app.use((req, res, next) => {
     res.jsonResponse = (data) => {
         res.send(JSON.stringify(data, null, 2));
     };
+    next();
+});
+
+// Too many requests
+app.use((req, res, next) => {
+    if (Date.now() > resetTime) requests = 0, resetTime = Date.now() + 10000;
+    if (++requests > 1000) return res.status(429).jsonResponse({ message: "Too Many Requests" });
     next();
 });
 
@@ -113,7 +122,7 @@ app.get('/v1', async (req, res) => {
 // Algorithms tool
 app.get('/:version/algorithms', (req, res) => {
     const { tool, value, value2 } = req.query;
-    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'reverse', 'primelist', 'primefactors'].includes(tool) || !value) 
+    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(tool) || !value) 
         return res.jsonResponse({ error: 'Invalid or missing input.' });
 
     if (tool === 'anagram') {
@@ -375,4 +384,4 @@ app.post('/:version/token', (req, res) => {
 
 // ----------- ----------- SERVER SETUP ----------- ----------- //
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
