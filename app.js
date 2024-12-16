@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 // Built-in module
 const crypto = require('crypto');
 
