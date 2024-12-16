@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://api.sylvain.pro"><img src="https://github.com/20syldev/api/blob/master/src/logo.png" alt="Logo" width="25%" height="auto"></a>
+  <a href="https://api.sylvain.pro"><img src="https://api.sylvain.pro/favicon.ico" alt="Logo" width="25%" height="auto"></a>
 
   # API Personnelle - Sylvain
   [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v0.5.0-ee6464?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
