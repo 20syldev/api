@@ -6,6 +6,7 @@ const { createCanvas } = require('canvas');
 const cors = require('cors');
 const express = require('express');
 const math = require('mathjs');
+const path = require('path');
 const qrcode = require('qrcode');
 const random = require('random');
 const uuid = require('uuid');
@@ -23,6 +24,9 @@ let requests = 0, resetTime = Date.now() + 10000;
 // CORS & Express setup
 app.use(cors({ methods: ['GET', 'POST'] }));
 app.use(express.urlencoded({ extended: true }));
+
+// Set favicon for API
+app.use('/favicon.ico', express.static(path.join(__dirname, 'src', 'favicon.ico')));
 
 // Return formatted JSON
 app.use((req, res, next) => {
