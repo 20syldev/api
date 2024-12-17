@@ -304,11 +304,11 @@ app.get('/:version/domain', (req, res) => {
     res.jsonResponse({
         domain,
         full_domain: fulldomain,
-        ip_address: ips.join(', '),
+        ip_address: ips,
         ssl_certified: Math.random() > 0.5,
         hosting_provider: random(['AWS', 'DigitalOcean', 'Bluehost', 'HostGator', 'SiteGround']),
-        dns_servers: dns.join(', '),
         dns_provider: random(['Cloudflare', 'Google DNS', 'AWS Route 53', 'Namecheap', 'GoDaddy']),
+        dns_servers: dns,
         traffic: `${Math.floor(Math.random() * 10000)} visits/day`,
         seo_score: Math.floor(Math.random() * 100),
         page_rank: Math.floor(Math.random() * 10),
