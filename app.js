@@ -290,23 +290,36 @@ app.get('/:version/color', (req, res) => {
 // Generate domain informations
 app.get('/:version/domain', (req, res) => {
     const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const subdomains = ['fr.', 'en.', 'docs.', 'api.', 'projects.', 'app.', 'web.', 'info.', 'dev.'];
-    const domainNames = ['example', 'site', 'test', 'demo', 'page'];
-    const tlds = ['.com', '.fr', '.eu', '.dev', '.net', '.org', '.io', '.tech', '.biz', '.info', '.co', '.app'];
+    const subdomains = ['fr.', 'en.', 'docs.', 'api.', 'projects.', 'app.', 'web.', 'info.', 'dev.', 'shop.', 'blog.', 'support.', 'mail.', 'forum.'];
+    const domains = ['example', 'site', 'test', 'demo', 'page', 'store', 'portfolio', 'platform', 'hub', 'network', 'service', 'cloud', 'solutions', 'company'];
+    const tlds = ['.com', '.fr', '.eu', '.dev', '.net', '.org', '.io', '.tech', '.biz', '.info', '.co', '.app', '.store', '.online', '.shop', '.tv'];
 
-    const randomSubdomain = random(subdomains);
-    const randomDomainName = random(domainNames);
-    const randomTld = random(tlds);
-
-    const fullDomain = `${randomDomainName}${randomTld}`;
-    const fullSubdomainDomain = `${randomSubdomain}${randomDomainName}${randomTld}`;
+    const domain = `${random(domains)}${random(tlds)}`;
+    const fulldomain = `${random(subdomains)}${domain}`;
+    
+    const getRandomIp = () => `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+    const ips = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, getRandomIp);
+    const dns = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, getRandomIp);
 
     res.jsonResponse({
-        domain: fullDomain,
-        subdomain_domain: fullSubdomainDomain,
-        random_subdomain: randomSubdomain,
-        random_name: randomDomainName,
-        random_tld: randomTld
+        domain,
+        full_domain: fulldomain,
+        ip_address: ips.join(', '),
+        ssl_certified: Math.random() > 0.5,
+        hosting_provider: random(['AWS', 'DigitalOcean', 'Bluehost', 'HostGator', 'SiteGround']),
+        dns_servers: dns.join(', '),
+        dns_provider: random(['Cloudflare', 'Google DNS', 'AWS Route 53', 'Namecheap', 'GoDaddy']),
+        traffic: `${Math.floor(Math.random() * 10000)} visits/day`,
+        seo_score: Math.floor(Math.random() * 100),
+        page_rank: Math.floor(Math.random() * 10),
+        country: random(['USA', 'Canada', 'Germany', 'France', 'UK', 'Australia', 'India', 'Japan']),
+        website_type: random(['E-commerce', 'Blog', 'Portfolio', 'Corporate', 'Personal', 'Community', 'Educational']),
+        random_name: domain.split('.')[0],
+        random_subdomain: fulldomain.split('.')[0],
+        random_tld: domain.split('.').pop(),
+        backlinks_count: Math.floor(Math.random() * 1000),
+        creation_date: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString(),
+        expiration_date: new Date(Date.now() + Math.floor(Math.random() * 10000000000)).toISOString(),
     });
 });
 
