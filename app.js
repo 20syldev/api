@@ -16,7 +16,7 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username'];
+const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Define global variables
 let requests = 0, resetTime = Date.now() + 10000;
@@ -487,6 +487,33 @@ app.get('/:version/username', (req, res) => {
 
     const username = choix[random(Object.keys(choix))]();
     res.jsonResponse({ adjective: adj, animal: ani, job, number: nombre, username });
+});
+
+// Display informations for owner's website
+app.get('/:version/website', async (req, res) => {
+    res.jsonResponse({
+        versions: {
+            api: process.env.API,
+            coop_api: process.env.COOP_API,
+            coop_status: process.env.COOP_STATUS,
+            database: process.env.DATABASE,
+            doc_coopbot: process.env.DOC_COOPBOT,
+            docs: process.env.DOCS,
+            flowers: process.env.FLOWERS,
+            gemsync: process.env.GEMSYNC,
+            gitsite: process.env.GITSITE,
+            nitrogen: process.env.NITROGEN,
+            portfolio: process.env.PORTFOLIO,
+            python_api: process.env.PYTHON_API,
+            terminal: process.env.TERMINAL,
+            wrkit: process.env.WRKIT,
+        },
+        updated_projects: process.env.RECENT.split(' '),
+        new_projects: process.env.NEW.split(' '),
+        stats: [process.env.STATS1, process.env.STATS2, process.env.STATS3, process.env.STATS4],
+        notif_tag: process.env.TAG,
+        active: process.env.ACTIVE
+    });
 });
 
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
