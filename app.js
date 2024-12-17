@@ -257,10 +257,6 @@ app.get('/:version/captcha', (req, res) => {
 // Generate color
 app.get('/:version/color', (req, res) => {
     const r = random.int(0, 255), g = random.int(0, 255), b = random.int(0, 255);
-    const cmyk = (() => {
-        const k = 1 - Math.max(r, g, b) / 255, c = (1 - r / 255 - k) / (1 - k) || 0, m = (1 - g / 255 - k) / (1 - k) || 0, y = (1 - b / 255 - k) / (1 - k) || 0;
-        return [c, m, y, k].map(x => x * 100);
-    })();
     const hsl = (() => {
         const r1 = r / 255, g1 = g / 255, b1 = b / 255, max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1), l = (max + min) / 2;
         if (max === min) return [0, 0, l * 100];
@@ -277,13 +273,17 @@ app.get('/:version/color', (req, res) => {
         const [h] = hsv, whiteness = Math.min(r, g, b) / 255, blackness = 1 - Math.max(r, g, b) / 255;
         return [h, whiteness * 100, blackness * 100];
     })();
+    const cmyk = (() => {
+        const k = 1 - Math.max(r, g, b) / 255, c = (1 - r / 255 - k) / (1 - k) || 0, m = (1 - g / 255 - k) / (1 - k) || 0, y = (1 - b / 255 - k) / (1 - k) || 0;
+        return [c, m, y, k].map(x => x * 100);
+    })();
     res.jsonResponse({
-        cmyk: `cmyk(${cmyk.map(x => x.toFixed(1)).join('%, ')}%)`,
         hex: `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`,
+        rgb: `rgb(${r}, ${g}, ${b})`,
         hsl: `hsl(${hsl[0].toFixed(1)}, ${hsl[1].toFixed(1)}%, ${hsl[2].toFixed(1)}%)`,
         hsv: `hsv(${hsv[0].toFixed(1)}, ${hsv[1].toFixed(1)}%, ${hsv[2].toFixed(1)}%)`,
         hwb: `hwb(${hwb[0].toFixed(1)}, ${hwb[1].toFixed(1)}%, ${hwb[2].toFixed(1)}%)`,
-        rgb: `rgb(${r}, ${g}, ${b})`
+        cmyk: `cmyk(${cmyk.map(x => x.toFixed(1)).join('%, ')}%)`
     });
 });
 
