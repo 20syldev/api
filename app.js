@@ -337,27 +337,117 @@ app.get('/:version/infos', async (req, res) => {
 // Generate personal data
 app.get('/:version/personal', (req, res) => {
     const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const data = [
-        { name: 'John Doe', email: 'john@example.com' },
-        { name: 'Jane Martin', email: 'jane@example.com' },
-        { name: 'Michael Johnson', email: 'michael@example.com' },
-        { name: 'Emily Davis', email: 'emily@example.com' },
-        { name: 'Alexis Barbos', email: 'alexis@example.com' }
+
+    const people = [
+        { name: 'John Doe', email: 'john@example.com', country: 'US' },
+        { name: 'Jane Martin', email: 'jane@example.com', country: 'FR' },
+        { name: 'Michael Johnson', email: 'michael@example.com', country: 'UK' },
+        { name: 'Emily Davis', email: 'emily@example.com', country: 'ES' },
+        { name: 'Alexis Barbos', email: 'alexis@example.com', country: 'DE' },
+        { name: 'Sarah Williams', email: 'sarah@example.com', country: 'IT' },
+        { name: 'Daniel Brown', email: 'daniel@example.com', country: 'JP' },
+        { name: 'Sophia Wilson', email: 'sophia@example.com', country: 'BR' },
+        { name: 'James Taylor', email: 'james@example.com', country: 'CA' },
+        { name: 'Olivia Thomas', email: 'olivia@example.com', country: 'AU' }
     ];
-    const localisations = [
-        { localisation: 'US', tel: '123-456-7890' },
-        { localisation: 'FR', tel: '06 78 90 12 34' },
-        { localisation: 'UK', tel: '7911 123456' },
-        { localisation: 'ES', tel: '678 901 234' },
-        { localisation: 'DE', tel: '163 555 1584' }
-    ];
+
+    const countries = {
+        US: { tel: '123-456-7890', code: '1', lang: 'English' },
+        FR: { tel: '06 78 90 12 34', code: '33', lang: 'French' },
+        UK: { tel: '7911 123456', code: '44', lang: 'English' },
+        ES: { tel: '678 901 234', code: '34', lang: 'Spanish' },
+        DE: { tel: '163 555 1584', code: '49', lang: 'German' },
+        IT: { tel: '345 678 9012', code: '39', lang: 'Italian' },
+        JP: { tel: '080-1234-5678', code: '81', lang: 'Japanese' },
+        BR: { tel: '(11) 98765-4321', code: '55', lang: 'Portuguese' },
+        CA: { tel: '416-123-4567', code: '1', lang: 'English' },
+        AU: { tel: '0412 345 678', code: '61', lang: 'English' }
+    };
+
     const jobs = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Doctor'];
+    const hobbies = ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Fitness', 'Music', 'Photography', 'Writing'];
+    const cities = ['New York', 'Paris', 'London', 'Madrid', 'Berlin', 'Rome', 'Tokyo', 'Los Angeles', 'Sydney', 'São Paulo', 'Toronto'];
+    const streets = ['Main St', '2nd Ave', 'Broadway', 'Park Lane', 'Elm St', 'Sunset Blvd', 'Maple St', 'Highland Rd'];
+    const socialHandles = ['john_doe', 'jane_martin', 'mike_johnson', 'emily_davis', 'alexis_barbos'];
 
     const card = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9000) + 1000).join(' ');
     const cvc = Math.floor(Math.random() * 900) + 100;
     const expiration = `${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}/${(new Date().getFullYear() + Math.floor(Math.random() * 3)).toString().slice(-2)}`;
 
-    res.jsonResponse({ ...random(data), ...random(localisations), job: random(jobs), card, cvc, expiration });
+    const person = random(people);
+    const country = person.country;
+    const phone = countries[country].tel;
+    const lang = countries[country].lang;
+
+    const age = Math.floor(Math.random() * 50) + 18;
+    const birthday = new Date(Date.now() - Math.floor((Math.random() * 50 + 18) * 365.25 * 24 * 60 * 60 * 1000)).toISOString();
+
+    let emergencyContacts = [], yearIncome = Math.floor(Math.random() * 100000), subscriptions = [], pets = [], vehicles = [];
+    let civilStatus = 'Single';
+    let children = 0;
+
+    if (age >= 21 && Math.random() > 0.7) civilStatus = 'Married';
+
+    if (civilStatus === 'Married' && age >= 25) children = Math.floor(Math.random() * 4);
+
+    while (emergencyContacts.length < Math.floor(Math.random() * 3) + 1) {
+        let emergencyContact = random(people);
+        while (emergencyContact.email === person.email || emergencyContacts.some(e => e.email === emergencyContact.email)) {
+            emergencyContact = random(people);
+        }
+        emergencyContacts.push({
+            name: emergencyContact.name,
+            relationship: random(['Spouse', 'Parent', 'Sibling', 'Friend']),
+            phone: `+${countries[country].code} ${countries[country].tel}`
+        });
+    }
+
+    while (subscriptions.length < Math.floor(Math.random() * 3) + 1) {
+        let subscription = random(['Netflix', 'Spotify', 'Amazon Prime', 'Disney+', 'Hulu']);
+        if (!subscriptions.includes(subscription)) subscriptions.push(subscription);
+    }
+
+    while (pets.length < Math.floor(Math.random() * 3) + 1) {
+        let pet = random(['Dog', 'Cat', 'Fish', 'Bird', 'None']);
+        if (!pets.includes(pet)) pets.push(pet);
+    }
+
+    while (vehicles.length < Math.floor(Math.random() * 3) + 1) {
+        let vehicle = random(['Car', 'Bike', 'Motorcycle', 'Bus', 'None']);
+        if (!vehicles.includes(vehicle)) vehicles.push(vehicle);
+    }
+
+    res.jsonResponse({
+        name: person.name,
+        email: person.email,
+        localisation: country,
+        phone: `+${countries[country].code} ${phone}`,
+        job: random(jobs),
+        hobbies: random(hobbies),
+        language: lang,
+        card,
+        cvc,
+        expiration,
+        address: `${Math.floor(Math.random() * 9999)} ${random(streets)}, ${random(cities)}`,
+        birthday,
+        civil_status: civilStatus,
+        children,
+        vehicle: vehicles,
+        social_profiles: {
+            twitter: `@${random(socialHandles)}`,
+            facebook: `facebook.com/${random(socialHandles)}`,
+            linkedin: `linkedin.com/in/${random(socialHandles)}`,
+            instagram: `instagram.com/${random(socialHandles)}`
+        },
+        year_income: `${yearIncome} USD/year`,
+        month_income: `${(yearIncome / 12).toFixed(2)} USD/month`,
+        education: random(['High School', 'Bachelor\'s', 'Master\'s', 'PhD']),
+        work_experience: `${Math.floor(Math.random() * 20)} years`,
+        health_status: random(['Healthy', 'Minor Issues', 'Chronic Conditions']),
+        emergency_contacts: emergencyContacts,
+        subscriptions,
+        pets,
+    });
 });
 
 // Generate QR Code
