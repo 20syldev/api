@@ -339,16 +339,16 @@ app.get('/:version/personal', (req, res) => {
     const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     const people = [
-        { name: 'John Doe', email: 'john@example.com', country: 'US' },
-        { name: 'Jane Martin', email: 'jane@example.com', country: 'FR' },
-        { name: 'Michael Johnson', email: 'michael@example.com', country: 'UK' },
-        { name: 'Emily Davis', email: 'emily@example.com', country: 'ES' },
-        { name: 'Alexis Barbos', email: 'alexis@example.com', country: 'DE' },
-        { name: 'Sarah Williams', email: 'sarah@example.com', country: 'IT' },
-        { name: 'Daniel Brown', email: 'daniel@example.com', country: 'JP' },
-        { name: 'Sophia Wilson', email: 'sophia@example.com', country: 'BR' },
-        { name: 'James Taylor', email: 'james@example.com', country: 'CA' },
-        { name: 'Olivia Thomas', email: 'olivia@example.com', country: 'AU' }
+        { name: 'John Doe', social: 'john_doe', email: 'john@example.com', country: 'US' },
+        { name: 'Jane Martin', social: 'jane_martin', email: 'jane@example.com', country: 'FR' },
+        { name: 'Michael Johnson', social: 'mike_johnson', email: 'michael@example.com', country: 'UK' },
+        { name: 'Emily Davis', social: 'emily_davis', email: 'emily@example.com', country: 'ES' },
+        { name: 'Alexis Barbos', social: 'alexis_barbos', email: 'alexis@example.com', country: 'DE' },
+        { name: 'Sarah Williams', social: 'sarah_williams', email: 'sarah@example.com', country: 'IT' },
+        { name: 'Daniel Brown', social: 'daniel_brown', email: 'daniel@example.com', country: 'JP' },
+        { name: 'Sophia Wilson', social: 'sophia_wilson', email: 'sophia@example.com', country: 'BR' },
+        { name: 'James Taylor', social: 'james_taylor', email: 'james@example.com', country: 'CA' },
+        { name: 'Olivia Thomas', social: 'olivia_thomas', email: 'olivia@example.com', country: 'AU' }
     ];
 
     const countries = {
@@ -368,13 +368,13 @@ app.get('/:version/personal', (req, res) => {
     const hobbies = ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Fitness', 'Music', 'Photography', 'Writing'];
     const cities = ['New York', 'Paris', 'London', 'Madrid', 'Berlin', 'Rome', 'Tokyo', 'Los Angeles', 'Sydney', 'São Paulo', 'Toronto'];
     const streets = ['Main St', '2nd Ave', 'Broadway', 'Park Lane', 'Elm St', 'Sunset Blvd', 'Maple St', 'Highland Rd'];
-    const socialHandles = ['john_doe', 'jane_martin', 'mike_johnson', 'emily_davis', 'alexis_barbos'];
 
     const card = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9000) + 1000).join(' ');
     const cvc = Math.floor(Math.random() * 900) + 100;
     const expiration = `${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}/${(new Date().getFullYear() + Math.floor(Math.random() * 3)).toString().slice(-2)}`;
 
     const person = random(people);
+    const social = person.social;
     const country = person.country;
     const phone = countries[country].tel;
     const lang = countries[country].lang;
@@ -434,10 +434,10 @@ app.get('/:version/personal', (req, res) => {
         children,
         vehicle: vehicles,
         social_profiles: {
-            twitter: `@${random(socialHandles)}`,
-            facebook: `facebook.com/${random(socialHandles)}`,
-            linkedin: `linkedin.com/in/${random(socialHandles)}`,
-            instagram: `instagram.com/${random(socialHandles)}`
+            twitter: `@${social}`,
+            facebook: `facebook.com/${social}`,
+            linkedin: `linkedin.com/in/${social}`,
+            instagram: `instagram.com/${social}`
         },
         year_income: `${yearIncome} USD/year`,
         month_income: `${(yearIncome / 12).toFixed(2)} USD/month`,
