@@ -18,6 +18,9 @@ const app = express();
 const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
+// Store logs
+const logs = [];
+
 // Define global variables
 let requests = 0, resetTime = Date.now() + 10000;
 
@@ -46,8 +49,12 @@ app.use((req, res, next) => {
     next();
 });
 
-// Logs
+// Save and send logs
 app.use((req, res, next) => {
+    if (req.originalUrl !== '/logs') {
+        logs.push({ timestamp: new Date().toISOString(), method: req.method, url: req.originalUrl });
+        if (logs.length > 1000) logs.shift();
+    }
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
     next();
 });
@@ -67,7 +74,7 @@ app.use((err, req, res, next) => {
 app.use('/:version', (req, res, next) => {
     const { version } = req.params;
 
-    if (!versions.includes(version)) {
+    if (!versions.includes(version) && version !== 'logs') {
         return res.status(404).jsonResponse({
             message: "Not Found",
             error: `Invalid API version (${version}).`,
@@ -82,7 +89,7 @@ app.use('/:version', (req, res, next) => {
 app.use('/:version/:endpoint', (req, res, next) => {
     const { version, endpoint } = req.params;
 
-    if (!endpoints.includes(endpoint)) {
+    if (!endpoints.includes(endpoint) || version === 'logs') {
         return res.status(404).jsonResponse({
             message: "Not Found",
             error: `Endpoint '${endpoint}' does not exists in ${version}.`,
@@ -122,6 +129,9 @@ app.get('/v1', (req, res) => {
         }
     });
 });
+
+// Display logs
+app.get('/logs', (req, res) => res.jsonResponse(logs));
 
 // ----------- ----------- GET ENDPOINTS ----------- ----------- //
 
