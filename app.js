@@ -105,7 +105,8 @@ app.use('/:version/:endpoint', (req, res, next) => {
 // Main route
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.jsonResponse({ 
+    res.jsonResponse({
+        logs: 'https://api.sylvain.pro/logs',
         versions: { 
             v1: 'https://api.sylvain.pro/v1'
         }
