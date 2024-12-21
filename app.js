@@ -93,7 +93,7 @@ app.use('/:version/:endpoint', (req, res, next) => {
     next();
 });
 
-// ----------- ----------- MAIN & VERSION ENDPOINTS ----------- ----------- //
+// ----------- ----------- MAIN ENDPOINTS ----------- ----------- //
 
 // Main route
 app.get('/', (req, res) => {
@@ -106,7 +106,7 @@ app.get('/', (req, res) => {
 });
 
 // Display v1 endpoints
-app.get('/v1', async (req, res) => {
+app.get('/v1', (req, res) => {
     res.jsonResponse({
         version: 'v1',
         endpoints: {
@@ -326,7 +326,7 @@ app.get('/:version/domain', (req, res) => {
 });
 
 // Display API informations
-app.get('/:version/infos', async (req, res) => {
+app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
         endpoints: endpoints.length,
         last_version: versions.at(-1),
@@ -490,7 +490,7 @@ app.get('/:version/username', (req, res) => {
 });
 
 // Display informations for owner's website
-app.get('/:version/website', async (req, res) => {
+app.get('/:version/website', (req, res) => {
     res.jsonResponse({
         versions: {
             api: process.env.API,
@@ -510,7 +510,12 @@ app.get('/:version/website', async (req, res) => {
         },
         updated_projects: process.env.RECENT.split(' '),
         new_projects: process.env.NEW.split(' '),
-        stats: [process.env.STATS1, process.env.STATS2, process.env.STATS3, process.env.STATS4],
+        stats: [
+            process.env.STATS1, 
+            process.env.STATS2, 
+            process.env.STATS3, 
+            process.env.STATS4
+        ],
         notif_tag: process.env.TAG,
         active: process.env.ACTIVE
     });
