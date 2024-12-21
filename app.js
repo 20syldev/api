@@ -61,7 +61,6 @@ app.use((req, res, next) => {
                 url: req.originalUrl,
                 status: res.statusCode === 304 ? 200 : res.statusCode,
                 duration: `${Date.now() - startTime}ms`,
-                host: req.headers.host,
                 platform: req.headers['sec-ch-ua-platform']?.replace(/"/g, ''),
             });
             if (logs.length > 1000) logs.shift();
