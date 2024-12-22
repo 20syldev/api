@@ -1,8 +1,8 @@
 <div align="center">
   <a href="https://api.sylvain.pro"><img src="https://api.sylvain.pro/favicon.ico" alt="Logo" width="25%" height="auto"></a>
 
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v1.2.0-ee6464?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
   # API Personnelle
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v1.3.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
