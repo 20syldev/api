@@ -33,6 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 // Set favicon for API
 app.use('/favicon.ico', express.static(path.join(__dirname, 'src', 'favicon.ico')));
 
+// Display robots.txt
+app.use('/robots.txt', express.static(path.join(__dirname, 'robots.txt')));
+
 // Return formatted JSON
 app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
