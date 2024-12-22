@@ -51,20 +51,21 @@ app.use((req, res, next) => {
 
 // Save and send logs
 app.use((req, res, next) => {
+    if (req.method === 'HEAD') return next();
+    if (req.originalUrl === '/logs') return next();
+    
     const startTime = Date.now();
 
     res.on('finish', () => {
-        if (req.originalUrl !== '/logs') {
-            logs.push({
-                timestamp: new Date().toISOString(),
-                method: req.method,
-                url: req.originalUrl,
-                status: res.statusCode === 304 ? 200 : res.statusCode,
-                duration: `${Date.now() - startTime}ms`,
-                platform: req.headers['sec-ch-ua-platform']?.replace(/"/g, ''),
-            });
-            if (logs.length > 1000) logs.shift();
-        }
+        logs.push({
+            timestamp: new Date().toISOString(),
+            method: req.method,
+            url: req.originalUrl,
+            status: res.statusCode === 304 ? 200 : res.statusCode,
+            duration: `${Date.now() - startTime}ms`,
+            platform: req.headers['sec-ch-ua-platform']?.replace(/"/g, ''),
+        });
+        if (logs.length > 1000) logs.shift();
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - startTime}ms`);
     });
     next();
