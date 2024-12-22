@@ -525,6 +525,7 @@ app.get('/:version/website', (req, res) => {
             flowers: process.env.FLOWERS,
             gemsync: process.env.GEMSYNC,
             gitsite: process.env.GITSITE,
+            logs: process.env.LOGS,
             nitrogen: process.env.NITROGEN,
             portfolio: process.env.PORTFOLIO,
             python_api: process.env.PYTHON_API,
