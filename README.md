@@ -17,7 +17,7 @@ L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple 
 $ npm run build
 ```
 ```console
-> api@1.2.0 build
+> api@1.3.0 build
 > npm install && node app.js
 
 [...]
