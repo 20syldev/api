@@ -89,6 +89,12 @@ app.use((err, req, res, next) => {
 app.use('/:version', (req, res, next) => {
     const { version } = req.params;
 
+    if (['fr', 'en'].includes(version)) {
+        const latestVersion = versions[versions.length - 1];
+        const endpoint = req.originalUrl.split('/').slice(2).join('/');
+        return res.redirect(endpoint ? `/${latestVersion}/${endpoint}` : `/${latestVersion}`);
+    }
+
     if (!versions.includes(version) && version !== 'logs') {
         return res.status(404).jsonResponse({
             message: "Not Found",
@@ -104,7 +110,12 @@ app.use('/:version', (req, res, next) => {
 app.use('/:version/:endpoint', (req, res, next) => {
     const { version, endpoint } = req.params;
 
-    if (!endpoints.includes(endpoint) || version === 'logs') {
+    if (['fr', 'en'].includes(version)) {
+        const latestVersion = versions[versions.length - 1];
+        return res.redirect(`/${latestVersion}/${endpoint}`);
+    }
+
+    if (!versions.includes(version) || !endpoints.includes(endpoint) || version === 'logs') {
         return res.status(404).jsonResponse({
             message: "Not Found",
             error: `Endpoint '${endpoint}' does not exists in ${version}.`,
