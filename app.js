@@ -118,7 +118,7 @@ app.use('/:version/:endpoint', (req, res, next) => {
     if (!versions.includes(version) || !endpoints.includes(endpoint) || version === 'logs') {
         return res.status(404).jsonResponse({
             message: "Not Found",
-            error: `Endpoint '${endpoint}' does not exists in ${version}.`,
+            error: `Endpoint '${endpoint}' does not exist in ${version}.`,
             documentation_url: "https://docs.sylvain.pro",
             status: '404'
         });
