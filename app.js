@@ -534,6 +534,7 @@ app.get('/:version/website', (req, res) => {
             coop_api: process.env.COOP_API,
             coop_status: process.env.COOP_STATUS,
             database: process.env.DATABASE,
+            digit: process.env.DIGIT,
             doc_coopbot: process.env.DOC_COOPBOT,
             docs: process.env.DOCS,
             flowers: process.env.FLOWERS,
