@@ -537,6 +537,7 @@ app.get('/:version/website', (req, res) => {
             digit: process.env.DIGIT,
             doc_coopbot: process.env.DOC_COOPBOT,
             docs: process.env.DOCS,
+            donut: process.env.DONUT,
             flowers: process.env.FLOWERS,
             gemsync: process.env.GEMSYNC,
             gitsite: process.env.GITSITE,
