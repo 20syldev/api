@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const { createCanvas } = require('canvas');
 const cors = require('cors');
 const express = require('express');
+const fetch = require('node-fetch');
 const math = require('mathjs');
 const path = require('path');
 const qrcode = require('qrcode');
@@ -22,7 +23,7 @@ const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'persona
 const logs = [];
 
 // Define global variables
-let requests = 0, resetTime = Date.now() + 10000;
+let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
@@ -527,7 +528,59 @@ app.get('/:version/username', (req, res) => {
 });
 
 // Display informations for owner's website
-app.get('/:version/website', (req, res) => {
+app.get('/:version/website', async (req, res) => {
+    const currentTime = Date.now();
+
+    if (currentTime - lastFetch >= 10 * 60 * 1000) {
+        try {
+            const username = '20syldev';
+            const token = process.env.STATS5;
+            const today = new Date().toISOString().split('T')[0];
+            const monthFirst = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            const lastYear = new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0];
+
+            const query = `
+            {
+              user(login: "${username}") {
+                contributionsCollection(from: "${today}T00:00:00Z") {
+                  contributionCalendar {
+                    totalContributions
+                  }
+                }
+                contributions_month: contributionsCollection(from: "${monthFirst}T00:00:00Z") {
+                contributionCalendar {
+                    totalContributions
+                  }
+                }
+                contributions_year: contributionsCollection(from: "${lastYear}T00:00:00Z") {
+                  contributionCalendar {
+                    totalContributions
+                  }
+                }
+              }
+            }`;
+
+            const apiResponse = await fetch('https://api.github.com/graphql', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+
+            if (!apiResponse.ok) throw new Error('Error fetching data.');
+
+            const data = await apiResponse.json();
+            const user = data?.data?.user;
+
+            contributions = {
+                today: user?.contributionsCollection?.contributionCalendar?.totalContributions || 0,
+                month: user?.contributions_month?.contributionCalendar?.totalContributions || 0,
+                year: user?.contributions_year?.contributionCalendar?.totalContributions || 0,
+            };
+
+            lastFetch = currentTime;
+        } catch { contributions = { today: 0, month: 0, year: 0 }; }
+    }
+
     res.jsonResponse({
         versions: {
             api: process.env.API,
@@ -551,12 +604,15 @@ app.get('/:version/website', (req, res) => {
         },
         updated_projects: process.env.RECENT.split(' '),
         new_projects: process.env.NEW.split(' '),
-        stats: [
-            process.env.STATS1, 
-            process.env.STATS2, 
-            process.env.STATS3, 
-            process.env.STATS4
-        ],
+        stats: {
+            os: process.env.STATS1,
+            front: process.env.STATS2,
+            back: process.env.STATS3,
+            projects: process.env.STATS4,
+            today: contributions.today.toString(),
+            this_month: contributions.month.toString(),
+            last_year: contributions.year.toString(),
+        },
         notif_tag: process.env.TAG,
         active: process.env.ACTIVE
     });
