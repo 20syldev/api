@@ -1,6 +1,6 @@
 {
     "name": "api",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "description": "Personnal API",
     "main": "app.js",
     "scripts": {
@@ -10,8 +10,8 @@
     "dependencies": {
         "canvas": "^2.11.2",
         "cors": "2.8.5",
-        "dotenv": "^16.1.4",
-        "express": "^4.18.2",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
         "mathjs": "^11.10.0",
         "prettier": "^3.3.3",
         "qrcode": "^1.5.1",
