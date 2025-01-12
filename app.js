@@ -17,7 +17,7 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'color', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
+const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store logs
 const logs = [];
@@ -332,6 +332,27 @@ app.get('/:version/color', (req, res) => {
         hwb: `hwb(${hwb[0].toFixed(1)}, ${hwb[1].toFixed(1)}%, ${hwb[2].toFixed(1)}%)`,
         cmyk: `cmyk(${cmyk.map(x => x.toFixed(1)).join('%, ')}%)`
     });
+});
+
+// Convert units
+app.get('/v1/convert', (req, res) => {
+    const { value, from, to } = req.query;
+
+    if (isNaN(value)) return res.jsonResponse({ error: 'Invalid number.' });
+    if (!value) return res.jsonResponse({ error: 'Please provide a value (?value={value})' });
+    if (!from) return res.jsonResponse({ error: 'Please provide a source unit (&from={unit})' });
+    if (!to) return res.jsonResponse({ error: 'Please provide a target unit (&to={unit})' });
+
+    const conversions = {
+        celsius: { fahrenheit: (val) => (val * 9) / 5 + 32, kelvin: (val) => val + 273.15 },
+        fahrenheit: { celsius: (val) => ((val - 32) * 5) / 9, kelvin: (val) => ((val - 32) * 5) / 9 + 273.15 },
+        kelvin: { celsius: (val) => val - 273.15, fahrenheit: (val) => ((val - 273.15) * 9) / 5 + 32 },
+    };
+
+    const convert = conversions[from.toLowerCase()]?.[to.toLowerCase()];
+    if (!convert) return res.jsonResponse({ error: 'Invalid conversion units.' });
+
+    res.jsonResponse({ from, to, value: parseFloat(value), result: convert(parseFloat(value)) });
 });
 
 // Generate domain informations
