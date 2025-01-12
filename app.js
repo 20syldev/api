@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 // Too many requests
 app.use((req, res, next) => {
     if (Date.now() > resetTime) requests = 0, resetTime = Date.now() + 10000;
-    if (++requests > 1000) return res.status(429).jsonResponse({ message: "Too Many Requests" });
+    if (++requests > 1000) return res.status(429).jsonResponse({ message: 'Too Many Requests' });
     next();
 });
 
@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     if (req.method === 'HEAD') return next();
     if (req.originalUrl === '/logs') return next();
-    
+
     const startTime = Date.now();
 
     res.on('finish', () => {
@@ -79,9 +79,9 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
-        message: "Internal Server Error",
+        message: 'Internal Server Error',
         error: err.message,
-        documentation_url: "https://docs.sylvain.pro",
+        documentation: 'https://docs.sylvain.pro',
         status: '500'
     });
 });
@@ -98,9 +98,9 @@ app.use('/:version', (req, res, next) => {
 
     if (!versions.includes(version) && version !== 'logs') {
         return res.status(404).jsonResponse({
-            message: "Not Found",
+            message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation_url: "https://docs.sylvain.pro",
+            documentation: 'https://docs.sylvain.pro',
             status: '404'
         });
     }
@@ -118,9 +118,9 @@ app.use('/:version/:endpoint', (req, res, next) => {
 
     if (!versions.includes(version) || !endpoints.includes(endpoint) || version === 'logs') {
         return res.status(404).jsonResponse({
-            message: "Not Found",
+            message: 'Not Found',
             error: `Endpoint '${endpoint}' does not exist in ${version}.`,
-            documentation_url: "https://docs.sylvain.pro",
+            documentation: 'https://docs.sylvain.pro',
             status: '404'
         });
     }
@@ -252,6 +252,7 @@ app.get('/:version/algorithms', (req, res) => {
 // Generate captcha
 app.get('/:version/captcha', (req, res) => {
     const captcha = req.query.text;
+
     if (!captcha) return res.jsonResponse({ error: 'Please provide a valid argument (?text={text})' });
 
     const size = 60, font = '60px Comic Sans Ms', width = captcha.length * size, height = 120;
@@ -368,9 +369,9 @@ app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
         endpoints: endpoints.length,
         last_version: versions.at(-1),
-        documentation: "https://docs.sylvain.pro",
-        github: "https://github.com/20syldev/api",
-        creation: "November 25th 2024",
+        documentation: 'https://docs.sylvain.pro',
+        github: 'https://github.com/20syldev/api',
+        creation: 'November 25th 2024',
     });
 });
 
@@ -493,6 +494,7 @@ app.get('/:version/personal', (req, res) => {
 // Generate QR Code
 app.get('/:version/qrcode', async (req, res) => {
     const { url } = req.query;
+
     if (!url) return res.jsonResponse({ error: 'Please provide a valid url (?url={URL})' });
 
     try { res.jsonResponse({ qr: await qrcode.toDataURL(url) }); }
@@ -586,7 +588,6 @@ app.get('/:version/website', async (req, res) => {
             api: process.env.API,
             coop_api: process.env.COOP_API,
             coop_status: process.env.COOP_STATUS,
-            old_database: process.env.OLD_DATABASE,
             digit: process.env.DIGIT,
             doc_coopbot: process.env.DOC_COOPBOT,
             docs: process.env.DOCS,
@@ -596,6 +597,7 @@ app.get('/:version/website', async (req, res) => {
             gitsite: process.env.GITSITE,
             logs: process.env.LOGS,
             nitrogen: process.env.NITROGEN,
+            old_database: process.env.OLD_DATABASE,
             portfolio: process.env.PORTFOLIO,
             python_api: process.env.PYTHON_API,
             readme: process.env.README,
