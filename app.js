@@ -166,11 +166,17 @@ app.get('/logs', (req, res) => res.jsonResponse(logs));
 // Algorithms tool
 app.get('/:version/algorithms', (req, res) => {
     const { tool, value, value2 } = req.query;
-    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(tool) || !value) 
-        return res.jsonResponse({ error: 'Invalid or missing input.' });
+
+    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(tool)) {
+        return res.jsonResponse({
+            error: 'Please provide a valid algorithm (?tool={algorithm})',
+            documentation: 'https://docs.sylvain.pro/v1/algorithms'
+        });
+    }
+    if (!value) return res.jsonResponse({ error: 'Please provide a valid value (&value={value})' });
 
     if (tool === 'anagram') {
-        if (!value2) return res.jsonResponse({ error: 'Please provide a second input.' });
+        if (!value2) return res.jsonResponse({ error: 'Please provide a second value (&value2={value})' });
         return res.jsonResponse({ answer: value.split('').sort().join('') === value2.split('').sort().join('') });
     }
 
@@ -190,9 +196,15 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: math.factorial(value) });
     }
 
+    if (tool === 'fibonacci') {
+        let fib = [0, 1];
+        for (let i = 2; i < parseInt(value); i++) fib.push(fib[i - 1] + fib[i - 2]);
+        return res.jsonResponse({ answer: fib.slice(0, parseInt(value)) });
+    }
+
     if (tool === 'gcd') {
         const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
-        if (!value2) return res.jsonResponse({ error: 'Please provide a second input.' });
+        if (!value2) return res.jsonResponse({ error: 'Please provide a second value (&value2={value})' });
         if (isNaN(value) || isNaN(value2)) return res.jsonResponse({ error: 'Invalid numbers.' });
         return res.jsonResponse({ answer: gcd(value, value2) });
     }
@@ -209,13 +221,20 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: isPrime });
     }
 
-    if (tool === 'fibonacci') {
-        let fib = [0, 1];
-        for (let i = 2; i < parseInt(value); i++) fib.push(fib[i - 1] + fib[i - 2]);
-        return res.jsonResponse({ answer: fib.slice(0, parseInt(value)) });
-    }
-
     if (tool === 'palindrome') return res.jsonResponse({ answer: value === value.split('').reverse().join('') });
+
+    if (tool === 'primefactors') {
+        let num = value;
+        let factors = [];
+        if (isNaN(num) || num < 2 || num > 100000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 100 000.' });
+        for (let i = 2; i <= num; i++) {
+            while (num % i === 0) {
+                factors.push(i);
+                num /= i;
+            }
+        }
+        return res.jsonResponse({ answer: factors });
+    }
 
     if (tool === 'primelist') {
         const primes = [];
@@ -231,19 +250,6 @@ app.get('/:version/algorithms', (req, res) => {
             if (isPrime) primes.push(i);
         }
         return res.jsonResponse({ answer: primes });
-    }
-
-    if (tool === 'primefactors') {
-        let num = value;
-        let factors = [];
-        if (isNaN(num) || num < 2 || num > 100000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 100 000.' });
-        for (let i = 2; i <= num; i++) {
-            while (num % i === 0) {
-                factors.push(i);
-                num /= i;
-            }
-        }
-        return res.jsonResponse({ answer: factors });
     }
 
     if (tool === 'reverse') return res.jsonResponse({ answer: value.split('').reverse().join('') });
