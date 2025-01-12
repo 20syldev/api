@@ -339,10 +339,9 @@ app.get('/:version/color', (req, res) => {
 app.get('/v1/convert', (req, res) => {
     const { value, from, to } = req.query;
 
-    if (isNaN(value)) return res.jsonResponse({ error: 'Invalid number.' });
-    if (!value) return res.jsonResponse({ error: 'Please provide a value (?value={value})' });
-    if (!from) return res.jsonResponse({ error: 'Please provide a source unit (&from={unit})' });
-    if (!to) return res.jsonResponse({ error: 'Please provide a target unit (&to={unit})' });
+    if (!value || isNaN(value)) return res.jsonResponse({ error: 'Please provide a valid value (?value={value})' });
+    if (!from) return res.jsonResponse({ error: 'Please provide a valid source unit (&from={unit})' });
+    if (!to) return res.jsonResponse({ error: 'Please provide a valid target unit (&to={unit})' });
 
     const conversions = {
         celsius: { fahrenheit: (val) => (val * 9) / 5 + 32, kelvin: (val) => val + 273.15 },
