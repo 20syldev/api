@@ -89,11 +89,11 @@ app.use((err, req, res, next) => {
 // Check if version exists
 app.use('/:version', (req, res, next) => {
     const { version } = req.params;
+    const latest = versions[versions.length - 1];
+    const endpoint = req.originalUrl.split('/').slice(2).join('/');
 
-    if (['fr', 'en'].includes(version)) {
-        const latestVersion = versions[versions.length - 1];
-        const endpoint = req.originalUrl.split('/').slice(2).join('/');
-        return res.redirect(endpoint ? `/${latestVersion}/${endpoint}` : `/${latestVersion}`);
+    if (['latest', 'fr', 'en'].includes(version)) {
+        return res.redirect(endpoint ? `/${latest}/${endpoint}` : `/${latest}`);
     }
 
     if (!versions.includes(version) && version !== 'logs') {
