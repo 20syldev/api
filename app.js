@@ -17,7 +17,7 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
+const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store logs
 const logs = [];
@@ -386,6 +386,11 @@ app.get('/:version/domain', (req, res) => {
     });
 });
 
+// GET hash error
+app.get('/:version/hash', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
+});
+
 // Display API informations
 app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
@@ -643,6 +648,23 @@ app.get('/:version/website', async (req, res) => {
 });
 
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
+
+// Generate hash
+app.post('/v1/hash', (req, res) => {
+    const { text, method } = req.body;
+
+    if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
+    if (!method) return res.jsonResponse({
+        error: 'Please provide a valid hash algorithm (?method={algorithm})',
+        documentation: 'https://docs.sylvain.pro/v1/hash'
+    });
+
+    const methods = crypto.getHashes();
+    if (!methods.includes(method)) return res.jsonResponse({ error: `Unsupported method. Use one of: ${methods.join(', ')}` });
+
+    const hash = crypto.createHash(method).update(text).digest('hex');
+    res.jsonResponse({ method, hash });
+});
 
 // Generate Token
 app.post('/:version/token', (req, res) => {
