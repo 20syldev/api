@@ -140,7 +140,7 @@ app.get('/v1', (req, res) => {
     res.jsonResponse({
         version: 'v1',
         endpoints: {
-            algorithm: '/v1/algorithms?tool={algorithm}&value={value}(&value2={value2})',
+            algorithm: '/v1/algorithms?method={algorithm}&value={value}(&value2={value2})',
             captcha: '/v1/captcha?text={text}',
             color: '/v1/color',
             convert: '/v1/convert?value={value}&from={unit}&to={unit}',
@@ -159,24 +159,24 @@ app.get('/logs', (req, res) => res.jsonResponse(logs));
 
 // ----------- ----------- GET ENDPOINTS ----------- ----------- //
 
-// Algorithms tool
+// Algorithms
 app.get('/:version/algorithms', (req, res) => {
-    const { tool, value, value2 } = req.query;
+    const { method, value, value2 } = req.query;
 
-    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(tool)) {
+    if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(method)) {
         return res.jsonResponse({
-            error: 'Please provide a valid algorithm (?tool={algorithm})',
+            error: 'Please provide a valid algorithm (?method={algorithm})',
             documentation: 'https://docs.sylvain.pro/v1/algorithms'
         });
     }
     if (!value) return res.jsonResponse({ error: 'Please provide a valid value (&value={value})' });
 
-    if (tool === 'anagram') {
+    if (method === 'anagram') {
         if (!value2) return res.jsonResponse({ error: 'Please provide a second value (&value2={value})' });
         return res.jsonResponse({ answer: value.split('').sort().join('') === value2.split('').sort().join('') });
     }
 
-    if (tool === 'bubblesort') {
+    if (method === 'bubblesort') {
         const arr = value.split(',').map(Number);
         const n = arr.length;
         for (let i = 0; i < n-1; i++) {
@@ -187,25 +187,25 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: arr });
     }
 
-    if (tool === 'factorial') {
+    if (method === 'factorial') {
         if (isNaN(value) || value < 0 || value > 170) return res.jsonResponse({ error: 'Please provide a valid number between 0 and 170.' });
         return res.jsonResponse({ answer: math.factorial(value) });
     }
 
-    if (tool === 'fibonacci') {
+    if (method === 'fibonacci') {
         let fib = [0, 1];
         for (let i = 2; i < parseInt(value); i++) fib.push(fib[i - 1] + fib[i - 2]);
         return res.jsonResponse({ answer: fib.slice(0, parseInt(value)) });
     }
 
-    if (tool === 'gcd') {
+    if (method === 'gcd') {
         const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
         if (!value2) return res.jsonResponse({ error: 'Please provide a second value (&value2={value})' });
         if (isNaN(value) || isNaN(value2)) return res.jsonResponse({ error: 'Invalid numbers.' });
         return res.jsonResponse({ answer: gcd(value, value2) });
     }
 
-    if (tool === 'isprime') {
+    if (method === 'isprime') {
         let isPrime = true;
         if (isNaN(value) || value < 1) return res.jsonResponse({ error: 'Please provide a valid number greater than or equal to 1.' });
         for (let i = 2; i <= Math.sqrt(value); i++) {
@@ -217,9 +217,9 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: isPrime });
     }
 
-    if (tool === 'palindrome') return res.jsonResponse({ answer: value === value.split('').reverse().join('') });
+    if (method === 'palindrome') return res.jsonResponse({ answer: value === value.split('').reverse().join('') });
 
-    if (tool === 'primefactors') {
+    if (method === 'primefactors') {
         let num = value;
         let factors = [];
         if (isNaN(num) || num < 2 || num > 100000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 100 000.' });
@@ -232,7 +232,7 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: factors });
     }
 
-    if (tool === 'primelist') {
+    if (method === 'primelist') {
         const primes = [];
         if (isNaN(value) || value < 2 || value > 10000) return res.jsonResponse({ error: 'Please provide a valid number between 2 and 10 000.' });
         for (let i = 2; i <= value; i++) {
@@ -248,7 +248,7 @@ app.get('/:version/algorithms', (req, res) => {
         return res.jsonResponse({ answer: primes });
     }
 
-    if (tool === 'reverse') return res.jsonResponse({ answer: value.split('').reverse().join('') });
+    if (method === 'reverse') return res.jsonResponse({ answer: value.split('').reverse().join('') });
 });
 
 // Generate captcha
