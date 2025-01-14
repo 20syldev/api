@@ -111,12 +111,7 @@ app.use('/:version', (req, res, next) => {
 app.use('/:version/:endpoint', (req, res, next) => {
     const { version, endpoint } = req.params;
 
-    if (['fr', 'en'].includes(version)) {
-        const latestVersion = versions[versions.length - 1];
-        return res.redirect(`/${latestVersion}/${endpoint}`);
-    }
-
-    if (!versions.includes(version) || !endpoints.includes(endpoint) || version === 'logs') {
+    if (!versions.includes(version) || !endpoints.includes(endpoint)) {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Endpoint '${endpoint}' does not exist in ${version}.`,
