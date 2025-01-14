@@ -128,6 +128,8 @@ app.use('/:version/:endpoint', (req, res, next) => {
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.jsonResponse({
+        documentation: 'https://docs.sylvain.pro',
+        latest: 'https://api.sylvain.pro/latest',
         logs: 'https://api.sylvain.pro/logs',
         versions: { 
             v1: 'https://api.sylvain.pro/v1'
