@@ -1,6 +1,6 @@
 {
     "name": "api",
-    "version": "2.0.0a",
+    "version": "2.0.0",
     "description": "Personnal API",
     "main": "app.js",
     "scripts": {
