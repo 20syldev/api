@@ -2,7 +2,7 @@
   <a href="https://api.sylvain.pro"><img src="https://api.sylvain.pro/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
 
   # API Personnelle
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v2.1.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v2.2.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
@@ -17,7 +17,7 @@ L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple 
 $ npm run build
 ```
 ```console
-> api@2.1.0 build
+> api@2.2.0 build
 > npm install && node app.js
 
 [...]
