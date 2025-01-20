@@ -30,6 +30,7 @@ let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
 // CORS & Express setup
 app.use(cors({ methods: ['GET', 'POST'] }));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Set favicon for API
 app.use('/favicon.ico', express.static(path.join(__dirname, 'src', 'favicon.ico')));
@@ -338,7 +339,7 @@ app.get('/:version/color', (req, res) => {
 });
 
 // Convert units
-app.get('/v1/convert', (req, res) => {
+app.get('/:version/convert', (req, res) => {
     const { value, from, to } = req.query;
 
     if (!value || isNaN(value)) return res.jsonResponse({ error: 'Please provide a valid value (?value={value})' });
@@ -657,7 +658,7 @@ app.get('/:version/website', async (req, res) => {
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
 
 // Generate hash
-app.post('/v1/hash', (req, res) => {
+app.post('/:version/hash', (req, res) => {
     const { text, method } = req.body;
 
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
