@@ -25,9 +25,6 @@ const logs = [], chat = [];
 // Define global variables
 let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
 
-// Reset chat every 10 minutes
-setInterval(() => chat.shift(), 600000);
-
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
 // CORS & Express setup
@@ -688,7 +685,11 @@ app.post('/:version/chat', (req, res) => {
     const { username, message, timestamp } = req.body;
     
     if (!username || !message) return res.status(400).jsonResponse({ error: 'Username and message are required.' });
-    chat.push({ username, message, timestamp: timestamp || new Date().toISOString() });
+    
+    const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
+    chat.push(msg);
+    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 600000);
+
     res.jsonResponse({ message: 'Message sent successfully' });
 });
 
