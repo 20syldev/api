@@ -17,13 +17,16 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
+const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'chat', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store logs
-const logs = [];
+const logs = [], chat = [];
 
 // Define global variables
 let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
+
+// Reset chat every 10 minutes
+setInterval(() => chat.shift(), 600000);
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
@@ -410,6 +413,12 @@ app.get('/:version/infos', (req, res) => {
     });
 });
 
+// Display stored data
+app.get('/:version/chat', (req, res) => {
+    if (chat.length > 0) res.jsonResponse(chat);
+    else res.jsonResponse({ error: 'No messages stored.' });
+});
+
 // Generate personal data
 app.get('/:version/personal', (req, res) => {
     const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -672,6 +681,15 @@ app.post('/:version/hash', (req, res) => {
 
     const hash = crypto.createHash(method).update(text).digest('hex');
     res.jsonResponse({ method, hash });
+});
+
+// Store chat messages
+app.post('/:version/chat', (req, res) => {
+    const { username, message, timestamp } = req.body;
+    
+    if (!username || !message) return res.status(400).jsonResponse({ error: 'Username and message are required.' });
+    chat.push({ username, message, timestamp: timestamp || new Date().toISOString() });
+    res.jsonResponse({ message: 'Message sent successfully' });
 });
 
 // Generate Token
