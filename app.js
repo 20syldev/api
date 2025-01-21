@@ -410,7 +410,7 @@ app.get('/:version/hash', (req, res) => {
 // Display API informations
 app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
-        endpoints: endpoints.length - 1,
+        endpoints: endpoints.length,
         last_version: versions.at(-1),
         documentation: 'https://docs.sylvain.pro',
         github: 'https://github.com/20syldev/api',
