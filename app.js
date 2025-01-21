@@ -20,7 +20,7 @@ const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store logs
-const logs = [], chat = [];
+const logs = [], chat = [], sessions = {};
 
 // Define global variables
 let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
@@ -667,14 +667,22 @@ app.get('/:version/website', async (req, res) => {
 
 // Store chat messages
 app.post('/:version/chat', (req, res) => {
-    const { username, message, timestamp } = req.body;
+    const { username, message, timestamp, session } = req.body;
+    const u = username.toLowerCase();
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!message) return res.jsonResponse({ error: 'Please provide a message (&message={message})' });
+    if (!session) return res.jsonResponse({ error: 'Please provide a valid session ID (&session={ID})' });
+    if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
 
     const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
     chat.push(msg);
-    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 600000);
+
+    sessions[u] = sessions[u] || { user: session, last: Date.now() };
+    sessions[u].last = Date.now();
+
+    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 3600000);
+    setTimeout(() => { if (Date.now() - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
 
     res.jsonResponse({ message: 'Message sent successfully' });
 });
