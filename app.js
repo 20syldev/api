@@ -17,7 +17,7 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'color', 'convert', 'chat', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
+const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store logs
 const logs = [], chat = [];
@@ -146,6 +146,7 @@ app.get('/v1', (req, res) => {
             get: {
                 algorithm: '/v1/algorithms?method={algorithm}&value={value}(&value2={value2})',
                 captcha: '/v1/captcha?text={text}',
+                chat: '/v1/chat',
                 color: '/v1/color',
                 convert: '/v1/convert?value={value}&from={unit}&to={unit}',
                 domain: '/v1/domain',
@@ -155,6 +156,7 @@ app.get('/v1', (req, res) => {
                 username: '/v1/username'
             },
             post: {
+                chat: '/v1/chat',
                 hash: '/v1/hash',
                 token: '/v1/token'
             }
@@ -305,6 +307,12 @@ app.get('/:version/captcha', (req, res) => {
     res.send(canvas.toBuffer('image/png'));
 });
 
+// Display stored data
+app.get('/:version/chat', (req, res) => {
+    if (chat.length > 0) res.jsonResponse(chat);
+    else res.jsonResponse({ error: 'No messages stored.' });
+});
+
 // Generate color
 app.get('/:version/color', (req, res) => {
     const r = random.int(0, 255), g = random.int(0, 255), b = random.int(0, 255);
@@ -408,12 +416,6 @@ app.get('/:version/infos', (req, res) => {
         github: 'https://github.com/20syldev/api',
         creation: 'November 25th 2024',
     });
-});
-
-// Display stored data
-app.get('/:version/chat', (req, res) => {
-    if (chat.length > 0) res.jsonResponse(chat);
-    else res.jsonResponse({ error: 'No messages stored.' });
 });
 
 // Generate personal data
@@ -663,6 +665,20 @@ app.get('/:version/website', async (req, res) => {
 
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
 
+// Store chat messages
+app.post('/:version/chat', (req, res) => {
+    const { username, message, timestamp } = req.body;
+
+    if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
+    if (!message) return res.jsonResponse({ error: 'Please provide a message (&message={message})' });
+
+    const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
+    chat.push(msg);
+    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 600000);
+
+    res.jsonResponse({ message: 'Message sent successfully' });
+});
+
 // Generate hash
 app.post('/:version/hash', (req, res) => {
     const { text, method } = req.body;
@@ -678,19 +694,6 @@ app.post('/:version/hash', (req, res) => {
 
     const hash = crypto.createHash(method).update(text).digest('hex');
     res.jsonResponse({ method, hash });
-});
-
-// Store chat messages
-app.post('/:version/chat', (req, res) => {
-    const { username, message, timestamp } = req.body;
-    
-    if (!username || !message) return res.status(400).jsonResponse({ error: 'Username and message are required.' });
-    
-    const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
-    chat.push(msg);
-    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 600000);
-
-    res.jsonResponse({ message: 'Message sent successfully' });
 });
 
 // Generate Token
