@@ -19,11 +19,11 @@ const app = express();
 const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
-// Store logs
+// Store data
 const logs = [], chat = [], sessions = {};
 
 // Define global variables
-let lastFetch = 0; commits = 0; requests = 0, resetTime = Date.now() + 10000;
+let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
