@@ -22,6 +22,12 @@
         "type": "git",
         "url": "git+https://github.com/20syldev/api.git"
     },
+    "keywords": [
+        "api",
+        "express",
+        "utility",
+        "math"
+    ],
     "author": "Sylvain L.",
     "license": "BSD 3-Clause",
     "bugs": {
