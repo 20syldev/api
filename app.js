@@ -730,4 +730,4 @@ app.post('/:version/token', (req, res) => {
 
 // ----------- ----------- SERVER SETUP ----------- ----------- //
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+app.listen(3000, () => console.log('API is running on\n    - http://127.0.0.1:3000\n    - http://localhost:3000'));
