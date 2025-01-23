@@ -17,13 +17,15 @@ L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple 
 $ npm run build
 ```
 ```console
-> api@2.4.0 build
+> @20syldev/api@2.4.0 build
 > npm install && node app.js
 
 [...]
 
 found 0 vulnerabilities
-Server running on http://localhost:3000
+API is running on
+    - http://127.0.0.1:3000
+    - http://localhost:3000
 ```
 
 *Visitez la [documentation](https://docs.sylvain.pro) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.pro) !*
