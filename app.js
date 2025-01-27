@@ -669,16 +669,16 @@ app.get('/:version/website', async (req, res) => {
 
 // Store chat messages
 app.post('/:version/chat', (req, res) => {
-    const { username, message, timestamp, session } = req.body;
-    const u = username.toLowerCase();
+    const { username, message, timestamp, session, token } = req.body;
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!message) return res.jsonResponse({ error: 'Please provide a message (&message={message})' });
     if (!session) return res.jsonResponse({ error: 'Please provide a valid session ID (&session={ID})' });
-    if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
 
+    const u = username.toLowerCase();
     const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
     chat.push(msg);
+    if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
 
     sessions[u] = sessions[u] || { user: session, last: Date.now() };
     sessions[u].last = Date.now();
