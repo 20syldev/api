@@ -631,6 +631,7 @@ app.get('/:version/website', async (req, res) => {
             api: process.env.API,
             coop_api: process.env.COOP_API,
             coop_status: process.env.COOP_STATUS,
+            chat: process.env.CHAT,
             digit: process.env.DIGIT,
             doc_coopbot: process.env.DOC_COOPBOT,
             docs: process.env.DOCS,
@@ -646,6 +647,7 @@ app.get('/:version/website', async (req, res) => {
             readme: process.env.README,
             terminal: process.env.TERMINAL,
             wrkit: process.env.WRKIT,
+            zpki: process.env.ZPKI
         },
         updated_projects: process.env.RECENT.split(' '),
         new_projects: process.env.NEW.split(' '),
