@@ -20,7 +20,7 @@ const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store data
-const logs = [], chat = [], sessions = {};
+const logs = [], chat = [], privateChats = {}, sessions = {};
 
 // Define global variables
 let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
@@ -677,13 +677,21 @@ app.post('/:version/chat', (req, res) => {
 
     const u = username.toLowerCase();
     const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
-    chat.push(msg);
+
     if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
+    if (token) {
+        if (!privateChats[token]) {
+            privateChats[token] = [];
+            setTimeout(() => { delete privateChats[token]; }, 3600000);
+        }
+        privateChats[token].push(msg);
+    } else chat.push(msg);
 
     sessions[u] = sessions[u] || { user: session, last: Date.now() };
     sessions[u].last = Date.now();
 
-    setTimeout(() => chat.splice(chat.indexOf(msg), 1), 3600000);
+    if (!token) setTimeout(() => chat.splice(chat.indexOf(msg), 1), 3600000);
+
     setTimeout(() => { if (Date.now() - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
 
     res.jsonResponse({ message: 'Message sent successfully' });
