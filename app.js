@@ -313,6 +313,11 @@ app.get('/:version/chat', (req, res) => {
     else res.jsonResponse({ error: 'No messages stored.' });
 });
 
+// GET private chat error
+app.get('/:version/chat/private', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
+});
+
 // Generate color
 app.get('/:version/color', (req, res) => {
     const r = random.int(0, 255), g = random.int(0, 255), b = random.int(0, 255);
@@ -695,6 +700,17 @@ app.post('/:version/chat', (req, res) => {
     setTimeout(() => { if (Date.now() - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
 
     res.jsonResponse({ message: 'Message sent successfully' });
+});
+
+// Display a private chat with a token
+app.post('/:version/chat/private', (req, res) => {
+    const { token } = req.body;
+
+    console.log(privateChats);
+    if (!token) return res.jsonResponse({ error: 'Please provide a valid token (?token={key}).' });
+    if (privateChats[token]) return res.jsonResponse(privateChats[token]);
+
+    return res.jsonResponse({ error: 'Invalid or expired token.' });
 });
 
 // Generate hash
