@@ -706,7 +706,6 @@ app.post('/:version/chat', (req, res) => {
 app.post('/:version/chat/private', (req, res) => {
     const { token } = req.body;
 
-    console.log(privateChats);
     if (!token) return res.jsonResponse({ error: 'Please provide a valid token (?token={key}).' });
     if (privateChats[token]) return res.jsonResponse(privateChats[token]);
 
