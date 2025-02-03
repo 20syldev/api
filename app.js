@@ -685,7 +685,7 @@ app.post('/:version/chat', (req, res) => {
     const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
 
     rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
-    if (rateLimits[u].length > 10) {
+    if (rateLimits[u].length > 50) {
         const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
         return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
     }
@@ -720,7 +720,7 @@ app.post('/:version/chat/private', (req, res) => {
     const u = username.toLowerCase(), now = Date.now();
 
     rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
-    if (rateLimits[u].length > 10) {
+    if (rateLimits[u].length > 50) {
         const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
         return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
     }
