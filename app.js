@@ -20,7 +20,7 @@ const versions = ['v1'];
 const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
 
 // Store data
-const logs = [], chat = [], privateChats = {}, sessions = {};
+const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {};
 
 // Define global variables
 let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
@@ -681,33 +681,51 @@ app.post('/:version/chat', (req, res) => {
     if (!message) return res.jsonResponse({ error: 'Please provide a message (&message={message})' });
     if (!session) return res.jsonResponse({ error: 'Please provide a valid session ID (&session={ID})' });
 
-    const u = username.toLowerCase();
+    const u = username.toLowerCase(), now = Date.now();
     const msg = { username, message, timestamp: timestamp || new Date().toISOString() };
 
+    rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
+    if (rateLimits[u].length > 10) {
+        const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
+        return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
+    }
+    rateLimits[u].push(now);
+
     if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
+
     if (token) {
-        if (!privateChats[token]) {
-            privateChats[token] = [];
-            setTimeout(() => { delete privateChats[token]; }, 3600000);
-        }
+        privateChats[token] = privateChats[token] || [];
         privateChats[token].push(msg);
-    } else chat.push(msg);
+        setTimeout(() => { delete privateChats[token]; }, 3600000);
+    } else {
+        chat.push(msg);
+        setTimeout(() => chat.splice(chat.indexOf(msg), 1), 3600000);
+    }
 
-    sessions[u] = sessions[u] || { user: session, last: Date.now() };
-    sessions[u].last = Date.now();
+    sessions[u] = sessions[u] || { user: session, last: now };
+    sessions[u].last = now;
 
-    if (!token) setTimeout(() => chat.splice(chat.indexOf(msg), 1), 3600000);
-
-    setTimeout(() => { if (Date.now() - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
+    setTimeout(() => { if (now - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
 
     res.jsonResponse({ message: 'Message sent successfully' });
 });
 
 // Display a private chat with a token
 app.post('/:version/chat/private', (req, res) => {
-    const { token } = req.body;
+    const { username, token } = req.body;
 
+    if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!token) return res.jsonResponse({ error: 'Please provide a valid token (?token={key}).' });
+
+    const u = username.toLowerCase(), now = Date.now();
+
+    rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
+    if (rateLimits[u].length > 10) {
+        const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
+        return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
+    }
+    rateLimits[u].push(now);
+
     if (privateChats[token]) return res.jsonResponse(privateChats[token]);
 
     return res.jsonResponse({ error: 'Invalid or expired token.' });
