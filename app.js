@@ -647,6 +647,7 @@ app.get('/:version/website', async (req, res) => {
             logs: process.env.LOGS,
             nitrogen: process.env.NITROGEN,
             old_database: process.env.OLD_DATABASE,
+            php: process.env.PHP,
             portfolio: process.env.PORTFOLIO,
             python_api: process.env.PYTHON_API,
             readme: process.env.README,
