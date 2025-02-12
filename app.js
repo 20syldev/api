@@ -15,9 +15,12 @@ const random = require('random');
 const uuid = require('uuid');
 const app = express();
 
-// Define allowed versions & endpoints
-const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'];
+// Define allowed versions & endpoints for each version
+const versions = ['v1', 'v2'];
+const endpoints = {
+    v1: ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'],
+    v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website']
+};
 
 // Store data
 const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, games = {};
@@ -112,7 +115,7 @@ app.use('/:version', (req, res, next) => {
 app.use('/:version/:endpoint', (req, res, next) => {
     const { version, endpoint } = req.params;
 
-    if (!versions.includes(version) || !endpoints.includes(endpoint)) {
+    if (!versions.includes(version) || !endpoints[version].includes(endpoint)) {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Endpoint '${endpoint}' does not exist in ${version}.`,
@@ -133,7 +136,8 @@ app.get('/', (req, res) => {
         latest: 'https://api.sylvain.pro/latest',
         logs: 'https://api.sylvain.pro/logs',
         versions: { 
-            v1: 'https://api.sylvain.pro/v1'
+            v1: 'https://api.sylvain.pro/v1',
+            v2: 'https://api.sylvain.pro/v2'
         }
     });
 });
@@ -146,7 +150,6 @@ app.get('/v1', (req, res) => {
             get: {
                 algorithm: '/v1/algorithms?method={algorithm}&value={value}(&value2={value2})',
                 captcha: '/v1/captcha?text={text}',
-                chat: '/v1/chat',
                 color: '/v1/color',
                 convert: '/v1/convert?value={value}&from={unit}&to={unit}',
                 domain: '/v1/domain',
@@ -156,9 +159,40 @@ app.get('/v1', (req, res) => {
                 username: '/v1/username'
             },
             post: {
-                chat: '/v1/chat',
-                hash: '/v1/hash',
                 token: '/v1/token'
+            }
+        }
+    });
+});
+
+// Display v2 endpoints
+app.get('/v2', (req, res) => {
+    res.jsonResponse({
+        version: 'v2',
+        endpoints: {
+            get: {
+                algorithm: '/v2/algorithms?method={algorithm}&value={value}(&value2={value2})',
+                captcha: '/v2/captcha?text={text}',
+                chat: '/v2/chat',
+                color: '/v2/color',
+                convert: '/v2/convert?value={value}&from={unit}&to={unit}',
+                domain: '/v2/domain',
+                infos: '/v2/infos',
+                personal: '/v2/personal',
+                qrcode: '/v2/qrcode?url={URL}',
+                username: '/v2/username'
+            },
+            post: {
+                chat: {
+                    chat: '/v2/chat',
+                    private: '/v2/chat/private'
+                },
+                hash: '/v2/hash',
+                tic_tac_toe: {
+                    tic_tac_toe: '/v2/tic-tac-toe',
+                    fetch: '/v2/tic-tac-toe/fetch'
+                },
+                token: '/v2/token'
             }
         }
     });
