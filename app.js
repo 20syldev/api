@@ -554,6 +554,11 @@ app.get('/:version/tic-tac-toe', (req, res) => {
     res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
 });
 
+// GET tic-tac-toe fetch error
+app.get('/:version/tic-tac-toe/fetch', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
+});
+
 // GET token error
 app.get('/:version/token', (req, res) => {
     res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
@@ -779,6 +784,35 @@ app.post('/:version/tic-tac-toe', (req, res) => {
     setTimeout(() => { if (now - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
 
     res.jsonResponse({ message: 'Move sent successfully' });
+});
+
+// Display a tic tac toe game with a token
+app.post('/:version/tic-tac-toe/fetch', (req, res) => {
+    const { username, game } = req.body;
+
+    if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
+
+    const generateId = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        return Array.from(crypto.randomBytes(5)).map(b => chars[b % chars.length]).join('');
+    };
+
+    const ID = game || generateId();
+    const u = username.toLowerCase(), now = Date.now();
+
+    rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
+    if (rateLimits[u].length > 50) {
+        const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
+        return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
+    }
+    rateLimits[u].push(now);
+
+    if (!games[ID]) games[ID] = [];
+
+    const data = games[ID], last = data.length ? data[data.length - 1].username : null;
+    const players = [...new Set(data.map(p => p.username))], turn = players.find(p => p !== last);
+
+    res.jsonResponse({ game: data, turn, ID });
 });
 
 // Generate hash
