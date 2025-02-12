@@ -725,7 +725,7 @@ app.post('/:version/chat/private', (req, res) => {
     const { username, token } = req.body;
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
-    if (!token) return res.jsonResponse({ error: 'Please provide a valid token (?token={key}).' });
+    if (!token) return res.jsonResponse({ error: 'Please provide a valid token (&token={key}).' });
 
     const u = username.toLowerCase(), now = Date.now();
 
