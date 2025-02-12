@@ -1,5 +1,5 @@
 {
-    "version": "2.7.0",
+    "version": "2.8.0",
     "name": "@20syldev/api",
     "description": "Personnal API",
     "main": "app.js",
