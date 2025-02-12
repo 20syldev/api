@@ -17,10 +17,10 @@ const app = express();
 
 // Define allowed versions & endpoints
 const versions = ['v1'];
-const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'];
+const endpoints = ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'];
 
 // Store data
-const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {};
+const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, games = {};
 
 // Define global variables
 let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
@@ -549,6 +549,11 @@ app.get('/:version/qrcode', async (req, res) => {
     catch { res.jsonResponse({ error: 'Error generating QR code.' }); }
 });
 
+// GET tic-tac-toe game error
+app.get('/:version/tic-tac-toe', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
+});
+
 // GET token error
 app.get('/:version/token', (req, res) => {
     res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
@@ -729,6 +734,51 @@ app.post('/:version/chat/private', (req, res) => {
     if (privateChats[token]) return res.jsonResponse(privateChats[token]);
 
     return res.jsonResponse({ error: 'Invalid or expired token.' });
+});
+
+// Store tic tac toe games
+app.post('/:version/tic-tac-toe', (req, res) => {
+    const { username, move, session, game } = req.body;
+
+    if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
+    if (!move) return res.jsonResponse({ error: 'Please provide a valid move (&move={move})' });
+    if (!session) return res.jsonResponse({ error: 'Please provide a valid session ID (&session={ID})' });
+    if (!game) return res.jsonResponse({ error: 'Please provide a valid game ID (&game={ID})' });
+
+    const u = username.toLowerCase(), now = Date.now();
+    const play = { username, move, session };
+    const validMoves = ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3', '3-1', '3-2', '3-3'];
+
+    if (!validMoves.includes(move)) return res.jsonResponse({ error: 'Invalid move. Please provide a valid move (e.g., 1-1, 2-2, 3-3).' });
+
+    rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
+    if (rateLimits[u].length > 50) {
+        const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
+        return res.jsonResponse({ error: `Rate limit exceeded. Try again in ${remainingTime} seconds.` });
+    }
+    rateLimits[u].push(now);
+
+    if (sessions[u] && sessions[u].user !== session) return res.jsonResponse({ error: 'Session ID mismatch' });
+
+    games[game] = games[game] || [];
+
+    const players = [...new Set(games[game].map(play => play.username))];
+    if (players.length >= 2 && !players.includes(username)) {
+        return res.jsonResponse({ error: 'Game is full, you can only watch.' });
+    }
+
+    if (games[game].length > 0 && games[game][games[game].length - 1].username === username) return res.jsonResponse({ error: 'Please wait for the other player to make a move.' });
+    if (games[game].some(play => play.move === move)) return res.jsonResponse({ error: 'Move already made. Please choose a different move.' });
+
+    games[game].push(play);
+    setTimeout(() => { delete games[game]; }, 3600000);
+
+    sessions[u] = sessions[u] || { user: session, last: now };
+    sessions[u].last = now;
+
+    setTimeout(() => { if (now - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
+
+    res.jsonResponse({ message: 'Move sent successfully' });
 });
 
 // Generate hash
