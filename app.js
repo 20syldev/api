@@ -104,7 +104,7 @@ app.use('/:version', (req, res, next) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation: 'https://docs.sylvain.pro',
+            documentation: `https://docs.sylvain.pro/${versions.at(-1)}`,
             status: '404'
         });
     }
@@ -119,7 +119,7 @@ app.use('/:version/:endpoint', (req, res, next) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Endpoint '${endpoint}' does not exist in ${version}.`,
-            documentation: 'https://docs.sylvain.pro',
+            documentation: `https://docs.sylvain.pro/${versions.at(-1)}`,
             status: '404'
         });
     }
@@ -206,11 +206,12 @@ app.get('/logs', (req, res) => res.jsonResponse(logs));
 // Algorithms
 app.get('/:version/algorithms', (req, res) => {
     const { method, value, value2 } = req.query;
+    const { version } = req.params;
 
     if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(method)) {
         return res.jsonResponse({
             error: 'Please provide a valid algorithm (?method={algorithm})',
-            documentation: 'https://docs.sylvain.pro/v1/algorithms'
+            documentation: `https://docs.sylvain.pro/${version}/algorithms`
         });
     }
     if (!value) return res.jsonResponse({ error: 'Please provide a valid value (&value={value})' });
@@ -449,7 +450,7 @@ app.get('/:version/hash', (req, res) => {
 // Display API informations
 app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
-        endpoints: endpoints.length,
+        endpoints: endpoints[versions.at(-1)].length,
         last_version: versions.at(-1),
         documentation: 'https://docs.sylvain.pro',
         github: 'https://github.com/20syldev/api',
@@ -855,11 +856,12 @@ app.post('/:version/tic-tac-toe/fetch', (req, res) => {
 // Generate hash
 app.post('/:version/hash', (req, res) => {
     const { text, method } = req.body;
+    const { version } = req.params;
 
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
     if (!method) return res.jsonResponse({
         error: 'Please provide a valid hash algorithm (?method={algorithm})',
-        documentation: 'https://docs.sylvain.pro/v1/hash'
+        documentation: `https://docs.sylvain.pro/${version}/hash`
     });
 
     const methods = crypto.getHashes();
