@@ -12,16 +12,16 @@
         "upgrade:build": "npm upgrade && npm install && node app.js"
     },
     "dependencies": {
-        "canvas": "^3.1.0",
-        "cors": "2.8.5",
-        "dotenv": "^16.4.7",
-        "express": "^4.21.2",
-        "mathjs": "^14.2.0",
-        "node-fetch": "^2.7.0",
-        "prettier": "^3.4.2",
-        "qrcode": "^1.5.4",
-        "random": "^5.1.1",
-        "uuid": "^11.0.5"
+        "canvas": "latest",
+        "cors": "latest",
+        "dotenv": "latest",
+        "express": "latest",
+        "mathjs": "latest",
+        "node-fetch": "latest",
+        "prettier": "latest",
+        "qrcode": "latest",
+        "random": "latest",
+        "uuid": "latest"
     },
     "repository": {
         "type": "git",
