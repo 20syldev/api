@@ -1,18 +1,17 @@
-require('dotenv').config();
+import { createCanvas } from 'canvas';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { randomBytes, getHashes, createHash } from 'crypto';
+import express, { urlencoded, json } from 'express';
+import { factorial } from 'mathjs';
+import fetch from 'node-fetch';
+import { dirname, join } from 'path';
+import { toDataURL } from 'qrcode';
+import { fileURLToPath } from 'url';
+import { v4 } from 'uuid';
 
-// Built-in module
-const crypto = require('crypto');
-
-// Imported module
-const { createCanvas } = require('canvas');
-const cors = require('cors');
-const express = require('express');
-const fetch = require('node-fetch');
-const math = require('mathjs');
-const path = require('path');
-const qrcode = require('qrcode');
-const random = require('random');
-const uuid = require('uuid');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const app = express();
 
 // Define allowed versions & endpoints for each version
@@ -30,16 +29,18 @@ let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
+dotenv.config();
+
 // CORS & Express setup
 app.use(cors({ methods: ['GET', 'POST'] }));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(urlencoded({ extended: true }));
+app.use(json());
 
 // Set favicon for API
-app.use('/favicon.ico', express.static(path.join(__dirname, 'src', 'favicon.ico')));
+app.use('/favicon.ico', express.static(join(__dirname, 'src', 'favicon.ico')));
 
 // Display robots.txt
-app.use('/robots.txt', express.static(path.join(__dirname, 'robots.txt')));
+app.use('/robots.txt', express.static(join(__dirname, 'robots.txt')));
 
 // Return formatted JSON
 app.use((req, res, next) => {
@@ -234,7 +235,7 @@ app.get('/:version/algorithms', (req, res) => {
 
     if (method === 'factorial') {
         if (isNaN(value) || value < 0 || value > 170) return res.jsonResponse({ error: 'Please provide a valid number between 0 and 170.' });
-        return res.jsonResponse({ answer: math.factorial(value) });
+        return res.jsonResponse({ answer: factorial(value) });
     }
 
     if (method === 'fibonacci') {
@@ -355,7 +356,7 @@ app.get('/:version/chat/private', (req, res) => {
 
 // Generate color
 app.get('/:version/color', (req, res) => {
-    const r = random.int(0, 255), g = random.int(0, 255), b = random.int(0, 255);
+    const r = Math.floor(Math.random() * 256), g = Math.floor(Math.random() * 256), b = Math.floor(Math.random() * 256);
     const hsl = (() => {
         const r1 = r / 255, g1 = g / 255, b1 = b / 255, max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1), l = (max + min) / 2;
         if (max === min) return [0, 0, l * 100];
@@ -580,7 +581,7 @@ app.get('/:version/qrcode', async (req, res) => {
 
     if (!url) return res.jsonResponse({ error: 'Please provide a valid url (?url={URL})' });
 
-    try { res.jsonResponse({ qr: await qrcode.toDataURL(url) }); }
+    try { res.jsonResponse({ qr: await toDataURL(url) }); }
     catch { res.jsonResponse({ error: 'Error generating QR code.' }); }
 });
 
@@ -864,10 +865,10 @@ app.post('/:version/hash', (req, res) => {
         documentation: `https://docs.sylvain.pro/${version}/hash`
     });
 
-    const methods = crypto.getHashes();
+    const methods = getHashes();
     if (!methods.includes(method)) return res.jsonResponse({ error: `Unsupported method. Use one of: ${methods.join(', ')}` });
 
-    const hash = crypto.createHash(method).update(text).digest('hex');
+    const hash = createHash(method).update(text).digest('hex');
     res.jsonResponse({ method, hash });
 });
 
