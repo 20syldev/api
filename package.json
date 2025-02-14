@@ -3,6 +3,7 @@
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.pro",
     "main": "app.js",
+    "type": "module",
     "scripts": {
         "start": "node app.js",
         "build": "npm install && node app.js",
