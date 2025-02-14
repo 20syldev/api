@@ -873,12 +873,14 @@ app.post('/:version/hash', (req, res) => {
 
 // Generate Token
 app.post('/:version/token', (req, res) => {
-    const length = parseInt(req.body.len || 24, 10);
-    const type = req.body.type || 'alpha';
+    let { len, type } = req.body;
 
-    if (isNaN(length) || length < 0) return res.jsonResponse({ error: 'Invalid number.' });
-    if (length > 4096) return res.jsonResponse({ error: 'Length cannot exceed 4096.' });
-    if (length < 12) return res.jsonResponse({ error: 'Length cannot be less than 12.' });
+    len = parseInt(len || 24, 10);
+    type = type ? type.toLowerCase() : 'alpha';
+
+    if (isNaN(len) || len < 0) return res.jsonResponse({ error: 'Invalid number.' });
+    if (len > 4096) return res.jsonResponse({ error: 'Length cannot exceed 4096.' });
+    if (len < 12) return res.jsonResponse({ error: 'Length cannot be less than 12.' });
 
     const token = {
         alpha: genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', len),
