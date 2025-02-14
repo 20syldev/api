@@ -21,6 +21,16 @@ const endpoints = {
     v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website']
 };
 
+// Arrowed functions (math & random)
+const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+const genID = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return Array.from(randomBytes(5)).map(b => chars[b % chars.length]).join('');
+};
+const genIP = () => `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+const genToken = (chars, length) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 // Store data
 const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, games = {};
 
@@ -245,7 +255,6 @@ app.get('/:version/algorithms', (req, res) => {
     }
 
     if (method === 'gcd') {
-        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
         if (!value2) return res.jsonResponse({ error: 'Please provide a second value (&value2={value})' });
         if (isNaN(value) || isNaN(value2)) return res.jsonResponse({ error: 'Invalid numbers.' });
         return res.jsonResponse({ answer: gcd(value, value2) });
@@ -409,17 +418,15 @@ app.get('/:version/convert', (req, res) => {
 
 // Generate domain informations
 app.get('/:version/domain', (req, res) => {
-    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const subdomains = ['fr.', 'en.', 'docs.', 'api.', 'projects.', 'app.', 'web.', 'info.', 'dev.', 'shop.', 'blog.', 'support.', 'mail.', 'forum.'];
     const domains = ['example', 'site', 'test', 'demo', 'page', 'store', 'portfolio', 'platform', 'hub', 'network', 'service', 'cloud', 'solutions', 'company'];
     const tlds = ['.com', '.fr', '.eu', '.dev', '.net', '.org', '.io', '.tech', '.biz', '.info', '.co', '.app', '.store', '.online', '.shop', '.tv'];
 
     const domain = `${random(domains)}${random(tlds)}`;
     const fulldomain = `${random(subdomains)}${domain}`;
-    
-    const getRandomIp = () => `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
-    const ips = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, getRandomIp);
-    const dns = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, getRandomIp);
+
+    const ips = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, genIP);
+    const dns = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, genIP);
 
     res.jsonResponse({
         domain,
@@ -461,8 +468,6 @@ app.get('/:version/infos', (req, res) => {
 
 // Generate personal data
 app.get('/:version/personal', (req, res) => {
-    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
     const people = [
         { name: 'John Doe', social: 'john_doe', email: 'john@example.com', country: 'US' },
         { name: 'Jane Martin', social: 'jane_martin', email: 'jane@example.com', country: 'FR' },
@@ -606,7 +611,6 @@ app.get('/:version/username', (req, res) => {
     const ani = ['Cat', 'Dog', 'Tiger', 'Elephant', 'Monkey', 'Penguin', 'Dolphin', 'Lion', 'Bear', 'Fox', 'Owl', 'Giraffe', 'Zebra', 'Koala', 'Rabbit', 'Squirrel', 'Panda', 'Horse', 'Wolf', 'Eagle'];
     const job = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Chef', 'Doctor', 'Teacher', 'Lawyer', 'Entrepreneur', 'Actor', 'Dancer', 'Photographer', 'Architect', 'Pilot', 'Designer', 'Journalist', 'Veterinarian'];
 
-    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const nombre = Math.floor(Math.random() * 100);
     const choix = {
         adj_num: () => random(adj) + nombre,
@@ -831,12 +835,7 @@ app.post('/:version/tic-tac-toe/fetch', (req, res) => {
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
 
-    const generateId = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        return Array.from(crypto.randomBytes(5)).map(b => chars[b % chars.length]).join('');
-    };
-
-    const ID = game || generateId();
+    const ID = game || genID();
     const u = username.toLowerCase(), now = Date.now();
 
     rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
@@ -881,17 +880,16 @@ app.post('/:version/token', (req, res) => {
     if (length > 4096) return res.jsonResponse({ error: 'Length cannot exceed 4096.' });
     if (length < 12) return res.jsonResponse({ error: 'Length cannot be less than 12.' });
 
-    const generateToken = (chars) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     const token = {
-        alpha: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
-        alphanum: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'),
-        base64: crypto.randomBytes(length).toString('base64').slice(0, length),
-        hex: crypto.randomBytes(length).toString('hex').slice(0, length),
-        num: generateToken('0123456789'),
-        punct: generateToken('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'),
-        urlsafe: generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'),
-        uuid: uuid.v4().replace(/-/g, '').slice(0, length)
-    }[type] || generateToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+        alpha: genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', len),
+        alphanum: genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', len),
+        base64: randomBytes(len).toString('base64').slice(0, len),
+        hex: randomBytes(len).toString('hex').slice(0, len),
+        num: genToken('0123456789', len),
+        punct: genToken('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', len),
+        urlsafe: genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_', len),
+        uuid: v4().replace(/-/g, '').slice(0, len)
+    }[type] || genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', len);
 
     res.jsonResponse({ token });
 });
