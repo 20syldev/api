@@ -35,7 +35,7 @@ const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, games = {};
 
 // Define global variables
-let lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
+let contributions, lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
