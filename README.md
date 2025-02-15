@@ -23,7 +23,7 @@ Pour utiliser le **paquet** dans votre projet, **créez** un fichier **JavaScrip
 require('@20syldev/api');
 ```
 
-Puis, **démarrez** un serveur [Node.js](http://nodejs.org) pour utiliser l'**API** :
+Puis, **démarrez** un serveur [Node.js](https://nodejs.org) pour utiliser l'**API** :
 ```console
 $ node index.js
 API is running on
