@@ -10,7 +10,7 @@
 ## À propos de l'API
 Voici mon API personnelle, disponible sur le domaine [api.sylvain.pro](https://api.sylvain.pro).
 L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.pro](https://docs.sylvain.pro) !
-> *Une limite de **1000** requêtes maximum chaque **10 secondes** est fixée.* 
+> *Une limite de **1000** requêtes maximum chaque **10 secondes** est fixée. Elle est baissé pour certains endpoints nécessitant plus de ressources.*
 
 ## Installer le paquet de l'API sur votre machine
 ```console
