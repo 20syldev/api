@@ -1,10 +1,11 @@
-import { createCanvas } from 'canvas';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { randomBytes, getHashes, createHash } from 'crypto';
-import express, { urlencoded, json } from 'express';
-import { factorial } from 'mathjs';
+import express from 'express';
 import fetch from 'node-fetch';
+import { createCanvas } from 'canvas';
+import { randomBytes, getHashes, createHash } from 'crypto';
+import { urlencoded, json } from 'express';
+import { factorial } from 'mathjs';
 import { dirname, join } from 'path';
 import { toDataURL } from 'qrcode';
 import { fileURLToPath } from 'url';
