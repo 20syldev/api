@@ -711,6 +711,7 @@ app.get('/:version/website', async (req, res) => {
         },
         updated_projects: process.env.RECENT !== undefined ? process.env.RECENT.split(' ') : [],
         new_projects: process.env.NEW !== undefined ? process.env.NEW.split(' ') : [],
+        sub_domains: process.env.DOMAINS !== undefined ? process.env.DOMAINS.split(' ') : [],
         stats: {
             os: process.env.STATS1,
             front: process.env.STATS2,
