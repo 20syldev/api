@@ -38,6 +38,45 @@ const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, g
 // Define global variables
 let contributions, lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
 
+// ----------- ----------- MAIN FUNCTIONS ----------- ----------- //
+
+/**
+ * Check the game result of a Tic-Tac-Toe game.
+ * 
+ * @param {Array} moves - The moves of the game.
+ * @returns {Object} - The result of the game.
+ */
+function checkGame(moves) {
+    let board = Array(3).fill().map(() => Array(3).fill(null));
+    let playerSymbols = {};
+    let playersOrder = [];
+
+    moves.forEach(({ username, move }) => {
+        if (!playerSymbols[username]) {
+            playersOrder.push(username);
+            playerSymbols[username] = playersOrder.length === 1 ? 'X' : 'O';
+        }
+        let [row, col] = move.split('-').map(Number);
+        board[row - 1][col - 1] = playerSymbols[username];
+    });
+
+    const checkWinner = (symbol) => {
+        for (let i = 0; i < 3; i++) {
+            if (board[i][0] === symbol && board[i][1] === symbol && board[i][2] === symbol) return true;
+            if (board[0][i] === symbol && board[1][i] === symbol && board[2][i] === symbol) return true;
+        }
+        if (board[0][0] === symbol && board[1][1] === symbol && board[2][2] === symbol) return true;
+        if (board[0][2] === symbol && board[1][1] === symbol && board[2][0] === symbol) return true;
+        return false;
+    };
+
+    let winner = Object.keys(playerSymbols).find(player => checkWinner(playerSymbols[player]));
+    let isTie = !winner && moves.length === 9;
+    let loser = winner && playersOrder.length === 2 ? playersOrder.find(player => player !== winner) : null;
+
+    return { winner, loser, tie: isTie };
+}
+
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
 dotenv.config();
@@ -813,15 +852,21 @@ app.post('/:version/tic-tac-toe', (req, res) => {
     games[game] = games[game] || [];
 
     const players = [...new Set(games[game].map(play => play.username))];
-    if (players.length >= 2 && !players.includes(username)) {
-        return res.jsonResponse({ error: 'Game is full, you can only watch.' });
-    }
-
+    if (players.length >= 2 && !players.includes(username)) return res.jsonResponse({ error: 'Game is full, you can only watch.' });
     if (games[game].length > 0 && games[game][games[game].length - 1].username === username) return res.jsonResponse({ error: 'Please wait for the other player to make a move.' });
     if (games[game].some(play => play.move === move)) return res.jsonResponse({ error: 'Move already made. Please choose a different move.' });
 
     games[game].push(play);
-    setTimeout(() => { delete games[game]; }, 3600000);
+
+    const result = checkGame(games[game]);
+    if (result.winner || result.tie) {
+        setTimeout(() => delete games[game], 600000);
+        return res.jsonResponse({
+            message: `Move sent successfully. ${result.winner ? result.winner + " wins. " + result.loser + " loses." : "It's a tie."}`,
+            ...result
+        });
+    }
+    if (!result.winner && !result.tie) setTimeout(() => delete games[game], 3600000);
 
     sessions[u] = sessions[u] || { user: session, last: now };
     sessions[u].last = now;
@@ -849,10 +894,13 @@ app.post('/:version/tic-tac-toe/fetch', (req, res) => {
 
     if (!games[ID]) games[ID] = [];
 
-    const data = games[ID], last = data.length ? data[data.length - 1].username : null;
-    const players = [...new Set(data.map(p => p.username))], turn = players.find(p => p !== last);
+    const data = games[ID];
+    const last = data.length ? data[data.length - 1].username : null;
+    const players = [...new Set(data.map(p => p.username))];
+    const turn = players.find(p => p !== last);
+    const result = data.length ? checkGame(data) : {};
 
-    res.jsonResponse({ game: data, turn, ID });
+    res.jsonResponse({ game: data, turn, ID, ...result });
 });
 
 // Generate hash
