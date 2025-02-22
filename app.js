@@ -506,6 +506,26 @@ app.get('/:version/infos', (req, res) => {
     });
 });
 
+// Calculate Levenshtein distance
+app.get('/:version/levenshtein', (req, res) => {
+    const { str1, str2 } = req.query;
+
+    if (!str1) return res.jsonResponse({ error: 'Please provide a first string (?str1={string})' });
+    if (!str2) return res.jsonResponse({ error: 'Please provide a second string (&str2={string})' });
+
+    const lev = (a, b) => {
+        const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+        for (let j = 0; j <= b.length; j++) m[0][j] = j;
+        for (let i = 1; i <= a.length; i++)
+            for (let j = 1; j <= b.length; j++)
+                m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] !== b[j - 1]));
+
+        return m[a.length][b.length];
+    };
+
+    res.jsonResponse({ str1, str2, distance: lev(str1, str2) });
+});
+
 // Generate personal data
 app.get('/:version/personal', (req, res) => {
     const people = [
