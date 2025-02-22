@@ -16,10 +16,11 @@ const __dirname = dirname(__filename);
 const app = express();
 
 // Define allowed versions & endpoints for each version
-const versions = ['v1', 'v2'];
+const versions = ['v1', 'v2', 'v3'];
 const endpoints = {
     v1: ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'],
-    v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website']
+    v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'],
+    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'date', 'domain', 'hash', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
 };
 
 // Arrowed functions (math & random)
@@ -188,7 +189,8 @@ app.get('/', (req, res) => {
         logs: 'https://api.sylvain.pro/logs',
         versions: { 
             v1: 'https://api.sylvain.pro/v1',
-            v2: 'https://api.sylvain.pro/v2'
+            v2: 'https://api.sylvain.pro/v2',
+            v3: 'https://api.sylvain.pro/v3'
         }
     });
 });
@@ -244,6 +246,41 @@ app.get('/v2', (req, res) => {
                     fetch: '/v2/tic-tac-toe/fetch'
                 },
                 token: '/v2/token'
+            }
+        }
+    });
+});
+
+// Display v3 endpoints
+app.get('/v3', (req, res) => {
+    res.jsonResponse({
+        version: 'v3',
+        endpoints: {
+            get: {
+                algorithm: '/v3/algorithms?method={algorithm}&value={value}(&value2={value2})',
+                captcha: '/v3/captcha?text={text}',
+                chat: '/v3/chat',
+                color: '/v3/color',
+                convert: '/v3/convert?value={value}&from={unit}&to={unit}',
+                domain: '/v3/domain',
+                infos: '/v3/infos',
+                levenshtein: '/v3/levenshtein?str1={string}&str2={string}',
+                personal: '/v3/personal',
+                qrcode: '/v3/qrcode?url={URL}',
+                time: '/v3/time(?type={type}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
+                username: '/v3/username'
+            },
+            post: {
+                chat: {
+                    chat: '/v3/chat',
+                    private: '/v3/chat/private'
+                },
+                hash: '/v3/hash',
+                tic_tac_toe: {
+                    tic_tac_toe: '/v3/tic-tac-toe',
+                    fetch: '/v3/tic-tac-toe/fetch'
+                },
+                token: '/v3/token'
             }
         }
     });
