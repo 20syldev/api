@@ -709,8 +709,8 @@ app.get('/:version/website', async (req, res) => {
             wrkit: process.env.WRKIT,
             zpki: process.env.ZPKI
         },
-        updated_projects: process.env.RECENT.split(' '),
-        new_projects: process.env.NEW.split(' '),
+        updated_projects: process.env.RECENT !== undefined ? process.env.RECENT.split(' ') : [],
+        new_projects: process.env.NEW !== undefined ? process.env.NEW.split(' ') : [],
         stats: {
             os: process.env.STATS1,
             front: process.env.STATS2,
