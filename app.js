@@ -134,7 +134,7 @@ app.use((req, res, next) => {
 // Internal Server Error
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({
+    res.status(500).jsonResponse({
         message: 'Internal Server Error',
         error: err.message,
         documentation: 'https://docs.sylvain.pro',
