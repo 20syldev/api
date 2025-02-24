@@ -837,6 +837,7 @@ app.get('/:version/website', async (req, res) => {
     res.jsonResponse({
         versions: {
             api: process.env.API,
+            cdn: process.env.CDN,
             coop_api: process.env.COOP_API,
             coop_status: process.env.COOP_STATUS,
             chat: process.env.CHAT,
@@ -849,6 +850,7 @@ app.get('/:version/website', async (req, res) => {
             gemsync: process.env.GEMSYNC,
             gitsite: process.env.GITSITE,
             logs: process.env.LOGS,
+            minify: process.env.MINIFY,
             morpion: process.env.MORPION,
             nitrogen: process.env.NITROGEN,
             old_database: process.env.OLD_DATABASE,
