@@ -199,6 +199,7 @@ app.get('/', (req, res) => {
 app.get('/v1', (req, res) => {
     res.jsonResponse({
         version: 'v1',
+        documentation: 'https://docs.sylvain.pro/v1',
         endpoints: {
             get: {
                 algorithm: '/v1/algorithms?method={algorithm}&value={value}(&value2={value2})',
@@ -222,6 +223,7 @@ app.get('/v1', (req, res) => {
 app.get('/v2', (req, res) => {
     res.jsonResponse({
         version: 'v2',
+        documentation: 'https://docs.sylvain.pro/v2',
         endpoints: {
             get: {
                 algorithm: '/v2/algorithms?method={algorithm}&value={value}(&value2={value2})',
@@ -255,6 +257,7 @@ app.get('/v2', (req, res) => {
 app.get('/v3', (req, res) => {
     res.jsonResponse({
         version: 'v3',
+        documentation: 'https://docs.sylvain.pro/v3',
         endpoints: {
             get: {
                 algorithm: '/v3/algorithms?method={algorithm}&value={value}(&value2={value2})',
