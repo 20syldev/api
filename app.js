@@ -553,6 +553,9 @@ app.get('/:version/levenshtein', (req, res) => {
     if (!str1 || typeof str1 !== 'string') return res.jsonResponse({ error: 'Please provide a first string (?str1={string})' });
     if (!str2 || typeof str2 !== 'string') return res.jsonResponse({ error: 'Please provide a second string (&str2={string})' });
 
+    if (str1.length > 1000) return res.jsonResponse({ error: 'First string exceeds 1000 characters.' });
+    if (str2.length > 1000) return res.jsonResponse({ error: 'Second string exceeds 1000 characters.' });
+
     const lev = (a, b) => {
         const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
         for (let j = 0; j <= b.length; j++) m[0][j] = j;
