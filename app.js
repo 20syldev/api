@@ -550,8 +550,8 @@ app.get('/:version/infos', (req, res) => {
 app.get('/:version/levenshtein', (req, res) => {
     const { str1, str2 } = req.query;
 
-    if (!str1) return res.jsonResponse({ error: 'Please provide a first string (?str1={string})' });
-    if (!str2) return res.jsonResponse({ error: 'Please provide a second string (&str2={string})' });
+    if (!str1 || typeof str1 !== 'string') return res.jsonResponse({ error: 'Please provide a first string (?str1={string})' });
+    if (!str2 || typeof str2 !== 'string') return res.jsonResponse({ error: 'Please provide a second string (&str2={string})' });
 
     const lev = (a, b) => {
         const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
