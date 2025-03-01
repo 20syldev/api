@@ -23,7 +23,8 @@ const endpoints = {
     v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'date', 'domain', 'hash', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
 };
 
-// Arrowed functions (math & random)
+// Arrowed functions (formatting, math & random)
+const formatDate = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
 const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
 const genID = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
