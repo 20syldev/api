@@ -1031,7 +1031,7 @@ app.post('/:version/tic-tac-toe', (req, res) => {
     if (result.winner || result.tie) {
         setTimeout(() => delete games[game], 600000);
         return res.jsonResponse({
-            message: `Move sent successfully. ${result.winner ? result.winner + " wins. " + result.loser + " loses." : "It's a tie."}`,
+            message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : 'It\'s a tie.'}`,
             ...result
         });
     }
