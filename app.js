@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import fetch from 'node-fetch';
+import ical from 'ical.js';
 import { createCanvas } from 'canvas';
 import { randomBytes, getHashes, createHash } from 'crypto';
 import { urlencoded, json } from 'express';
@@ -20,7 +21,7 @@ const versions = ['v1', 'v2', 'v3'];
 const endpoints = {
     v1: ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'],
     v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'],
-    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'date', 'domain', 'hash', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
+    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'date', 'domain', 'hash', 'hyperplanning', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
 };
 
 // Arrowed functions (formatting, math & random)
@@ -280,6 +281,7 @@ app.get('/v3', (req, res) => {
                     private: '/v3/chat/private'
                 },
                 hash: '/v3/hash',
+                hyperplanning: '/v3/hyperplanning',
                 tic_tac_toe: {
                     tic_tac_toe: '/v3/tic-tac-toe',
                     fetch: '/v3/tic-tac-toe/fetch'
@@ -529,6 +531,11 @@ app.get('/:version/domain', (req, res) => {
         creation_date: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString(),
         expiration_date: new Date(Date.now() + Math.floor(Math.random() * 10000000000)).toISOString(),
     });
+});
+
+// GET planning error
+app.get('/:version/hyperplanning', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
 });
 
 // GET hash error
@@ -942,6 +949,49 @@ app.post('/:version/chat/private', (req, res) => {
     if (privateChats[token]) return res.jsonResponse(privateChats[token]);
 
     return res.jsonResponse({ error: 'Invalid or expired token.' });
+});
+
+// Display a planning from an ICS file
+app.post('/:version/hyperplanning', async (req, res) => {
+    const { url, detail } = req.body;
+
+    if (!url) res.jsonResponse({ error: 'Please provide a valid ICS file URL.' });
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok || !(response.headers.get('content-type') || '').includes('text/calendar')) return res.jsonResponse({ error: 'Invalid ICS file format.' });
+
+        const events = new ical.Component(ical.parse(await response.text()))
+            .getAllSubcomponents('vevent')
+            .map(e => {
+                const evt = new ical.Event(e);
+                const summary = evt.summary.split(' ').filter(part => part !== '-');
+                const start = formatDate(evt.startDate.toJSDate());
+                const end = formatDate(evt.endDate.toJSDate());
+
+                if (detail === 'full') {
+                    const desc = evt.description.split('\n').map(l => l.trim());
+                    const extract = (p) => (desc.find(l => l.startsWith(p)) || '').replace(p, '').trim();
+
+                    return {
+                        summary,
+                        subject: extract('Matière :'),
+                        teacher: extract('Enseignant :'),
+                        classes: extract('Promotions :').split(', ').map(c => c.trim()),
+                        type: extract('Salle :') || undefined,
+                        start,
+                        end
+                    };
+                }
+                if (detail === 'list') return { summary, start, end };
+
+                return { summary: evt.summary, start, end };
+            })
+            .sort((a, b) => new Date(a.start) - new Date(b.start))
+            .filter(e => new Date(e.start) >= new Date());
+
+        res.jsonResponse(events);
+    } catch { res.jsonResponse({ error: 'Failed to parse ICS file.' }); }
 });
 
 // Store tic tac toe games
