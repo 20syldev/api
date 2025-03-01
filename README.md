@@ -2,7 +2,7 @@
   <a href="https://api.sylvain.pro"><img src="https://api.sylvain.pro/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
 
   # API Personnelle
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v3.1.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v3.2.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
@@ -44,7 +44,7 @@ Enfin, **exécutez** le script de build, qui installera les **dépendances** et 
 $ npm run build
 ```
 ```console
-> @20syldev/api@3.1.0 build
+> @20syldev/api@3.2.0 build
 > npm install && node app.js
 
 [...]
