@@ -21,7 +21,7 @@ const versions = ['v1', 'v2', 'v3'];
 const endpoints = {
     v1: ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'],
     v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'],
-    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'date', 'domain', 'hash', 'hyperplanning', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
+    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'hyperplanning', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
 };
 
 // Arrowed functions (formatting, math & random)
