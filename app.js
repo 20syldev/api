@@ -861,6 +861,7 @@ app.get('/:version/website', async (req, res) => {
             gemsync: process.env.GEMSYNC,
             gitsite: process.env.GITSITE,
             logs: process.env.LOGS,
+            logvault: process.env.LOGVAULT,
             minify: process.env.MINIFY,
             morpion: process.env.MORPION,
             nitrogen: process.env.NITROGEN,
