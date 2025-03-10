@@ -875,6 +875,7 @@ app.get('/:version/website', async (req, res) => {
             wrkit: process.env.WRKIT,
             zpki: process.env.ZPKI
         },
+        patched_projects: process.env.PATCH !== undefined ? process.env.PATCH.split(' ') : [],
         updated_projects: process.env.RECENT !== undefined ? process.env.RECENT.split(' ') : [],
         new_projects: process.env.NEW !== undefined ? process.env.NEW.split(' ') : [],
         sub_domains: process.env.DOMAINS !== undefined ? process.env.DOMAINS.split(' ') : [],
