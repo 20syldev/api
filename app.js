@@ -952,6 +952,24 @@ app.post('/:version/chat/private', (req, res) => {
     return res.jsonResponse({ error: 'Invalid or expired token.' });
 });
 
+// Generate hash
+app.post('/:version/hash', (req, res) => {
+    const { text, method } = req.body;
+    const { version } = req.params;
+
+    if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
+    if (!method) return res.jsonResponse({
+        error: 'Please provide a valid hash algorithm (?method={algorithm})',
+        documentation: `https://docs.sylvain.pro/${version}/hash`
+    });
+
+    const methods = getHashes();
+    if (!methods.includes(method)) return res.jsonResponse({ error: `Unsupported method. Use one of: ${methods.join(', ')}` });
+
+    const hash = createHash(method).update(text).digest('hex');
+    res.jsonResponse({ method, hash });
+});
+
 // Display a planning from an ICS file
 app.post('/:version/hyperplanning', async (req, res) => {
     const { url, detail } = req.body;
@@ -1071,24 +1089,6 @@ app.post('/:version/tic-tac-toe/fetch', (req, res) => {
     const result = data.length ? checkGame(data) : {};
 
     res.jsonResponse({ game: data, turn, ID, ...result });
-});
-
-// Generate hash
-app.post('/:version/hash', (req, res) => {
-    const { text, method } = req.body;
-    const { version } = req.params;
-
-    if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
-    if (!method) return res.jsonResponse({
-        error: 'Please provide a valid hash algorithm (?method={algorithm})',
-        documentation: `https://docs.sylvain.pro/${version}/hash`
-    });
-
-    const methods = getHashes();
-    if (!methods.includes(method)) return res.jsonResponse({ error: `Unsupported method. Use one of: ${methods.join(', ')}` });
-
-    const hash = createHash(method).update(text).digest('hex');
-    res.jsonResponse({ method, hash });
 });
 
 // Generate Token
