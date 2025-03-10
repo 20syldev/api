@@ -1007,7 +1007,7 @@ app.post('/:version/hyperplanning', async (req, res) => {
                 return { summary: evt.summary, start, end };
             })
             .sort((a, b) => new Date(a.start) - new Date(b.start))
-            .filter(e => new Date(e.start) >= new Date());
+            .filter(e => new Date(e.end) >= new Date());
 
         res.jsonResponse(events);
     } catch { res.jsonResponse({ error: 'Failed to parse ICS file.' }); }
