@@ -36,10 +36,10 @@ const genToken = (chars, length) => Array.from({ length }, () => chars[Math.floo
 const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // Store data
-const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, games = {};
+const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, ipLimits = {}, games = {};
 
 // Define global variables
-let contributions, lastFetch = 0, requests = 0, resetTime = Date.now() + 10000;
+let contributions, lastFetch = 0, requests = 0, requestLimit = 50, globalLimit = 10000, resetTime = Date.now() + 60000;
 
 // ----------- ----------- MAIN FUNCTIONS ----------- ----------- //
 
@@ -106,8 +106,38 @@ app.use((req, res, next) => {
 
 // Too many requests
 app.use((req, res, next) => {
-    if (Date.now() > resetTime) requests = 0, resetTime = Date.now() + 10000;
-    if (++requests > 1000) return res.status(429).jsonResponse({ message: 'Too Many Requests' });
+    const ip = req.ip, now = Date.now();
+    const token = req.headers.authorization?.split(' ')[1] || '';
+
+    const unlimited = process.env.UNLIMITED_TOKEN_LIST?.split(' ') || [];
+    const pro = process.env.PRO_TOKEN_LIST?.split(' ') || [];
+    const advanced = process.env.ADVANCED_TOKEN_LIST?.split(' ') || [];
+
+    if (token && ![...unlimited, ...pro, ...advanced].includes(token) || token === 'undefined') {
+        return res.status(401).jsonResponse({
+            message: 'Unauthorized',
+            error: 'Invalid token.',
+            status: '401'
+        });
+    }
+
+    if (unlimited.includes(token) && !unlimited.includes('undefined')) requestLimit = Infinity;
+    else if (pro.includes(token) && !pro.includes('undefined')) requestLimit = 100;
+    else if (advanced.includes(token) && !advanced.includes('undefined')) requestLimit = 75;
+
+    if (unlimited.includes(token)) return next();
+
+    if (now > resetTime) requests = 0, resetTime = now + 60000;
+    if (++requests > Math.max(globalLimit / Math.max(1, Object.keys(ipLimits).length), requestLimit)) {
+        return res.status(429).jsonResponse({ message: 'Too Many Requests' });
+    }
+
+    if (!ipLimits[ip]) ipLimits[ip] = [];
+    ipLimits[ip] = ipLimits[ip].filter(t => now - t < 60000);
+
+    if (ipLimits[ip].length >= requestLimit) return res.status(429).jsonResponse({ message: 'Too Many Requests (IP limited)' });
+
+    ipLimits[ip].push(now);
     next();
 });
 
