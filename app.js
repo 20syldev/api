@@ -333,6 +333,7 @@ app.get('/:version/algorithms', (req, res) => {
 
     if (method === 'fibonacci') {
         let fib = [0, 1];
+        if (isNaN(value) || value < 0 || value > 1000) return res.jsonResponse({ error: 'Please provide a valid number between 0 and 1000.' });
         for (let i = 2; i < parseInt(value); i++) fib.push(fib[i - 1] + fib[i - 2]);
         return res.jsonResponse({ answer: fib.slice(0, parseInt(value)) });
     }
