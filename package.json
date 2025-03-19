@@ -1,5 +1,5 @@
 {
-    "version": "3.2.0",
+    "version": "3.3.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.pro",
     "main": "app.js",
