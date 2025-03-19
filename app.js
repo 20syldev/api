@@ -128,7 +128,7 @@ app.use((req, res, next) => {
             platform: req.headers['sec-ch-ua-platform']?.replace(/"/g, ''),
         });
         if (logs.length > 1000) logs.shift();
-        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - startTime}ms`);
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - startTime}ms - ${req.ip}`);
     });
     next();
 });
