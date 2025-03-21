@@ -147,16 +147,15 @@ app.use((req, res, next) => {
     if (req.originalUrl === '/logs') return next();
 
     const startTime = Date.now();
+    const timestamp = new Date().toISOString();
+    const method = req.method;
+    const url = req.originalUrl;
+    const status = res.statusCode === 304 ? 200 : res.statusCode;
+    const duration = `${Date.now() - startTime}ms`;
+    const platform = req.headers['sec-ch-ua-platform']?.replace(/"/g, '');
 
     res.on('finish', () => {
-        logs.push({
-            timestamp: new Date().toISOString(),
-            method: req.method,
-            url: req.originalUrl,
-            status: res.statusCode === 304 ? 200 : res.statusCode,
-            duration: `${Date.now() - startTime}ms`,
-            platform: req.headers['sec-ch-ua-platform']?.replace(/"/g, ''),
-        });
+        logs.push({ timestamp, method, url, status, duration, platform });
         if (logs.length > 1000) logs.shift();
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - startTime}ms - ${req.ip}`);
     });
