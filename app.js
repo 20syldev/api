@@ -85,6 +85,7 @@ function checkGame(moves) {
 dotenv.config();
 
 // CORS & Express setup
+app.set('trust proxy', 1);
 app.use(cors({ methods: ['GET', 'POST'] }));
 app.use(urlencoded({ extended: true }));
 app.use(json());
@@ -106,7 +107,8 @@ app.use((req, res, next) => {
 
 // Too many requests
 app.use((req, res, next) => {
-    const ip = req.ip, now = Date.now();
+    const ip = req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
+    const now = Date.now();
     const token = req.headers.authorization?.split(' ')[1] || '';
 
     const unlimited = process.env.UNLIMITED_TOKEN_LIST?.split(' ') || [];
@@ -146,6 +148,8 @@ app.use((req, res, next) => {
     if (req.method === 'HEAD') return next();
     if (req.originalUrl === '/logs') return next();
 
+    const ip = req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
+
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
     const method = req.method;
@@ -156,8 +160,8 @@ app.use((req, res, next) => {
 
     res.on('finish', () => {
         logs.push({ timestamp, method, url, status, duration, platform });
+        console.log(`[${new Date().toISOString()}] ${method} ${url} ${res.statusCode} - ${duration} - ${ip}`);
         if (logs.length > 1000) logs.shift();
-        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - startTime}ms - ${req.ip}`);
     });
     next();
 });
