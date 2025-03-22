@@ -154,11 +154,12 @@ app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
     const method = req.method;
     const url = req.originalUrl;
-    const status = res.statusCode === 304 ? 200 : res.statusCode;
-    const duration = `${Date.now() - startTime}ms`;
     const platform = req.headers['sec-ch-ua-platform']?.replace(/"/g, '');
 
     res.on('finish', () => {
+        const status = res.statusCode === 304 ? 200 : res.statusCode;
+        const duration = `${Date.now() - startTime}ms`;
+
         logs.push({ timestamp, method, url, status, duration, platform });
         console.log(`[${new Date().toISOString()}] ${method} ${url} ${res.statusCode} - ${duration} - ${ip}`);
         if (logs.length > 1000) logs.shift();
