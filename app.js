@@ -39,7 +39,7 @@ const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const logs = [], chat = [], privateChats = {}, sessions = {}, rateLimits = {}, ipLimits = {}, games = {};
 
 // Define global variables
-let contributions, lastFetch = 0, requests = 0, requestLimit = 50, globalLimit = 10000, resetTime = Date.now() + 60000;
+let contributions, lastFetch = 0, requests = 0, requestLimit, resetTime = Date.now() + 3600000;
 
 // ----------- ----------- MAIN FUNCTIONS ----------- ----------- //
 
@@ -108,14 +108,17 @@ app.use((req, res, next) => {
 // Too many requests
 app.use((req, res, next) => {
     const ip = req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
-    const now = Date.now();
     const token = req.headers.authorization?.split(' ')[1] || '';
 
-    const unlimited = process.env.UNLIMITED_TOKEN_LIST?.split(' ') || [];
+    const now = Date.now();
+    const minute = Math.floor(now / 60000) % 60;
+    const hour = Math.floor(now / 3600000) % 24;
+
+    const business = process.env.BUSINESS_TOKEN_LIST?.split(' ') || [];
     const pro = process.env.PRO_TOKEN_LIST?.split(' ') || [];
     const advanced = process.env.ADVANCED_TOKEN_LIST?.split(' ') || [];
 
-    if (token && ![...unlimited, ...pro, ...advanced].includes(token) || token === 'undefined') {
+    if (token && ![...business, ...pro, ...advanced].includes(token) || token === 'undefined') {
         return res.status(401).jsonResponse({
             message: 'Unauthorized',
             error: 'Invalid token.',
@@ -123,23 +126,28 @@ app.use((req, res, next) => {
         });
     }
 
-    if (unlimited.includes(token) && !unlimited.includes('undefined')) requestLimit = Infinity;
-    else if (pro.includes(token) && !pro.includes('undefined')) requestLimit = 100;
-    else if (advanced.includes(token) && !advanced.includes('undefined')) requestLimit = 75;
+    if (business.includes(token) && !business.includes('undefined')) requestLimit = process.env.BUSINESS_LIMIT;
+    else if (pro.includes(token) && !pro.includes('undefined')) requestLimit = process.env.PRO_LIMIT;
+    else if (advanced.includes(token) && !advanced.includes('undefined')) requestLimit = process.env.ADVANCED_LIMIT;
+    else requestLimit = process.env.DEFAULT_LIMIT;
 
-    if (unlimited.includes(token)) return next();
-
-    if (now > resetTime) requests = 0, resetTime = now + 60000;
-    if (++requests > Math.max(globalLimit / Math.max(1, Object.keys(ipLimits).length), requestLimit)) {
+    if (now > resetTime) requests = 0, resetTime = now + 3600000;
+    if (++requests > Math.max(process.env.GLOBAL_LIMIT / Math.max(1, Object.keys(ipLimits).length), requestLimit)) {
         return res.status(429).jsonResponse({ message: 'Too Many Requests' });
     }
 
-    if (!ipLimits[ip]) ipLimits[ip] = [];
-    ipLimits[ip] = ipLimits[ip].filter(t => now - t < 60000);
+    if (!ipLimits[ip]) ipLimits[ip] = {};
+    if (!ipLimits[ip][hour]) ipLimits[ip][hour] = {};
+    ipLimits[ip][hour][minute] = (ipLimits[ip][hour][minute] || 0) + 1;
 
-    if (ipLimits[ip].length >= requestLimit) return res.status(429).jsonResponse({ message: 'Too Many Requests (IP limited)' });
+    if (ipLimits[ip][hour][minute] > requestLimit) return res.status(429).jsonResponse({
+        message: 'Too Many Requests (IP limited), authenticate to increase the limit.',
+        error: `You have exceeded the limit of ${requestLimit} requests per hour.`,
+        status: '429'
+    });
 
-    ipLimits[ip].push(now);
+    Object.keys(ipLimits[ip]).forEach(h => { if (h != hour) delete ipLimits[ip][h]; });
+
     next();
 });
 
