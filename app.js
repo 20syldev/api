@@ -132,7 +132,7 @@ app.use((req, res, next) => {
     else requestLimit = process.env.DEFAULT_LIMIT;
 
     if (now > resetTime) requests = 0, resetTime = now + 3600000;
-    if (++requests > Math.max(process.env.GLOBAL_LIMIT / Math.max(1, Object.keys(ipLimits).length), requestLimit)) {
+    if (++requests > Math.max(process.env.GLOBAL_LIMIT, requestLimit)) {
         return res.status(429).jsonResponse({ message: 'Too Many Requests' });
     }
 
