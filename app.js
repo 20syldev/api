@@ -140,11 +140,14 @@ app.use((req, res, next) => {
     if (!ipLimits[ip][hour]) ipLimits[ip][hour] = {};
     ipLimits[ip][hour][minute] = (ipLimits[ip][hour][minute] || 0) + 1;
 
-    if (ipLimits[ip][hour][minute] > requestLimit) return res.status(429).jsonResponse({
-        message: 'Too Many Requests (IP limited), authenticate to increase the limit.',
-        error: `You have exceeded the limit of ${requestLimit} requests per hour.`,
-        status: '429'
-    });
+    if (ipLimits[ip][hour][minute] > requestLimit) {
+        return res.status(429).jsonResponse({
+            message: 'Too Many Requests (IP limited), authenticate to increase the limit',
+            error: `You have exceeded the limit of ${requestLimit} requests per hour.`,
+            reset: `Reset in ${((resetTime - now) / 60000).toFixed(0)} minutes.`,
+            status: '429'
+        });
+    }
 
     Object.keys(ipLimits[ip]).forEach(h => { if (h != hour) delete ipLimits[ip][h]; });
 
