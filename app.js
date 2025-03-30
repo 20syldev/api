@@ -136,6 +136,10 @@ app.use((req, res, next) => {
         return res.status(429).jsonResponse({ message: 'Too Many Requests' });
     }
 
+    if (['__proto__', 'constructor', 'prototype'].includes(ip)) {
+        return res.status(400).jsonResponse({ message: 'Invalid IP address' });
+    }
+
     if (!ipLimits[ip]) ipLimits[ip] = {};
     if (!ipLimits[ip][hour]) ipLimits[ip][hour] = {};
     ipLimits[ip][hour][minute] = (ipLimits[ip][hour][minute] || 0) + 1;
