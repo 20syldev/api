@@ -354,7 +354,7 @@ app.get('/:version/algorithms', (req, res) => {
     if (!['anagram', 'bubblesort', 'factorial', 'fibonacci', 'gcd', 'isprime', 'palindrome', 'primefactors', 'primelist', 'reverse'].includes(method)) {
         return res.jsonResponse({
             error: 'Please provide a valid algorithm (?method={algorithm})',
-            documentation: `https://docs.sylvain.pro/${version}/algorithms`
+            documentation: `https://docs.sylvain.pro/${version}/en/algorithms`
         });
     }
     if (!value) return res.jsonResponse({ error: 'Please provide a valid value (&value={value})' });
@@ -1011,7 +1011,7 @@ app.post('/:version/hash', (req, res) => {
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
     if (!method) return res.jsonResponse({
         error: 'Please provide a valid hash algorithm (?method={algorithm})',
-        documentation: `https://docs.sylvain.pro/${version}/hash`
+        documentation: `https://docs.sylvain.pro/${version}/en/hash`
     });
 
     const methods = getHashes();
