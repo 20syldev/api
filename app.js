@@ -1010,7 +1010,7 @@ app.post('/:version/hash', (req, res) => {
 
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
     if (!method) return res.jsonResponse({
-        error: 'Please provide a valid hash algorithm (?method={algorithm})',
+        error: 'Please provide a valid hash algorithm (&method={algorithm})',
         documentation: `https://docs.sylvain.pro/${version}/en/hash`
     });
 
