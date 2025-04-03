@@ -848,7 +848,7 @@ app.get('/:version/website', async (req, res) => {
     if (currentTime - lastFetch >= 10 * 60 * 1000) {
         try {
             const username = '20syldev';
-            const token = process.env.STATS5;
+            const token = process.env.GITHUB_TOKEN;
             const today = new Date().toISOString().split('T')[0];
             const monthFirst = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
             const lastYear = new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0];
