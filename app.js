@@ -934,6 +934,7 @@ app.get('/:version/website', async (req, res) => {
             2: process.env.STATS2,
             3: process.env.STATS3,
             4: process.env.STATS4,
+            5: Object.keys(ipLimits).length,
             today: contributions.today.toString(),
             this_month: contributions.month.toString(),
             last_year: contributions.year.toString(),
