@@ -13,13 +13,19 @@
         "upgrade:major": "npx npm-check-updates -u && npm install",
         "upgrade:build": "npm upgrade && npm install && node app.js"
     },
+    "exports": {
+        "./v1": "./modules/v1.js",
+        "./v2": "./modules/v2.js",
+        "./v3": "./modules/v3.js",
+        "./captcha": "./modules/captcha.js",
+        "./color": "./modules/color.js"
+    },
     "dependencies": {
         "canvas": "latest",
         "cors": "latest",
         "dotenv": "latest",
         "express": "latest",
         "ical.js": "latest",
-        "mathjs": "latest",
         "node-fetch": "latest",
         "qrcode": "latest",
         "random": "latest",

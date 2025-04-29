@@ -1,0 +1,15 @@
+export * as algorithms from './v3/algorithms.js';
+export { default as chat } from './v3/chat.js';
+export { default as captcha } from './v3/captcha.js';
+export { default as color } from './v3/color.js';
+export { default as convert } from './v3/convert.js';
+export { default as domain } from './v3/domain.js';
+export { default as hash } from './v3/hash.js';
+export { default as hyperplanning } from './v3/hyperplanning.js';
+export { default as levenshtein } from './v3/levenshtein.js';
+export { default as personal } from './v3/personal.js';
+export { default as qrcode } from './v3/qrcode.js';
+export { default as tic_tac_toe } from './v3/tic_tac_toe.js';
+export { default as time } from './v3/time.js';
+export { default as token } from './v3/token.js';
+export { default as username } from './v3/username.js';
