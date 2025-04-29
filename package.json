@@ -21,10 +21,14 @@
         "ical.js": "latest",
         "mathjs": "latest",
         "node-fetch": "latest",
-        "prettier": "latest",
         "qrcode": "latest",
         "random": "latest",
         "uuid": "latest"
+    },
+    "devDependencies": {
+        "nodemon": "latest",
+        "npm-check-updates": "latest",
+        "prettier": "latest"
     },
     "repository": {
         "type": "git",
