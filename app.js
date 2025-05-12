@@ -912,6 +912,7 @@ app.get('/:version/website', async (req, res) => {
             gitsite: process.env.GITSITE,
             logs: process.env.LOGS,
             logvault: process.env.LOGVAULT,
+            lyah: process.env.LYAH,
             minify: process.env.MINIFY,
             morpion: process.env.MORPION,
             nitrogen: process.env.NITROGEN,
