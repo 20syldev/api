@@ -1027,7 +1027,7 @@ app.post('/:version/hash', (req, res) => {
 app.post('/:version/hyperplanning', async (req, res) => {
     const { url, detail } = req.body;
 
-    if (!url) return res.jsonResponse({ error: 'Please provide a valid ICS file URL.' });
+    if (!url) return res.jsonResponse({ error: 'Please provide a valid ICS file URL (?url={URL})' });
 
     try {
         const response = await fetch(url);
