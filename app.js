@@ -910,6 +910,7 @@ app.get('/:version/website', async (req, res) => {
             flowers: process.env.FLOWERS,
             gemsync: process.env.GEMSYNC,
             gitsite: process.env.GITSITE,
+            lebonchar: process.env.LEBONCHAR,
             logs: process.env.LOGS,
             logvault: process.env.LOGVAULT,
             lyah: process.env.LYAH,
