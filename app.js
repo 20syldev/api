@@ -15,11 +15,72 @@ const __dirname = dirname(__filename);
 const app = express();
 
 // Define allowed versions & endpoints for each version
-const versions = ['v1', 'v2', 'v3'];
-const endpoints = {
-    v1: ['algorithms', 'captcha', 'color', 'convert', 'domain', 'infos', 'personal', 'qrcode', 'token', 'username', 'website'],
-    v2: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'infos', 'personal', 'qrcode', 'tic-tac-toe', 'token', 'username', 'website'],
-    v3: ['algorithms', 'captcha', 'chat', 'color', 'convert', 'domain', 'hash', 'hyperplanning', 'infos', 'levenshtein', 'personal', 'qrcode', 'tic-tac-toe', 'time', 'token', 'username', 'website']
+const v1 = {
+    get: [
+        { name: 'algorithms', path: '/algorithms?method={algorithm}&value={value}(&value2={value2})' },
+        { name: 'captcha', path: '/captcha?text={text}' },
+        { name: 'color', path: '/color' },
+        { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
+        { name: 'domain', path: '/domain' },
+        { name: 'infos', path: '/infos' },
+        { name: 'personal', path: '/personal' },
+        { name: 'qrcode', path: '/qrcode?url={URL}' },
+        { name: 'username', path: '/username' },
+        { name: 'website', path: '/website' }
+    ],
+    post: [
+        { name: 'token', path: '/token' }
+    ]
+};
+const v2 = {
+    get: [
+        ...v1.get,
+        { name: 'chat', path: '/chat' }
+    ],
+    post: [
+        ...v1.post,
+        {
+            name: 'chat',
+            children: {
+                chat: '/chat',
+                private: '/chat/private'
+            }
+        },
+        { name: 'hash', path: '/hash' },
+        {
+            name: 'tic_tac_toe',
+            children: {
+                tic_tac_toe: '/tic-tac-toe',
+                fetch: '/tic-tac-toe/fetch'
+            }
+        },
+        { name: 'token', path: '/token' }
+    ]
+};
+const v3 = {
+    get: [
+        ...v2.get,
+        { name: 'levenshtein', path: '/levenshtein?str1={string}&str2={string}' },
+        { name: 'time', path: '/time(?type={type}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})' },
+    ],
+    post: [
+        ...v2.post,
+        { name: 'hyperplanning', path: '/hyperplanning' }
+    ]
+};
+const versions = {
+    v1: {
+        endpoints: v1,
+        modules: apiv3
+    },
+    v2: {
+        endpoints: v2,
+        modules: apiv3
+    },
+    v3: {
+        endpoints: v3,
+        modules: apiv3
+    }
 };
 
 // API storage
@@ -159,21 +220,38 @@ app.use((err, req, res, next) => {
 // Check if version exists
 app.use('/:version', (req, res, next) => {
     const { version } = req.params;
-    const latest = versions[versions.length - 1];
+    const latest = Object.keys(versions).pop();
     const endpoint = req.originalUrl.split('/').slice(2).join('/');
+
+    req.version = version;
+    req.latest = latest;
 
     if (['latest', 'fr', 'en'].includes(version)) {
         return res.redirect(endpoint ? `/${latest}/${endpoint}` : `/${latest}`);
     }
 
-    if (!versions.includes(version) && version !== 'logs') {
+    if (version === 'logs') return res.jsonResponse(logs);
+
+    if (!versions[version] && version !== 'logs') {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation: `https://docs.sylvain.pro/${versions.at(-1)}`,
+            documentation: `https://docs.sylvain.pro/${latest}`,
             status: '404'
         });
     }
+
+    req.module = versions[version].modules;
+
+    if (!req.module) {
+        return res.status(404).jsonResponse({
+            message: 'Not Found',
+            error: `Module not found for version ${version}.`,
+            documentation: `https://docs.sylvain.pro/${latest}`,
+            status: '404'
+        });
+    }
+
     next();
 });
 
@@ -181,11 +259,14 @@ app.use('/:version', (req, res, next) => {
 app.use('/:version/:endpoint', (req, res, next) => {
     const { version, endpoint } = req.params;
 
-    if (!versions.includes(version) || !endpoints[version].includes(endpoint)) {
+    req.version = version;
+    req.endpoint = endpoint;
+
+    if (!req.endpoint) {
         return res.status(404).jsonResponse({
             message: 'Not Found',
-            error: `Endpoint '${endpoint}' does not exist in ${version}.`,
-            documentation: `https://docs.sylvain.pro/${versions.at(-1)}`,
+            error: `Endpoint '${endpoint}' does not exist in ${req.version}.`,
+            documentation: `https://docs.sylvain.pro/${versions[version.length - 1]}`,
             status: '404'
         });
     }
@@ -196,116 +277,59 @@ app.use('/:version/:endpoint', (req, res, next) => {
 
 // Main route
 app.get('/', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
+    const base = `${req.protocol}://${req.get('host')}`;
+    const links = Object.keys(versions).reduce((link, version) => {
+        link[version] = `${base}/${version}`;
+        return link;
+    }, {});
+
     res.jsonResponse({
         documentation: 'https://docs.sylvain.pro',
-        latest: 'https://api.sylvain.pro/latest',
-        logs: 'https://api.sylvain.pro/logs',
-        versions: {
-            v1: 'https://api.sylvain.pro/v1',
-            v2: 'https://api.sylvain.pro/v2',
-            v3: 'https://api.sylvain.pro/v3'
-        }
+        latest: `${base}/latest`,
+        logs: `${base}/logs`,
+        versions: links
     });
 });
 
-// Display v1 endpoints
-app.get('/v1', (req, res) => {
+// Display version information
+app.get('/:version', (req, res) => {
+    const { version } = req.params;
+
+    if (!versions[version]) {
+        return res.status(404).jsonResponse({
+            message: 'Not Found',
+            error: `Invalid API version (${version}).`,
+            documentation: `https://docs.sylvain.pro/${versions[versions.length - 1]}`,
+            status: '404'
+        });
+    }
+
+    const endpoints = Object.keys(versions[version].endpoints).reduce((acc, method) => {
+        acc[method] = versions[version].endpoints[method]
+            .filter(({ name }) => name !== 'website')
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .reduce((group, endpoint) => {
+                if (endpoint.children) {
+                    group[endpoint.name] = Object.keys(endpoint.children)
+                        .sort((a, b) => a.localeCompare(b))
+                        .reduce((childGroup, childName) => {
+                            childGroup[childName] = `/${version}${endpoint.children[childName]}`;
+                            return childGroup;
+                        }, {});
+                } else {
+                    group[endpoint.name] = `/${version}${endpoint.path}`;
+                }
+                return group;
+            }, {});
+        return acc;
+    }, {});
+
     res.jsonResponse({
-        version: 'v1',
-        documentation: 'https://docs.sylvain.pro/v1',
-        endpoints: {
-            get: {
-                algorithm: '/v1/algorithms?method={algorithm}&value={value}(&value2={value2})',
-                captcha: '/v1/captcha?text={text}',
-                color: '/v1/color',
-                convert: '/v1/convert?value={value}&from={unit}&to={unit}',
-                domain: '/v1/domain',
-                infos: '/v1/infos',
-                personal: '/v1/personal',
-                qrcode: '/v1/qrcode?url={URL}',
-                username: '/v1/username'
-            },
-            post: {
-                token: '/v1/token'
-            }
-        }
+        version,
+        documentation: `https://docs.sylvain.pro/${version}`,
+        endpoints
     });
 });
-
-// Display v2 endpoints
-app.get('/v2', (req, res) => {
-    res.jsonResponse({
-        version: 'v2',
-        documentation: 'https://docs.sylvain.pro/v2',
-        endpoints: {
-            get: {
-                algorithm: '/v2/algorithms?method={algorithm}&value={value}(&value2={value2})',
-                captcha: '/v2/captcha?text={text}',
-                chat: '/v2/chat',
-                color: '/v2/color',
-                convert: '/v2/convert?value={value}&from={unit}&to={unit}',
-                domain: '/v2/domain',
-                infos: '/v2/infos',
-                personal: '/v2/personal',
-                qrcode: '/v2/qrcode?url={URL}',
-                username: '/v2/username'
-            },
-            post: {
-                chat: {
-                    chat: '/v2/chat',
-                    private: '/v2/chat/private'
-                },
-                hash: '/v2/hash',
-                tic_tac_toe: {
-                    tic_tac_toe: '/v2/tic-tac-toe',
-                    fetch: '/v2/tic-tac-toe/fetch'
-                },
-                token: '/v2/token'
-            }
-        }
-    });
-});
-
-// Display v3 endpoints
-app.get('/v3', (req, res) => {
-    res.jsonResponse({
-        version: 'v3',
-        documentation: 'https://docs.sylvain.pro/v3',
-        endpoints: {
-            get: {
-                algorithm: '/v3/algorithms?method={algorithm}&value={value}(&value2={value2})',
-                captcha: '/v3/captcha?text={text}',
-                chat: '/v3/chat',
-                color: '/v3/color',
-                convert: '/v3/convert?value={value}&from={unit}&to={unit}',
-                domain: '/v3/domain',
-                infos: '/v3/infos',
-                levenshtein: '/v3/levenshtein?str1={string}&str2={string}',
-                personal: '/v3/personal',
-                qrcode: '/v3/qrcode?url={URL}',
-                time: '/v3/time(?type={type}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
-                username: '/v3/username'
-            },
-            post: {
-                chat: {
-                    chat: '/v3/chat',
-                    private: '/v3/chat/private'
-                },
-                hash: '/v3/hash',
-                hyperplanning: '/v3/hyperplanning',
-                tic_tac_toe: {
-                    tic_tac_toe: '/v3/tic-tac-toe',
-                    fetch: '/v3/tic-tac-toe/fetch'
-                },
-                token: '/v3/token'
-            }
-        }
-    });
-});
-
-// Display logs
-app.get('/logs', (req, res) => res.jsonResponse(logs));
 
 // ----------- ----------- GET ENDPOINTS ----------- ----------- //
 
