@@ -24,7 +24,6 @@
         "dotenv": "latest",
         "express": "latest",
         "ical.js": "latest",
-        "mathjs": "latest",
         "node-fetch": "latest",
         "qrcode": "latest",
         "random": "latest",
