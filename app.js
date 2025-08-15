@@ -299,7 +299,7 @@ app.get('/:version', (req, res) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation: `https://docs.sylvain.pro/${versions[versions.length - 1]}`,
+            documentation: `https://docs.sylvain.pro/${Object.keys(versions).pop()}`,
             status: '404'
         });
     }
@@ -448,13 +448,14 @@ app.get('/:version/hash', (req, res) => {
 
 // Display API informations
 app.get('/:version/infos', (req, res) => {
-    const endpoints = Object.values(versions[req.version].endpoints).flat().reduce((total, endpoint) => {
-        if (endpoint.children) return total + Object.keys(endpoint.children).length;
-        return total + 1;
-    }, 0);
+    const endpoints = Object.values(versions[req.version].endpoints).flat();
+
+    const paths = endpoints.flatMap(e => e.children
+        ? Object.values(e.children)
+        : (e.path ? [e.path] : []));
 
     res.jsonResponse({
-        endpoints,
+        endpoints: new Set(paths).size,
         last_version: Object.keys(versions).pop(),
         documentation: 'https://docs.sylvain.pro',
         github: 'https://github.com/20syldev/api',
