@@ -642,11 +642,13 @@ app.get('/:version/website', async (req, res) => {
             morpion: process.env.MORPION,
             nitrogen: process.env.NITROGEN,
             old_database: process.env.OLD_DATABASE,
+            password: process.env.PASSWORD,
             php: process.env.PHP,
             ping: process.env.PING,
             portfolio: process.env.PORTFOLIO,
             python_api: process.env.PYTHON_API,
             readme: process.env.README,
+            timestamp: process.env.TIMESTAMP,
             terminal: process.env.TERMINAL,
             wrkit: process.env.WRKIT,
             zpki: process.env.ZPKI
