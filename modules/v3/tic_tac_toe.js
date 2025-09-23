@@ -63,30 +63,31 @@ function playMove(params, games, sessions, u, now) {
     }
 
     // Initialize game if needed
-    games[game] = games[game] || [];
+    games[game] = games[game] || { moves: [], players: [] };
+    const moves = games[game].moves;
 
     // Check if game is full
-    const players = [...new Set(games[game].map(play => play.username))];
+    const players = [...new Set(moves.map(play => play.username))];
     if (players.length >= 2 && !players.includes(params.username)) {
         throw new Error('Game is full, you can only watch.');
     }
 
     // Check if it's player's turn
-    if (games[game].length > 0 && games[game][games[game].length - 1].username === params.username) {
+    if (moves.length > 0 && moves[moves.length - 1].username === params.username) {
         throw new Error('Please wait for the other player to make a move.');
     }
 
     // Check if move is already made
-    if (games[game].some(play => play.move === move)) {
+    if (moves.some(play => play.move === move)) {
         throw new Error('Move already made. Please choose a different move.');
     }
 
     // Add move to game
     const play = { username: params.username, move, session };
-    games[game].push(play);
+    moves.push(play);
 
     // Check game result
-    const result = checkGame(games[game]);
+    const result = checkGame(moves);
     if (result.winner || result.tie) {
         setTimeout(() => delete games[game], 600000);
         return {
@@ -110,18 +111,33 @@ function playMove(params, games, sessions, u, now) {
  * Fetch a game state
  */
 function fetchGame(params, games, u) {
-    const ID = params.game || generateGameId();
+    const id = params.game || generateGameId();
 
-    // Initialize game if needed
-    if (!games[ID]) games[ID] = [];
+    if (!games[id]) {
+        games[id] = {
+            moves: [],
+            players: []
+        };
+    }
+    if (!games[id].players.includes(u)) {
+        games[id].players.push(u);
+    }
 
-    const data = games[ID];
-    const last = data.length ? data[data.length - 1].username : null;
-    const players = [...new Set(data.map(p => p.username))];
-    const turn = players.find(p => p !== last);
-    const result = data.length ? checkGame(data) : {};
+    const moves = games[id].moves;
+    const players = games[id].players;
+    const lastPlayer = moves.length ? moves[moves.length - 1].username : null;
+    const turn = players.find(p => p !== lastPlayer) || players[0];
+    const status = players.length >= 2 ? 'ready' : 'waiting';
+    const result = moves.length ? checkGame(moves) : {};
 
-    return { game: data, turn, ID, ...result };
+    return {
+        id,
+        moves,
+        players,
+        turn,
+        status,
+        ...result
+    };
 }
 
 /**
