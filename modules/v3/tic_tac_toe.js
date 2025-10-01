@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 /**
  * Manages a Tic-Tac-Toe game session
  *
- * @param {string} action - The action to perform ('play' or 'fetch')
+ * @param {string} action - The action to perform ('play', 'fetch', or 'list')
  * @param {Object} params - The parameters for the action
  * @returns {Object} - The result of the action
  * @throws {Error} - If parameters are invalid
@@ -19,6 +19,9 @@ export default function tic_tac_toe(action, params = {}) {
 
     // Reference the storage properties
     const { games, sessions, rateLimits } = storage;
+
+    // List public games
+    if (action === 'list') return listGames(games);
 
     // Input validation for common parameters
     if (!params.username) throw new Error('Please provide a username');
@@ -40,7 +43,7 @@ export default function tic_tac_toe(action, params = {}) {
     } else if (action === 'fetch') {
         return fetchGame(params, games, u);
     } else {
-        throw new Error('Invalid action. Use "play" or "fetch"');
+        throw new Error('Invalid action. Use "play", "fetch", or "list"');
     }
 }
 
@@ -63,7 +66,12 @@ function playMove(params, games, sessions, u, now) {
     }
 
     // Initialize game if needed
-    games[game] = games[game] || { moves: [], players: [] };
+    games[game] = games[game] || {
+        moves: [],
+        players: [],
+        private: params.private || false,
+        creation: Date.now()
+    };
     const moves = games[game].moves;
 
     // Check if game is full
@@ -112,11 +120,12 @@ function playMove(params, games, sessions, u, now) {
  */
 function fetchGame(params, games, u) {
     const id = params.game || generateGameId();
-
     if (!games[id]) {
         games[id] = {
             moves: [],
-            players: []
+            players: [],
+            private: params.private || false,
+            creation: Date.now()
         };
     }
     if (!games[id].players.includes(u)) {
@@ -125,6 +134,7 @@ function fetchGame(params, games, u) {
 
     const moves = games[id].moves;
     const players = games[id].players;
+    const privateGame = games[id].private;
     const lastPlayer = moves.length ? moves[moves.length - 1].username : null;
     const turn = players.find(p => p !== lastPlayer) || players[0];
     const status = players.length >= 2 ? 'ready' : 'waiting';
@@ -136,7 +146,50 @@ function fetchGame(params, games, u) {
         players,
         turn,
         status,
+        private: privateGame,
         ...result
+    };
+}
+
+/**
+ * List all public games in progress
+ */
+function listGames(games) {
+    const publicGames = [];
+    const now = Date.now();
+
+    for (const [gameId, game] of Object.entries(games)) {
+        // Only include public games
+        if (!game.private) {
+            const result = game.moves.length ? checkGame(game.moves) : {};
+            const isFinished = result.winner || result.tie;
+
+            // Only include active games (not finished)
+            if (!isFinished) {
+                const lastPlayer = game.moves.length ? game.moves[game.moves.length - 1].username : null;
+                const turn = game.players.find(p => p !== lastPlayer) || game.players[0];
+                const status = game.players.length >= 2 ? 'ready' : 'waiting';
+
+                publicGames.push({
+                    id: gameId,
+                    players: game.players,
+                    playersCount: game.players.length,
+                    moves: game.moves.length,
+                    turn,
+                    status,
+                    creation: game.creation || now
+                });
+            }
+        }
+    }
+
+    // Sort by creation time (newest first)
+    publicGames.sort((a, b) => b.creation - a.creation);
+
+    return {
+        message: 'Public games available',
+        count: publicGames.length,
+        games: publicGames
     };
 }
 

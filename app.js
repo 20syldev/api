@@ -51,7 +51,8 @@ const v2 = {
             name: 'tic_tac_toe',
             children: {
                 tic_tac_toe: '/tic-tac-toe',
-                fetch: '/tic-tac-toe/fetch'
+                fetch: '/tic-tac-toe/fetch',
+                list: '/tic-tac-toe/list'
             }
         },
         { name: 'token', path: '/token' }
@@ -521,6 +522,11 @@ app.get('/:version/tic-tac-toe/fetch', (req, res) => {
     res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
 });
 
+// GET tic-tac-toe list error
+app.get('/:version/tic-tac-toe/list', (req, res) => {
+    res.jsonResponse({ error: 'This endpoint only supports POST requests.' });
+});
+
 // Display or generate time informations
 app.get('/:version/time', (req, res) => {
     const { type = 'live', start, end, format, timezone } = req.query;
@@ -780,6 +786,7 @@ app.post('/:version/tic-tac-toe', (req, res) => {
 // Display a tic tac toe game with a token
 app.post('/:version/tic-tac-toe/fetch', (req, res) => {
     const { username, game } = req.body;
+    const privateGame = req.body.private;
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
 
@@ -787,6 +794,19 @@ app.post('/:version/tic-tac-toe/fetch', (req, res) => {
         const result = req.module.tic_tac_toe('fetch', {
             username,
             game,
+            private: privateGame,
+            storage: ticTacToeStorage
+        });
+        res.jsonResponse(result);
+    } catch (err) {
+        res.jsonResponse({ error: err.message });
+    }
+});
+
+// List public tic tac toe games
+app.post('/:version/tic-tac-toe/list', (req, res) => {
+    try {
+        const result = req.module.tic_tac_toe('list', {
             storage: ticTacToeStorage
         });
         res.jsonResponse(result);
