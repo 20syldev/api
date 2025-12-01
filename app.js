@@ -682,7 +682,7 @@ app.get('/:version/website', async (req, res) => {
 
 // Store chat messages
 app.post('/:version/chat', (req, res) => {
-    const { username, message, timestamp, session, token } = req.body;
+    const { username, message, timestamp, session, token } = req.body || {};
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!message) return res.jsonResponse({ error: 'Please provide a message (&message={message})' });
@@ -705,7 +705,7 @@ app.post('/:version/chat', (req, res) => {
 
 // Display a private chat with a token
 app.post('/:version/chat/private', (req, res) => {
-    const { username, token } = req.body;
+    const { username, token } = req.body || {};
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!token) return res.jsonResponse({ error: 'Please provide a valid token (&token={key}).' });
@@ -724,7 +724,7 @@ app.post('/:version/chat/private', (req, res) => {
 
 // Generate hash
 app.post('/:version/hash', (req, res) => {
-    const { text, method } = req.body;
+    const { text, method } = req.body || {};
 
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
     if (!method) return res.jsonResponse({
@@ -745,7 +745,7 @@ app.post('/:version/hash', (req, res) => {
 
 // Display a planning from an ICS file
 app.post('/:version/hyperplanning', async (req, res) => {
-    const { url, detail } = req.body;
+    const { url, detail } = req.body || {};
 
     if (!url) return res.jsonResponse({ error: 'Please provide a valid ICS file URL (?url={URL})' });
 
@@ -762,7 +762,7 @@ app.post('/:version/hyperplanning', async (req, res) => {
 
 // Store tic tac toe games
 app.post('/:version/tic-tac-toe', (req, res) => {
-    const { username, move, session, game } = req.body;
+    const { username, move, session, game } = req.body || {};
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
     if (!move) return res.jsonResponse({ error: 'Please provide a valid move (&move={move})' });
@@ -785,8 +785,8 @@ app.post('/:version/tic-tac-toe', (req, res) => {
 
 // Display a tic tac toe game with a token
 app.post('/:version/tic-tac-toe/fetch', (req, res) => {
-    const { username, game } = req.body;
-    const privateGame = req.body.private;
+    const { username, game } = req.body || {};
+    const privateGame = (req.body || {}).private;
 
     if (!username) return res.jsonResponse({ error: 'Please provide a username (?username={username})' });
 
@@ -817,7 +817,7 @@ app.post('/:version/tic-tac-toe/list', (req, res) => {
 
 // Generate Token
 app.post('/:version/token', (req, res) => {
-    let { len, type } = req.body;
+    let { len, type } = req.body || {};
 
     len = parseInt(len || 24, 10);
     type = type ? type.toLowerCase() : 'alpha';
