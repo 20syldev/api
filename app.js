@@ -750,11 +750,11 @@ app.post('/:version/hyperplanning', async (req, res) => {
     if (!url) return res.jsonResponse({ error: 'Please provide a valid ICS file URL (?url={URL})' });
 
     try {
-        const hyperplanning = req.module.hyperplanning(url, detail);
+        const hyperplanning = await req.module.hyperplanning(url, detail);
         res.jsonResponse(hyperplanning);
     } catch (err){
         res.jsonResponse({
-            error: 'Failed to parse ICS file.',
+            error: err.message,
             documentation: `https://docs.sylvain.pro/${req.version}/en/hyperplanning`
         });
     }
