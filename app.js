@@ -650,6 +650,7 @@ app.get('/:version/website', async (req, res) => {
             old_database: process.env.OLD_DATABASE,
             password: process.env.PASSWORD,
             php: process.env.PHP,
+            planning: process.env.PLANNING,
             ping: process.env.PING,
             portfolio: process.env.PORTFOLIO,
             python_api: process.env.PYTHON_API,
