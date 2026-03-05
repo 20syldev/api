@@ -1,16 +1,16 @@
 <div align="center">
-  <a href="https://api.sylvain.pro"><img src="https://api.sylvain.pro/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
+  <a href="https://api.sylvain.sh"><img src="https://api.sylvain.sh/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
 
   # API Personnelle
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v3.4.0-6479ee?logo=api.sylvain.pro&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v3.4.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
 
 ## À propos de l'API
-Voici mon API personnelle, disponible sur le domaine [api.sylvain.pro](https://api.sylvain.pro).
-L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.pro](https://docs.sylvain.pro) !
-> *Une limite de **2000** requêtes **par heure** est fixée. Elle change pour certains endpoints nécessitant plus de ressources. Si vous souhaitez une **augmentation** de cette limite, n'hésitez pas à visiter la [documentation](https://docs.sylvain.pro/pricing).*
+Voici mon API personnelle, disponible sur le domaine [api.sylvain.sh](https://api.sylvain.sh).
+L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.sh](https://docs.sylvain.sh) !
+> *Une limite de **2000** requêtes **par heure** est fixée. Elle change pour certains endpoints nécessitant plus de ressources. Si vous souhaitez une **augmentation** de cette limite, n'hésitez pas à visiter la [documentation](https://docs.sylvain.sh/pricing).*
 
 ## Installer le paquet de l'API sur votre machine
 ```console
@@ -67,7 +67,7 @@ Ensuite, **déplacez-vous** dans le dossier du projet, via un terminal **Linux**
 $ cd /chemin/vers/le/projet
 ```
 
-Enfin, **exécutez** le script de build, qui installera les **dépendances** et lancera le **serveur** de l'[API](https://api.sylvain.pro) :
+Enfin, **exécutez** le script de build, qui installera les **dépendances** et lancera le **serveur** de l'[API](https://api.sylvain.sh) :
 ```console
 $ npm run build
 ```
@@ -107,4 +107,4 @@ import {
 } from '@20syldev/api/v3';
 ```
 
-*Visitez la [documentation](https://docs.sylvain.pro) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.pro) !*
+*Visitez la [documentation](https://docs.sylvain.sh) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.sh) !*

@@ -1,7 +1,7 @@
 {
     "version": "3.4.0",
     "name": "@20syldev/api",
-    "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.pro",
+    "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
     "main": "app.js",
     "type": "module",
     "scripts": {
@@ -49,5 +49,5 @@
     "bugs": {
         "url": "https://github.com/20syldev/api/issues"
     },
-    "homepage": "https://api.sylvain.pro"
+    "homepage": "https://api.sylvain.sh"
 }
