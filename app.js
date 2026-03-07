@@ -678,8 +678,8 @@ app.get('/:version/website', async (req, res) => {
             this_month: contributions.month.toString(),
             last_year: contributions.year.toString(),
         },
-        active: process.env.ACTIVE
         tag: process.env.TAG,
+        active: process.env.ACTIVE === 'true'
     });
 });
 
