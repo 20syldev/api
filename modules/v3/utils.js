@@ -43,6 +43,17 @@ export function formatDate(date) {
 }
 
 /**
+ * Parse a space-separated env variable into an array, or return null.
+ *
+ * @param {string} key - The environment variable name.
+ * @returns {string[]|null} - The parsed array or null.
+ */
+export function envList(key) {
+    const v = process.env[key];
+    return v && v !== 'undefined' ? v.split(' ') : null;
+}
+
+/**
  * Manage rate limiting for users
  *
  * @param {Object} rateLimits - Rate limits object
