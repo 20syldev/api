@@ -102,6 +102,9 @@ const ticTacToeStorage = {
     rateLimits: {}
 };
 
+// Define documentation URL
+const documentation = 'https://docs.sylvain.sh';
+
 // Define global variables
 let contributions, lastFetch = 0, requests = 0, requestLimit, resetTime = Date.now() + 3600000;
 
@@ -213,7 +216,7 @@ app.use((err, req, res, next) => {
     res.status(500).jsonResponse({
         message: 'Internal Server Error',
         error: err.message,
-        documentation: 'https://docs.sylvain.sh',
+        documentation,
         status: '500'
     });
 });
@@ -237,7 +240,7 @@ app.use('/:version', (req, res, next) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation: `https://docs.sylvain.sh/${latest}`,
+            documentation: `${documentation}/${latest}`,
             status: '404'
         });
     }
@@ -248,7 +251,7 @@ app.use('/:version', (req, res, next) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Module not found for version ${version}.`,
-            documentation: `https://docs.sylvain.sh/${latest}`,
+            documentation: `${documentation}/${latest}`,
             status: '404'
         });
     }
@@ -267,7 +270,7 @@ app.use('/:version/:endpoint', (req, res, next) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Endpoint '${endpoint}' does not exist in ${req.version}.`,
-            documentation: `https://docs.sylvain.sh/${versions[version.length - 1]}`,
+            documentation: `${documentation}/${versions[version.length - 1]}`,
             status: '404'
         });
     }
@@ -285,7 +288,7 @@ app.get('/', (req, res) => {
     }, {});
 
     res.jsonResponse({
-        documentation: 'https://docs.sylvain.sh',
+        documentation,
         latest: `${base}/latest`,
         logs: `${base}/logs`,
         versions: links
@@ -300,7 +303,7 @@ app.get('/:version', (req, res) => {
         return res.status(404).jsonResponse({
             message: 'Not Found',
             error: `Invalid API version (${version}).`,
-            documentation: `https://docs.sylvain.sh/${Object.keys(versions).pop()}`,
+            documentation: `${documentation}/${Object.keys(versions).pop()}`,
             status: '404'
         });
     }
@@ -327,7 +330,7 @@ app.get('/:version', (req, res) => {
 
     res.jsonResponse({
         version,
-        documentation: `https://docs.sylvain.sh/${version}`,
+        documentation: `${documentation}/${version}`,
         endpoints
     });
 });
@@ -342,7 +345,7 @@ app.get('/:version/algorithms', (req, res) => {
     if (!req.module.algorithms || !req.module.algorithms[method]) {
         return res.jsonResponse({
             error: 'Please provide a valid algorithm (?method={algorithm})',
-            documentation: `https://docs.sylvain.sh/${version}/en/algorithms`
+            documentation: `${documentation}/${version}/en/algorithms`
         });
     }
 
@@ -352,7 +355,7 @@ app.get('/:version/algorithms', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${version}/en/algorithms`
+            documentation: `${documentation}/${version}/en/algorithms`
         });
     }
 });
@@ -369,7 +372,7 @@ app.get('/:version/captcha', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/captcha`
+            documentation: `${documentation}/${req.version}/en/captcha`
         });
     }
 });
@@ -400,7 +403,7 @@ app.get('/:version/color', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/color`
+            documentation: `${documentation}/${req.version}/en/color`
         });
     }
 });
@@ -419,7 +422,7 @@ app.get('/:version/convert', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/convert`
+            documentation: `${documentation}/${req.version}/en/convert`
         });
     }
 });
@@ -432,7 +435,7 @@ app.get('/:version/domain', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/domain`
+            documentation: `${documentation}/${req.version}/en/domain`
         });
     }
 });
@@ -458,7 +461,7 @@ app.get('/:version/infos', (req, res) => {
     res.jsonResponse({
         endpoints: new Set(paths).size,
         last_version: Object.keys(versions).pop(),
-        documentation: 'https://docs.sylvain.sh',
+        documentation,
         github: 'https://github.com/20syldev/api',
         creation: 'November 25th 2024',
     });
@@ -477,7 +480,7 @@ app.get('/:version/levenshtein', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/levenshtein`
+            documentation: `${documentation}/${req.version}/en/levenshtein`
         });
     }
 });
@@ -490,7 +493,7 @@ app.get('/:version/personal', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/personal`
+            documentation: `${documentation}/${req.version}/en/personal`
         });
     }
 });
@@ -507,7 +510,7 @@ app.get('/:version/qrcode', async (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/qrcode`
+            documentation: `${documentation}/${req.version}/en/qrcode`
         });
     }
 });
@@ -546,7 +549,7 @@ app.get('/:version/time', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/time`
+            documentation: `${documentation}/${req.version}/en/time`
         });
     }
 });
@@ -564,7 +567,7 @@ app.get('/:version/username', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/username`
+            documentation: `${documentation}/${req.version}/en/username`
         });
     }
 });
@@ -730,7 +733,7 @@ app.post('/:version/hash', (req, res) => {
     if (!text) return res.jsonResponse({ error: 'Please provide a text (?text={text})' });
     if (!method) return res.jsonResponse({
         error: 'Please provide a valid hash algorithm (&method={algorithm})',
-        documentation: `https://docs.sylvain.sh/${req.version}/en/hash`
+        documentation: `${documentation}/${req.version}/en/hash`
     });
 
     try {
@@ -739,7 +742,7 @@ app.post('/:version/hash', (req, res) => {
     } catch (err) {
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/hash`
+            documentation: `${documentation}/${req.version}/en/hash`
         })
     }
 });
@@ -756,7 +759,7 @@ app.post('/:version/hyperplanning', async (req, res) => {
     } catch (err){
         res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/hyperplanning`
+            documentation: `${documentation}/${req.version}/en/hyperplanning`
         });
     }
 });
@@ -833,7 +836,7 @@ app.post('/:version/token', (req, res) => {
     } catch (err) {
         return res.jsonResponse({
             error: err.message,
-            documentation: `https://docs.sylvain.sh/${req.version}/en/token`
+            documentation: `${documentation}/${req.version}/en/token`
         });
     }
 });
