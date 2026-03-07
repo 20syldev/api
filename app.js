@@ -1,5 +1,6 @@
 // Import modules
 import * as apiv3 from './modules/v3.js';
+import { envList } from './modules/v3/utils.js';
 
 // Import dependencies
 import cors from 'cors';
@@ -663,10 +664,10 @@ app.get('/:version/website', async (req, res) => {
             wrkit: process.env.WRKIT,
             zpki: process.env.ZPKI
         },
-        patched_projects: process.env.PATCH?.split(' ') || [],
-        updated_projects: process.env.RECENT?.split(' ') || [],
-        new_projects: process.env.NEW?.split(' ') || [],
-        sub_domains: process.env.DOMAINS?.split(' ') || [],
+        patched_projects: envList('PATCH'),
+        updated_projects: envList('RECENT'),
+        new_projects: envList('NEW'),
+        sub_domains: envList('DOMAINS'),
         stats: {
             1: process.env.STATS1,
             2: process.env.STATS2,
