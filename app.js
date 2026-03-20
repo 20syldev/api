@@ -640,7 +640,7 @@ app.get('/:version/website', async (req, res) => {
             donut: process.env.DONUT,
             drawio_plugin: process.env.DRAWIO_PLUGIN,
             flowers: process.env.FLOWERS,
-            g_2048: process.env.G_2048,
+            2048: process.env["2048"],
             gemsync: process.env.GEMSYNC,
             gft: process.env.GFT,
             gitsite: process.env.GITSITE,
