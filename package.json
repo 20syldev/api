@@ -34,6 +34,9 @@
         "npm-check-updates": "latest",
         "prettier": "latest"
     },
+    "publishConfig": {
+        "access": "public"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/20syldev/api.git"
