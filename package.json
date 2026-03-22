@@ -19,20 +19,20 @@
         "./v3": "./modules/v3.js"
     },
     "dependencies": {
-        "canvas": "latest",
-        "cors": "latest",
-        "dotenv": "latest",
-        "express": "latest",
-        "ical.js": "latest",
-        "node-fetch": "latest",
-        "qrcode": "latest",
-        "random": "latest",
-        "uuid": "latest"
+        "canvas": "^3.1.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^5.1.0",
+        "ical.js": "^2.1.0",
+        "node-fetch": "^3.3.2",
+        "qrcode": "^1.5.4",
+        "random": "^5.3.0",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
-        "nodemon": "latest",
-        "npm-check-updates": "latest",
-        "prettier": "latest"
+        "nodemon": "^3.1.10",
+        "npm-check-updates": "^18.0.1",
+        "prettier": "^3.5.3"
     },
     "publishConfig": {
         "access": "public"
