@@ -645,6 +645,7 @@ app.get('/:version/website', async (req, res) => {
             gft: process.env.GFT,
             gitsite: process.env.GITSITE,
             lebonchar: process.env.LEBONCHAR,
+            logger: process.env.LOGGER,
             logs: process.env.LOGS,
             logvault: process.env.LOGVAULT,
             lyah: process.env.LYAH,
