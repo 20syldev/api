@@ -629,6 +629,7 @@ app.get('/:version/website', async (req, res) => {
 
     res.jsonResponse({
         versions: {
+            2048: process.env.G_2048,
             api: process.env.API,
             cdn: process.env.CDN,
             coop_api: process.env.COOP_API,
@@ -640,7 +641,6 @@ app.get('/:version/website', async (req, res) => {
             donut: process.env.DONUT,
             drawio_plugin: process.env.DRAWIO_PLUGIN,
             flowers: process.env.FLOWERS,
-            2048: process.env["2048"],
             gemsync: process.env.GEMSYNC,
             gft: process.env.GFT,
             gitsite: process.env.GITSITE,
