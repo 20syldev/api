@@ -623,7 +623,7 @@ app.get('/:version/website', async (req, res) => {
         } catch { activity = []; }
     }
 
-    res.jsonResponse({
+    const response = {
         versions: {
             2048: process.env.G_2048,
             api: process.env.API,
@@ -678,7 +678,27 @@ app.get('/:version/website', async (req, res) => {
         },
         tag: process.env.TAG,
         active: process.env.ACTIVE === 'true'
-    });
+    };
+
+    const key = req.query.key;
+    if (key) {
+        const keys = key.split('.');
+        let result = response;
+
+        for (const k of keys) {
+            if (result == null || typeof result !== 'object' || !(k in result)) {
+                return res.status(404).jsonResponse({
+                    error: `Key '${key}' not found.`,
+                    available: Object.keys(result ?? {})
+                });
+            }
+            result = result[k];
+        }
+
+        return res.jsonResponse({ [key]: result });
+    }
+
+    res.jsonResponse(response);
 });
 
 // ----------- ----------- POST ENDPOINTS ----------- ----------- //
