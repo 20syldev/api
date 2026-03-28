@@ -107,7 +107,7 @@ const ticTacToeStorage = {
 const documentation = 'https://docs.sylvain.sh';
 
 // Define global variables
-let contributions, lastFetch = 0, requests = 0, requestLimit, resetTime = Date.now() + 3600000;
+let activity = [], lastFetch = 0, requests = 0, requestLimit, resetTime = Date.now() + 3600000;
 
 // ----------- ----------- MIDDLEWARES SETUP ----------- ----------- //
 
@@ -581,26 +581,21 @@ app.get('/:version/website', async (req, res) => {
         try {
             const username = '20syldev';
             const token = process.env.GITHUB_TOKEN;
-            const today = new Date().toISOString().split('T')[0];
-            const monthFirst = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
             const lastYear = new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0];
 
             const query = `
             {
               user(login: "${username}") {
-                contributionsCollection(from: "${today}T00:00:00Z") {
+                contributionsCollection(from: "${lastYear}T00:00:00Z") {
                   contributionCalendar {
                     totalContributions
-                  }
-                }
-                contributions_month: contributionsCollection(from: "${monthFirst}T00:00:00Z") {
-                contributionCalendar {
-                    totalContributions
-                  }
-                }
-                contributions_year: contributionsCollection(from: "${lastYear}T00:00:00Z") {
-                  contributionCalendar {
-                    totalContributions
+                    weeks {
+                      firstDay
+                      contributionDays {
+                        date
+                        contributionCount
+                      }
+                    }
                   }
                 }
               }
@@ -617,14 +612,15 @@ app.get('/:version/website', async (req, res) => {
             const data = await apiResponse.json();
             const user = data?.data?.user;
 
-            contributions = {
-                today: user?.contributionsCollection?.contributionCalendar?.totalContributions || 0,
-                month: user?.contributions_month?.contributionCalendar?.totalContributions || 0,
-                year: user?.contributions_year?.contributionCalendar?.totalContributions || 0,
-            };
+            const weeks = user?.contributionsCollection?.contributionCalendar?.weeks || [];
+            activity = weeks.map(w => ({
+                week: w.firstDay,
+                total: w.contributionDays.reduce((sum, d) => sum + d.contributionCount, 0),
+                days: w.contributionDays.map(d => ({ date: d.date, count: d.contributionCount }))
+            }));
 
             lastFetch = currentTime;
-        } catch { contributions = { today: 0, month: 0, year: 0 }; }
+        } catch { activity = []; }
     }
 
     res.jsonResponse({
@@ -678,9 +674,7 @@ app.get('/:version/website', async (req, res) => {
             3: process.env.STATS3,
             4: process.env.STATS4,
             5: Object.keys(ipLimits).length,
-            today: contributions.today.toString(),
-            this_month: contributions.month.toString(),
-            last_year: contributions.year.toString(),
+            activity
         },
         tag: process.env.TAG,
         active: process.env.ACTIVE === 'true'
