@@ -1,6 +1,5 @@
 import { formatDate } from './utils.js';
 import ical from 'ical.js';
-import fetch from 'node-fetch';
 
 /**
  * Parse an ICS calendar file and extract event information
@@ -19,24 +18,26 @@ export default async function hyperplanning(url, detail) {
 
     const events = new ical.Component(ical.parse(await response.text()))
         .getAllSubcomponents('vevent')
-        .map(e => {
+        .map((e) => {
             const evt = new ical.Event(e);
-            const summary = (evt.summary || '').split(' ').filter(part => part !== '-');
+            const summary = (evt.summary || '').split(' ').filter((part) => part !== '-');
             const start = formatDate(evt.startDate.toJSDate());
             const end = formatDate(evt.endDate.toJSDate());
 
             if (detail === 'full') {
-                const desc = (evt.description || '').split('\n').map(l => l.trim());
-                const extract = (p) => (desc.find(l => l.startsWith(p)) || '').replace(p, '').trim();
+                const desc = (evt.description || '').split('\n').map((l) => l.trim());
+                const extract = (p) => (desc.find((l) => l.startsWith(p)) || '').replace(p, '').trim();
 
                 return {
                     summary,
                     subject: extract('Matière :'),
                     teacher: extract('Enseignant :'),
-                    classes: extract('Promotions :').split(', ').map(c => c.trim()),
+                    classes: extract('Promotions :')
+                        .split(', ')
+                        .map((c) => c.trim()),
                     type: extract('Salle :') || undefined,
                     start,
-                    end
+                    end,
                 };
             }
 
@@ -45,11 +46,11 @@ export default async function hyperplanning(url, detail) {
             return {
                 summary: evt.summary || '',
                 start,
-                end
+                end,
             };
         })
         .sort((a, b) => new Date(a.start) - new Date(b.start))
-        .filter(e => new Date(e.end) >= new Date());
+        .filter((e) => new Date(e.end) >= new Date());
 
     return events;
 }

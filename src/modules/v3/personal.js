@@ -16,7 +16,7 @@ export default function personal() {
         { name: 'Daniel Brown', social: 'daniel_brown', email: 'daniel@example.com', country: 'JP' },
         { name: 'Sophia Wilson', social: 'sophia_wilson', email: 'sophia@example.com', country: 'BR' },
         { name: 'James Taylor', social: 'james_taylor', email: 'james@example.com', country: 'CA' },
-        { name: 'Olivia Thomas', social: 'olivia_thomas', email: 'olivia@example.com', country: 'AU' }
+        { name: 'Olivia Thomas', social: 'olivia_thomas', email: 'olivia@example.com', country: 'AU' },
     ];
 
     const countries = {
@@ -29,12 +29,24 @@ export default function personal() {
         JP: { tel: '080-1234-5678', code: '81', lang: 'Japanese' },
         BR: { tel: '(11) 98765-4321', code: '55', lang: 'Portuguese' },
         CA: { tel: '416-123-4567', code: '1', lang: 'English' },
-        AU: { tel: '0412 345 678', code: '61', lang: 'English' }
+        AU: { tel: '0412 345 678', code: '61', lang: 'English' },
     };
 
     const jobs = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Doctor'];
     const hobbies = ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Fitness', 'Music', 'Photography', 'Writing'];
-    const cities = ['New York', 'Paris', 'London', 'Madrid', 'Berlin', 'Rome', 'Tokyo', 'Los Angeles', 'Sydney', 'São Paulo', 'Toronto'];
+    const cities = [
+        'New York',
+        'Paris',
+        'London',
+        'Madrid',
+        'Berlin',
+        'Rome',
+        'Tokyo',
+        'Los Angeles',
+        'Sydney',
+        'São Paulo',
+        'Toronto',
+    ];
     const streets = ['Main St', '2nd Ave', 'Broadway', 'Park Lane', 'Elm St', 'Sunset Blvd', 'Maple St', 'Highland Rd'];
 
     const card = Array.from({ length: 4 }, () => randomNumber(1000, 9999)).join(' ');
@@ -66,7 +78,7 @@ export default function personal() {
         let emergencyContact = random(people);
         while (
             emergencyContact.email === person.email ||
-            emergencyContacts.some(e => e.email === emergencyContact.email)
+            emergencyContacts.some((e) => e.email === emergencyContact.email)
         ) {
             emergencyContact = random(people);
         }
@@ -74,7 +86,7 @@ export default function personal() {
         emergencyContacts.push({
             name: emergencyContact.name,
             relationship: random(['Spouse', 'Parent', 'Sibling', 'Friend']),
-            phone: `+${countries[country].code} ${emergencyPhone}`
+            phone: `+${countries[country].code} ${emergencyPhone}`,
         });
     }
 
@@ -113,11 +125,11 @@ export default function personal() {
             twitter: `@${social}`,
             facebook: `facebook.com/${social}`,
             linkedin: `linkedin.com/in/${social}`,
-            instagram: `instagram.com/${social}`
+            instagram: `instagram.com/${social}`,
         },
         year_income: `${yearIncome} USD/year`,
         month_income: `${(yearIncome / 12).toFixed(2)} USD/month`,
-        education: random(['High School', 'Bachelor\'s', 'Master\'s', 'PhD']),
+        education: random(['High School', "Bachelor's", "Master's", 'PhD']),
         work_experience: `${randomNumber(0, 20)} years`,
         health_status: random(['Healthy', 'Minor Issues', 'Chronic Conditions']),
         emergency_contacts: emergencyContacts,

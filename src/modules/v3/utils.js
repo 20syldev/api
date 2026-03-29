@@ -65,7 +65,7 @@ export function envList(key) {
  * @throws {Error} - If rate limit is exceeded
  */
 export function checkRateLimit(rateLimits, userId, timestamp, window = 10000, limit = 50) {
-    rateLimits[userId] = (rateLimits[userId] || []).filter(ts => timestamp - ts < window);
+    rateLimits[userId] = (rateLimits[userId] || []).filter((ts) => timestamp - ts < window);
 
     if (rateLimits[userId].length > limit) {
         const remainingTime = Math.ceil((rateLimits[userId][0] + window - timestamp) / 1000);

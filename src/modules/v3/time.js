@@ -11,16 +11,27 @@
  */
 export default function time(type = 'live', start, end, format, timezone) {
     const validFormats = [
-        'iso', 'utc', 'timestamp', 'locale', 'date', 'time',
-        'year', 'month', 'day', 'hour', 'minute', 'second',
-        'ms', 'dayOfWeek', 'dayOfYear', 'weekNumber',
-        'timezone', 'timezoneOffset'
+        'iso',
+        'utc',
+        'timestamp',
+        'locale',
+        'date',
+        'time',
+        'year',
+        'month',
+        'day',
+        'hour',
+        'minute',
+        'second',
+        'ms',
+        'dayOfWeek',
+        'dayOfYear',
+        'weekNumber',
+        'timezone',
+        'timezoneOffset',
     ];
 
-    const validTimezones = [
-        'UTC', 'America/New_York', 'Europe/Paris',
-        'Asia/Tokyo', 'Australia/Sydney'
-    ];
+    const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'];
 
     // Input validation
     if (type !== 'live' && type !== 'random') {
@@ -61,9 +72,9 @@ export default function time(type = 'live', start, end, format, timezone) {
             ms: date.getMilliseconds(),
             dayOfWeek: date.getDay(),
             dayOfYear: Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000),
-            weekNumber: Math.ceil((((date - new Date(date.getFullYear(), 0, 0)) / 86400000) + 1) / 7),
+            weekNumber: Math.ceil(((date - new Date(date.getFullYear(), 0, 0)) / 86400000 + 1) / 7),
             timezone: tz,
-            timezoneOffset: date.getTimezoneOffset()
+            timezoneOffset: date.getTimezoneOffset(),
         };
     };
 

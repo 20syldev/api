@@ -1,4 +1,4 @@
-import { checkRateLimit } from "./utils.js";
+import { checkRateLimit } from './utils.js';
 
 /**
  * Manages a chat system with public and private messages
@@ -61,14 +61,16 @@ function sendMessage(params, messages, privateChats, sessions, u, now) {
     const msg = {
         username: params.username,
         message,
-        timestamp: params.timestamp || new Date().toISOString()
+        timestamp: params.timestamp || new Date().toISOString(),
     };
 
     // Store message based on whether it's private or public
     if (token) {
         privateChats[token] = privateChats[token] || [];
         privateChats[token].push(msg);
-        setTimeout(() => { delete privateChats[token]; }, 3600000);
+        setTimeout(() => {
+            delete privateChats[token];
+        }, 3600000);
     } else {
         messages.push(msg);
         setTimeout(() => messages.splice(messages.indexOf(msg), 1), 3600000);

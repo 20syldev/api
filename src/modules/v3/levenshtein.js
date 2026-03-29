@@ -33,7 +33,7 @@ export default function levenshtein(str1, str2) {
             m[i][j] = Math.min(
                 m[i - 1][j] + 1,
                 m[i][j - 1] + 1,
-                m[i - 1][j - 1] + (str1[i - 1] !== str2[j - 1] ? 1 : 0)
+                m[i - 1][j - 1] + (str1[i - 1] !== str2[j - 1] ? 1 : 0),
             );
         }
     }
@@ -41,6 +41,6 @@ export default function levenshtein(str1, str2) {
     return {
         str1,
         str2,
-        distance: m[str1.length][str2.length]
+        distance: m[str1.length][str2.length],
     };
 }

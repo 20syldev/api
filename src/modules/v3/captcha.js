@@ -10,8 +10,12 @@ import { createCanvas } from 'canvas';
 export default function captcha(text) {
     if (!text) throw new Error('Text is required to generate a captcha.');
 
-    const size = 60, font = '60px Comic Sans Ms', width = text.length * size, height = 120;
-    const canvas = createCanvas(width, height), ctx = canvas.getContext('2d');
+    const size = 60,
+        font = '60px Comic Sans Ms',
+        width = text.length * size,
+        height = 120;
+    const canvas = createCanvas(width, height),
+        ctx = canvas.getContext('2d');
 
     // Set white background
     ctx.fillStyle = 'white';
@@ -31,7 +35,8 @@ export default function captcha(text) {
 
     // Draw each character with random rotation and color
     for (let i = 0; i < text.length; i++) {
-        const offsetX = Math.cos(i * 0.3) * 10, y = height / 2.5 + Math.floor(Math.random() * (height / 2));
+        const offsetX = Math.cos(i * 0.3) * 10,
+            y = height / 2.5 + Math.floor(Math.random() * (height / 2));
 
         ctx.font = font;
         ctx.fillStyle = `rgb(${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)})`;

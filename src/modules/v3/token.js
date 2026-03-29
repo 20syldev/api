@@ -24,18 +24,24 @@ export default function token(len, type = 'alphanum') {
         return Array.from({ length }, () => {
             return chars[Math.floor(Math.random() * chars.length)];
         }).join('');
-    }
+    };
 
     // Token type definitions
     const tokenTypes = {
         alpha: () => genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', len),
         alphanum: () => genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', len),
-        base64: () => randomBytes(Math.ceil(len * 0.75)).toString('base64').slice(0, len),
-        hex: () => randomBytes(Math.ceil(len * 0.5)).toString('hex').slice(0, len),
+        base64: () =>
+            randomBytes(Math.ceil(len * 0.75))
+                .toString('base64')
+                .slice(0, len),
+        hex: () =>
+            randomBytes(Math.ceil(len * 0.5))
+                .toString('hex')
+                .slice(0, len),
         num: () => genToken('0123456789', len),
         punct: () => genToken('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', len),
         urlsafe: () => genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_', len),
-        uuid: () => v4().replace(/-/g, '').slice(0, len)
+        uuid: () => v4().replace(/-/g, '').slice(0, len),
     };
 
     // Generate token based on type or default to alphanum

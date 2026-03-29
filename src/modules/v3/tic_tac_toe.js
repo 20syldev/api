@@ -30,7 +30,7 @@ export default function tic_tac_toe(action, params = {}) {
     const now = Date.now();
 
     // Rate limiting
-    rateLimits[u] = (rateLimits[u] || []).filter(ts => now - ts < 10000);
+    rateLimits[u] = (rateLimits[u] || []).filter((ts) => now - ts < 10000);
     if (rateLimits[u].length > 50) {
         const remainingTime = Math.ceil((rateLimits[u][0] + 10000 - now) / 1000);
         throw new Error(`Rate limit exceeded. Try again in ${remainingTime} seconds.`);
@@ -70,12 +70,12 @@ function playMove(params, games, sessions, u, now) {
         moves: [],
         players: [],
         private: params.private || false,
-        creation: Date.now()
+        creation: Date.now(),
     };
     const moves = games[game].moves;
 
     // Check if game is full
-    const players = [...new Set(moves.map(play => play.username))];
+    const players = [...new Set(moves.map((play) => play.username))];
     if (players.length >= 2 && !players.includes(params.username)) {
         throw new Error('Game is full, you can only watch.');
     }
@@ -86,7 +86,7 @@ function playMove(params, games, sessions, u, now) {
     }
 
     // Check if move is already made
-    if (moves.some(play => play.move === move)) {
+    if (moves.some((play) => play.move === move)) {
         throw new Error('Move already made. Please choose a different move.');
     }
 
@@ -99,8 +99,8 @@ function playMove(params, games, sessions, u, now) {
     if (result.winner || result.tie) {
         setTimeout(() => delete games[game], 600000);
         return {
-            message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : 'It\'s a tie.'}`,
-            ...result
+            message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : "It's a tie."}`,
+            ...result,
         };
     }
 
@@ -110,7 +110,9 @@ function playMove(params, games, sessions, u, now) {
     // Update session
     sessions[u] = sessions[u] || { user: session, last: now };
     sessions[u].last = now;
-    setTimeout(() => { if (now - sessions[u].last >= 3600000) delete sessions[u]; }, 3600000);
+    setTimeout(() => {
+        if (now - sessions[u].last >= 3600000) delete sessions[u];
+    }, 3600000);
 
     return { message: 'Move sent successfully' };
 }
@@ -125,7 +127,7 @@ function fetchGame(params, games, u) {
             moves: [],
             players: [],
             private: params.private || false,
-            creation: Date.now()
+            creation: Date.now(),
         };
     }
     if (!games[id].players.includes(u)) {
@@ -136,7 +138,7 @@ function fetchGame(params, games, u) {
     const players = games[id].players;
     const privateGame = games[id].private;
     const lastPlayer = moves.length ? moves[moves.length - 1].username : null;
-    const turn = players.find(p => p !== lastPlayer) || players[0];
+    const turn = players.find((p) => p !== lastPlayer) || players[0];
     const status = players.length >= 2 ? 'ready' : 'waiting';
     const result = moves.length ? checkGame(moves) : {};
 
@@ -147,7 +149,7 @@ function fetchGame(params, games, u) {
         turn,
         status,
         private: privateGame,
-        ...result
+        ...result,
     };
 }
 
@@ -167,7 +169,7 @@ function listGames(games) {
             // Only include active games (not finished)
             if (!isFinished) {
                 const lastPlayer = game.moves.length ? game.moves[game.moves.length - 1].username : null;
-                const turn = game.players.find(p => p !== lastPlayer) || game.players[0];
+                const turn = game.players.find((p) => p !== lastPlayer) || game.players[0];
                 const status = game.players.length >= 2 ? 'ready' : 'waiting';
 
                 publicGames.push({
@@ -177,7 +179,7 @@ function listGames(games) {
                     moves: game.moves.length,
                     turn,
                     status,
-                    creation: game.creation || now
+                    creation: game.creation || now,
                 });
             }
         }
@@ -189,7 +191,7 @@ function listGames(games) {
     return {
         message: 'Public games available',
         count: publicGames.length,
-        games: publicGames
+        games: publicGames,
     };
 }
 
@@ -198,14 +200,18 @@ function listGames(games) {
  */
 function generateGameId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return Array.from(randomBytes(5)).map(b => chars[b % chars.length]).join('');
+    return Array.from(randomBytes(5))
+        .map((b) => chars[b % chars.length])
+        .join('');
 }
 
 /**
  * Check the game result
  */
 function checkGame(moves) {
-    let board = Array(3).fill().map(() => Array(3).fill(null));
+    let board = Array(3)
+        .fill()
+        .map(() => Array(3).fill(null));
     let playerSymbols = {};
     let playersOrder = [];
 
@@ -228,9 +234,9 @@ function checkGame(moves) {
         return false;
     };
 
-    let winner = Object.keys(playerSymbols).find(player => checkWinner(playerSymbols[player]));
+    let winner = Object.keys(playerSymbols).find((player) => checkWinner(playerSymbols[player]));
     let isTie = !winner && moves.length === 9;
-    let loser = winner && playersOrder.length === 2 ? playersOrder.find(player => player !== winner) : null;
+    let loser = winner && playersOrder.length === 2 ? playersOrder.find((player) => player !== winner) : null;
 
     return { winner, loser, tie: isTie };
 }

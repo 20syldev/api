@@ -11,15 +11,15 @@ export default function convert(value, from, to) {
     const conversions = {
         celsius: {
             fahrenheit: (val) => (val * 9) / 5 + 32,
-            kelvin: (val) => val + 273.15
+            kelvin: (val) => val + 273.15,
         },
         fahrenheit: {
             celsius: (val) => ((val - 32) * 5) / 9,
-            kelvin: (val) => ((val - 32) * 5) / 9 + 273.15
+            kelvin: (val) => ((val - 32) * 5) / 9 + 273.15,
         },
         kelvin: {
             celsius: (val) => val - 273.15,
-            fahrenheit: (val) => ((val - 273.15) * 9) / 5 + 32
+            fahrenheit: (val) => ((val - 273.15) * 9) / 5 + 32,
         },
     };
 
@@ -34,6 +34,6 @@ export default function convert(value, from, to) {
         from,
         to,
         value: parseFloat(value),
-        result: convert(parseFloat(value))
+        result: convert(parseFloat(value)),
     };
 }

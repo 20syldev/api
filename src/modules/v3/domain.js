@@ -6,9 +6,56 @@ import { random, genIP } from './utils.js';
  * @returns {Object} Domain details including DNS, hosting, and SEO metrics
  */
 export default function domain() {
-    const subdomains = ['fr.', 'en.', 'docs.', 'api.', 'projects.', 'app.', 'web.', 'info.', 'dev.', 'shop.', 'blog.', 'support.', 'mail.', 'forum.'];
-    const domains = ['example', 'site', 'test', 'demo', 'page', 'store', 'portfolio', 'platform', 'hub', 'network', 'service', 'cloud', 'solutions', 'company'];
-    const tlds = ['.com', '.fr', '.eu', '.dev', '.net', '.org', '.io', '.tech', '.biz', '.info', '.co', '.app', '.store', '.online', '.shop', '.tv'];
+    const subdomains = [
+        'fr.',
+        'en.',
+        'docs.',
+        'api.',
+        'projects.',
+        'app.',
+        'web.',
+        'info.',
+        'dev.',
+        'shop.',
+        'blog.',
+        'support.',
+        'mail.',
+        'forum.',
+    ];
+    const domains = [
+        'example',
+        'site',
+        'test',
+        'demo',
+        'page',
+        'store',
+        'portfolio',
+        'platform',
+        'hub',
+        'network',
+        'service',
+        'cloud',
+        'solutions',
+        'company',
+    ];
+    const tlds = [
+        '.com',
+        '.fr',
+        '.eu',
+        '.dev',
+        '.net',
+        '.org',
+        '.io',
+        '.tech',
+        '.biz',
+        '.info',
+        '.co',
+        '.app',
+        '.store',
+        '.online',
+        '.shop',
+        '.tv',
+    ];
 
     const domain = `${random(domains)}${random(tlds)}`;
     const fulldomain = `${random(subdomains)}${domain}`;
