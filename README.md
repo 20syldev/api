@@ -9,8 +9,11 @@
 
 ## À propos de l'API
 Voici mon API personnelle, disponible sur le domaine [api.sylvain.sh](https://api.sylvain.sh).
-L'API est développée avec Node.js et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.sh](https://docs.sylvain.sh) !
+L'API est développée avec **TypeScript** et **Node.js**, et hébergée **24h/7j**. Elle est **simple d'utilisation** et a une **documentation** disponible sur [docs.sylvain.sh](https://docs.sylvain.sh) !
 > *Une limite de **2000** requêtes **par heure** est fixée. Elle change pour certains endpoints nécessitant plus de ressources. Si vous souhaitez une **augmentation** de cette limite, n'hésitez pas à visiter la [documentation](https://docs.sylvain.sh/pricing).*
+
+## Prérequis
+- **Node.js** >= 22.0.0
 
 ## Installer le paquet de l'API sur votre machine
 ```console
@@ -24,17 +27,25 @@ $ npm init
 
 ### Option 1 : Démarrer un serveur local
 
-Pour démarrer un serveur local avec tous les endpoints, créez un fichier JavaScript, par exemple `index.js` :
-```js
-import '@20syldev/api';
-```
-
-Puis, **démarrez** un serveur [Node.js](https://nodejs.org) :
+Pour démarrer un serveur local avec tous les endpoints :
 ```console
-$ node index.js
+$ npm run build && npm start
+```
+```console
+> @20syldev/api@3.5.0 build
+> tsc
+
+> @20syldev/api@3.5.0 start
+> node dist/app.js
+
 API is running on
     - http://127.0.0.1:3000
     - http://localhost:3000
+```
+
+Pour le développement avec rechargement automatique :
+```console
+$ npm run dev
 ```
 
 ### Option 2 : Utiliser les modules directement dans votre code
@@ -42,8 +53,8 @@ API is running on
 Vous pouvez également importer les modules spécifiques dont vous avez besoin :
 
 ```js
-// Importer des modules spécifiques depuis la v3
-import { color, token, username } from '@20syldev/api/v3';
+// Importer des modules spécifiques depuis la v4
+import { color, token, username } from '@20syldev/api/v4';
 
 // Générer une couleur aléatoire
 const couleur = color();
@@ -60,32 +71,20 @@ const jeton = token(16, 'hex');
 console.log(`Jeton: ${jeton}`);
 ```
 
-## Tester l'API sur votre machine
-**Téléchargez** la [dernière mise à jour](https://github.com/20syldev/api/releases/latest) de l'API, puis **extrayez** le contenu du fichier `.zip` ou `.tar.gz` dans un de vos **répertoires**.
-Ensuite, **déplacez-vous** dans le dossier du projet, via un terminal **Linux**, **Windows** ou **macOS** :
-```console
-$ cd /chemin/vers/le/projet
-```
+## Scripts disponibles
 
-Enfin, **exécutez** le script de build, qui installera les **dépendances** et lancera le **serveur** de l'[API](https://api.sylvain.sh) :
-```console
-$ npm run build
-```
-```console
-> @20syldev/api@3.5.0 build
-> npm install && node app.js
-
-[...]
-
-found 0 vulnerabilities
-API is running on
-    - http://127.0.0.1:3000
-    - http://localhost:3000
-```
+| Commande | Description |
+|----------|-------------|
+| `npm run dev` | Serveur de développement avec rechargement automatique (tsx watch) |
+| `npm run build` | Compilation TypeScript vers `dist/` |
+| `npm start` | Démarrer le serveur de production (`node dist/app.js`) |
+| `npm run lint` | Vérification ESLint |
+| `npm run format` | Formatage avec Prettier |
+| `npm run check` | Vérification TypeScript + ESLint |
 
 ## Modules disponibles
 
-L'API v3 expose plusieurs modules que vous pouvez importer :
+L'API v4 expose plusieurs modules que vous pouvez importer :
 
 ```js
 import {
@@ -104,7 +103,7 @@ import {
     time,              // Informations temporelles
     token,             // Génération de jetons sécurisés
     username           // Génération de noms d'utilisateur
-} from '@20syldev/api/v3';
+} from '@20syldev/api/v4';
 ```
 
 *Visitez la [documentation](https://docs.sylvain.sh) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.sh) !*
