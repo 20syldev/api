@@ -1,38 +1,52 @@
 {
-    "version": "3.5.0",
+    "version": "4.0.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
-    "main": "app.js",
+    "main": "dist/app.js",
     "type": "module",
     "scripts": {
-        "start": "node app.js",
-        "dev": "nodemon app.js",
-        "build": "npm install && node app.js",
-        "lint": "prettier --write .",
+        "dev": "tsx watch src/app.ts",
+        "start": "node dist/app.js",
+        "build": "tsc",
+        "check": "tsc --noEmit && eslint src/",
+        "format": "prettier --write src/ && eslint --fix src/",
         "upgrade:minor": "npm upgrade",
-        "upgrade:major": "npx npm-check-updates -u && npm install",
-        "upgrade:build": "npm upgrade && npm install && node app.js"
+        "upgrade:major": "npx npm-check-updates -u && npm install"
+    },
+    "engines": {
+        "node": ">=22.0.0"
     },
     "exports": {
-        "./v1": "./modules/v1.js",
-        "./v2": "./modules/v2.js",
-        "./v3": "./modules/v3.js"
+        "./v1": "./dist/modules/v1.js",
+        "./v2": "./dist/modules/v2.js",
+        "./v3": "./dist/modules/v3.js",
+        "./v4": "./dist/modules/v4.js"
     },
     "dependencies": {
+        "@20syldev/logger.ts": "^1.0.1",
         "canvas": "^3.1.0",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^5.1.0",
         "ical.js": "^2.1.0",
-        "node-fetch": "^3.3.2",
         "qrcode": "^1.5.4",
         "random": "^5.3.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
-        "nodemon": "^3.1.10",
+        "@eslint/js": "^9.24.0",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.0.0",
+        "@types/qrcode": "^1.5.6",
+        "@types/uuid": "^10.0.0",
+        "eslint": "^9.24.0",
+        "eslint-config-prettier": "^10.1.1",
         "npm-check-updates": "^18.0.1",
-        "prettier": "^3.5.3"
+        "prettier": "^3.5.3",
+        "tsx": "^4.19.0",
+        "typescript": "^5.7.0",
+        "typescript-eslint": "^8.29.0"
     },
     "publishConfig": {
         "access": "public"
@@ -45,7 +59,8 @@
         "api",
         "express",
         "utility",
-        "math"
+        "math",
+        "typescript"
     ],
     "author": "Sylvain L.",
     "license": "BSD 3-Clause",
