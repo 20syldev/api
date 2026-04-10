@@ -8,8 +8,9 @@
         "dev": "tsx watch src/app.ts",
         "start": "node dist/app.js",
         "build": "tsc",
-        "check": "tsc --noEmit && eslint src/",
-        "format": "prettier --write src/ && eslint --fix src/",
+        "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/",
+        "format": "prettier --write src/ tests/ && eslint --fix src/ tests/",
+        "test": "NODE_ENV=test node --import tsx --test --test-force-exit tests/unit/*.test.ts tests/integration/*.test.ts",
         "upgrade:minor": "npm upgrade",
         "upgrade:major": "npx npm-check-updates -u && npm install"
     },
