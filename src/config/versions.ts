@@ -11,9 +11,21 @@ export interface VersionConfig {
     endpoints: {
         get: Endpoint[];
         post: Endpoint[];
+        patch?: Endpoint[];
+        delete?: Endpoint[];
     };
     modules: typeof apiv3 | typeof apiv4;
 }
+
+/**
+ * Merges a base list of endpoints with additions, deduplicating by `name`.
+ * If an addition has the same name as a base entry, it overrides it.
+ */
+const merge = (base: Endpoint[], additions: Endpoint[]): Endpoint[] => {
+    const map = new Map(base.map((e) => [e.name, e]));
+    for (const e of additions) map.set(e.name, e);
+    return [...map.values()];
+};
 
 const v1 = {
     get: [
@@ -32,9 +44,8 @@ const v1 = {
 };
 
 const v2 = {
-    get: [...v1.get, { name: 'chat', path: '/chat' }],
-    post: [
-        ...v1.post,
+    get: merge(v1.get, [{ name: 'chat', path: '/chat' }]),
+    post: merge(v1.post, [
         {
             name: 'chat',
             children: {
@@ -51,24 +62,25 @@ const v2 = {
                 list: '/tic-tac-toe/list',
             } as Record<string, string>,
         },
-        { name: 'token', path: '/token' },
-    ],
+    ]),
 };
 
 const v3 = {
-    get: [
-        ...v2.get,
+    get: merge(v2.get, [
         { name: 'levenshtein', path: '/levenshtein?str1={string}&str2={string}' },
         {
             name: 'time',
             path: '/time(?type={type}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
         },
-    ],
-    post: [...v2.post, { name: 'hyperplanning', path: '/hyperplanning' }],
+    ]),
+    post: merge(v2.post, [{ name: 'hyperplanning', path: '/hyperplanning' }]),
 };
 
 const v4 = {
-    get: [...v3.get],
+    get: merge(v3.get, [
+        { name: 'dice', path: '/dice?roll={NdX+M}' },
+        { name: 'statistics', path: '/statistics?values={n1,n2,n3,...}' },
+    ]),
     post: [...v3.post],
 };
 
