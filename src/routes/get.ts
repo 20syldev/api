@@ -18,6 +18,7 @@ router.get('/:version', (req: Request, res: Response) => {
 
     const endpoints = Object.keys(versionConfig.endpoints).reduce<Record<string, unknown>>((acc, method) => {
         const endpointList = versionConfig.endpoints[method as keyof typeof versionConfig.endpoints];
+        if (!endpointList) return acc;
         acc[method] = endpointList
             .filter(({ name }: { name: string }) => name !== 'website')
             .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name))
@@ -149,6 +150,29 @@ router.get('/:version/domain', (req: Request, res: Response) => {
     }
 });
 
+// RPG Dice roller
+router.get('/:version/dice', (req: Request, res: Response) => {
+    const { roll } = req.query;
+    const { version } = req.params;
+
+    const dice = (req.module as { dice?: (r: string) => unknown }).dice;
+    if (!dice) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/dice`);
+        return;
+    }
+    if (!roll) {
+        error(res, 400, 'Please provide a roll notation (?roll=2d6+3)', `${version}/dice`);
+        return;
+    }
+
+    try {
+        const result = dice(roll as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/dice`);
+    }
+});
+
 // GET planning error
 router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
@@ -219,6 +243,29 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/qrcode`);
+    }
+});
+
+// Statistics on a list of numbers
+router.get('/:version/statistics', (req: Request, res: Response) => {
+    const { values } = req.query;
+    const { version } = req.params;
+
+    const statistics = (req.module as { statistics?: (v: string) => unknown }).statistics;
+    if (!statistics) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/statistics`);
+        return;
+    }
+    if (!values) {
+        error(res, 400, 'Please provide a list of values (?values=1,2,3)', `${version}/statistics`);
+        return;
+    }
+
+    try {
+        const result = statistics(values as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/statistics`);
     }
 });
 
