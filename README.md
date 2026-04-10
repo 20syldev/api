@@ -93,16 +93,21 @@ import {
     chat,              // Système de chat temporaire
     color,             // Génération de couleurs aléatoires
     convert,           // Conversions d'unités
+    dice,              // Lanceur de dés RPG
     domain,            // Informations de domaine aléatoires
+    encode,            // Encodage / décodage (base64, morse, rot13, caesar, binaire)
     hash,              // Hachage de texte
     hyperplanning,     // Analyse de calendriers
     levenshtein,       // Distance entre chaînes
     personal,          // Informations personnelles aléatoires
     qrcode,            // Génération de QR codes
+    statistics,        // Statistiques descriptives
     tic_tac_toe,       // Jeu de morpion
     time,              // Informations temporelles
+    text,              // Utilitaires texte (slug, stats, lorem, nombre en lettres)
     token,             // Génération de jetons sécurisés
-    username           // Génération de noms d'utilisateur
+    username,          // Génération de noms d'utilisateur
+    validate           // Validation (Luhn, IBAN, email)
 } from '@20syldev/api/v4';
 ```
 
