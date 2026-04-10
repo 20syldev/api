@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { versions } from '../config/versions.js';
 import { ipLimits } from '../storage/index.js';
 import { logger } from '../middleware/logger.js';
-import { DOCS_URL, START_TIME } from '../constants.js';
+import { APP_VERSION, DOCS_URL, START_TIME } from '../constants.js';
 
 const router = Router();
 
@@ -28,7 +28,7 @@ router.get('/health', (_req: Request, res: Response) => {
     res.jsonResponse({
         status: 'ok',
         uptime: Math.floor((Date.now() - START_TIME) / 1000),
-        version: '4.0.0',
+        version: APP_VERSION,
         node: process.version,
         memory: {
             rss: `${(mem.rss / 1024 / 1024).toFixed(1)} MB`,

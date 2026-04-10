@@ -1,3 +1,6 @@
+import pkg from '../package.json' with { type: 'json' };
+
+export const APP_VERSION = pkg.version;
 export const MAX_LOG_ENTRIES = 1000;
 export const RATE_LIMIT_WINDOW = 10_000;
 export const RATE_LIMIT_MAX = 50;
