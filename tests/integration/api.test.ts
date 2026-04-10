@@ -51,7 +51,10 @@ describe('GET / (version listing)', () => {
         assert.equal(body.version, 'v4');
         const endpoints = body.endpoints as Record<string, Record<string, string>>;
         assert.ok('dice' in endpoints.get!);
+        assert.ok('encode' in endpoints.get!);
         assert.ok('statistics' in endpoints.get!);
+        assert.ok('text' in endpoints.get!);
+        assert.ok('validate' in endpoints.get!);
     });
 
     test('invalid version returns 404', async () => {
@@ -148,6 +151,24 @@ describe('GET /v4/dice', () => {
     });
 });
 
+describe('GET /v4/encode', () => {
+    test('base64 encode', async () => {
+        const { status, body } = await getJson('/v4/encode?method=base64encode&text=hello');
+        assert.equal(status, 200);
+        assert.equal(body.result, 'aGVsbG8=');
+    });
+
+    test('rot13', async () => {
+        const { body } = await getJson('/v4/encode?method=rot13&text=Hello');
+        assert.equal(body.result, 'Uryyb');
+    });
+
+    test('missing method returns 400', async () => {
+        const { status } = await getJson('/v4/encode?text=hello');
+        assert.equal(status, 400);
+    });
+});
+
 describe('GET /v4/domain', () => {
     test('has TLD', async () => {
         const { status, body } = await getJson('/v4/domain');
@@ -205,6 +226,23 @@ describe('GET /v4/statistics', () => {
     });
 });
 
+describe('GET /v4/text', () => {
+    test('slug', async () => {
+        const { body } = await getJson('/v4/text?method=slug&value=Hello%20World');
+        assert.equal(body.result, 'hello-world');
+    });
+
+    test('number en', async () => {
+        const { body } = await getJson('/v4/text?method=number&value=42&lang=en');
+        assert.equal(body.result, 'forty-two');
+    });
+
+    test('lorem words', async () => {
+        const { body } = await getJson('/v4/text?method=lorem&type=words&count=5');
+        assert.equal((body.result as string).split(' ').length, 5);
+    });
+});
+
 describe('GET /v4/time', () => {
     test('live', async () => {
         const { status, body } = await getJson('/v4/time');
@@ -219,6 +257,23 @@ describe('GET /v4/time', () => {
         const ts = body.timestamp as number;
         assert.ok(ts >= new Date('2020-01-01').getTime());
         assert.ok(ts <= new Date('2020-12-31').getTime());
+    });
+});
+
+describe('GET /v4/validate', () => {
+    test('valid luhn', async () => {
+        const { body } = await getJson('/v4/validate?type=luhn&value=4111111111111111');
+        assert.equal(body.valid, true);
+    });
+
+    test('valid email', async () => {
+        const { body } = await getJson('/v4/validate?type=email&value=hello%40example.com');
+        assert.equal(body.valid, true);
+    });
+
+    test('invalid type returns 400', async () => {
+        const { status } = await getJson('/v4/validate?type=foo&value=bar');
+        assert.equal(status, 400);
     });
 });
 
