@@ -39,6 +39,10 @@ app.use(getRoutes);
 app.use(postRoutes);
 
 // Start server
-app.listen(env.PORT, () =>
-    console.log(`API is running on\n    - http://127.0.0.1:${env.PORT}\n    - http://localhost:${env.PORT}`),
-);
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(env.PORT, () =>
+        console.log(`API is running on\n    - http://127.0.0.1:${env.PORT}\n    - http://localhost:${env.PORT}`),
+    );
+}
+
+export default app;
