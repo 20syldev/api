@@ -79,7 +79,10 @@ const v3 = {
 const v4 = {
     get: merge(v3.get, [
         { name: 'dice', path: '/dice?roll={NdX+M}' },
+        { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
         { name: 'statistics', path: '/statistics?values={n1,n2,n3,...}' },
+        { name: 'text', path: '/text?method={method}(&value={value}&type={type}&count={count}&lang={lang})' },
+        { name: 'validate', path: '/validate?type={type}&value={value}' },
     ]),
     post: [...v3.post],
 };
