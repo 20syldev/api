@@ -173,6 +173,29 @@ router.get('/:version/dice', (req: Request, res: Response) => {
     }
 });
 
+// Encode / decode text
+router.get('/:version/encode', (req: Request, res: Response) => {
+    const { method, text, shift } = req.query;
+    const { version } = req.params;
+
+    const encode = (req.module as { encode?: Record<string, (v: string, v2?: string) => string> }).encode;
+    if (!encode) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/encode`);
+        return;
+    }
+    if (!method || !encode[method as string]) {
+        error(res, 400, 'Please provide a valid method (?method={method})', `${version}/encode`);
+        return;
+    }
+
+    try {
+        const result = encode[method as string]!(text as string, shift as string);
+        res.jsonResponse({ method, result });
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/encode`);
+    }
+});
+
 // GET planning error
 router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
@@ -266,6 +289,70 @@ router.get('/:version/statistics', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/statistics`);
+    }
+});
+
+// Text utilities (slug, stats, lorem, number)
+router.get('/:version/text', (req: Request, res: Response) => {
+    const { method, value, type, count, lang, text } = req.query;
+    const { version } = req.params;
+
+    const textMod = (req.module as { text?: Record<string, (...args: string[]) => unknown> }).text;
+    if (!textMod) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/text`);
+        return;
+    }
+    if (!method || !textMod[method as string]) {
+        error(res, 400, 'Please provide a valid method (?method={slug|stats|lorem|number})', `${version}/text`);
+        return;
+    }
+
+    try {
+        let result: unknown;
+        switch (method) {
+            case 'slug':
+            case 'stats':
+                result = textMod[method as string]!((value ?? text) as string);
+                break;
+            case 'lorem':
+                result = textMod.lorem!((type as string) || 'words', (count as string) || '5');
+                break;
+            case 'number':
+                result = textMod.number!(value as string, (lang as string) || 'en');
+                break;
+            default:
+                throw new Error('Unknown method');
+        }
+        res.jsonResponse({ method, result });
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/text`);
+    }
+});
+
+// Validate data (luhn, iban, email)
+router.get('/:version/validate', (req: Request, res: Response) => {
+    const { type, value } = req.query;
+    const { version } = req.params;
+
+    const validate = (req.module as { validate?: Record<string, (v: string) => unknown> }).validate;
+    if (!validate) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/validate`);
+        return;
+    }
+    if (!type || !validate[type as string]) {
+        error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})', `${version}/validate`);
+        return;
+    }
+    if (!value) {
+        error(res, 400, 'Please provide a value (&value={value})', `${version}/validate`);
+        return;
+    }
+
+    try {
+        const result = validate[type as string]!(value as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/validate`);
     }
 });
 
