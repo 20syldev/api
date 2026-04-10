@@ -2,7 +2,7 @@
   <a href="https://api.sylvain.sh"><img src="https://api.sylvain.sh/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
 
   # API Personnelle
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v4.0.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v4.1.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
@@ -32,10 +32,10 @@ Pour démarrer un serveur local avec tous les endpoints :
 $ npm run build && npm start
 ```
 ```console
-> @20syldev/api@4.0.0 build
+> @20syldev/api@4.1.0 build
 > tsc
 
-> @20syldev/api@4.0.0 start
+> @20syldev/api@4.1.0 start
 > node dist/app.js
 
 API is running on
