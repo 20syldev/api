@@ -1,4 +1,4 @@
-import { MAX_FACTORIAL, MAX_GCD_VALUE, MAX_PRIME_LIST, MAX_STRING_LENGTH } from '../../constants.js';
+import { MAX_FACTORIAL, MAX_GCD_VALUE, MAX_PRIME_LIST, MAX_STRING_LENGTH, ROMAN_VALUES } from '../../constants.js';
 
 export function anagram(value: string, value2: string): boolean {
     if (!value) throw new Error('First value is required');
@@ -152,4 +152,46 @@ export function reverse(value: string): string {
     if (typeof value !== 'string') throw new Error('Value must be a string');
 
     return value.split('').reverse().join('');
+}
+
+export function roman(value: string): number | string {
+    if (!value) throw new Error('A value is required');
+
+    const num = Number(value);
+    if (!isNaN(num)) {
+        if (!Number.isInteger(num)) throw new Error('Value must be an integer');
+        if (num < 1 || num > 3999) throw new Error('Number must be between 1 and 3999');
+
+        let result = '';
+        let n = num;
+        for (const [val, sym] of ROMAN_VALUES) {
+            while (n >= val) {
+                result += sym;
+                n -= val;
+            }
+        }
+        return result;
+    }
+
+    if (typeof value !== 'string') throw new Error('Value must be a number or a Roman numeral');
+    const upper = value.toUpperCase();
+    if (!/^[MDCLXVI]+$/.test(upper)) throw new Error('Invalid Roman numeral');
+
+    let result = 0;
+    let i = 0;
+    while (i < upper.length) {
+        const two = upper.slice(i, i + 2);
+        const match = ROMAN_VALUES.find(([, sym]) => sym === two);
+        if (match) {
+            result += match[0];
+            i += 2;
+        } else {
+            const one = ROMAN_VALUES.find(([, sym]) => sym === upper[i]);
+            if (!one) throw new Error('Invalid Roman numeral');
+            result += one[0];
+            i += 1;
+        }
+    }
+
+    return result;
 }
