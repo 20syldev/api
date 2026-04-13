@@ -196,6 +196,29 @@ router.get('/:version/encode', (req: Request, res: Response) => {
     }
 });
 
+// Geographic distance and bearing between two coordinates
+router.get('/:version/geo', (req: Request, res: Response) => {
+    const { lat1, lon1, lat2, lon2 } = req.query;
+    const { version } = req.params;
+
+    const geo = (req.module as { geo?: (a: string, b: string, c: string, d: string) => unknown }).geo;
+    if (!geo) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/geo`);
+        return;
+    }
+    if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) {
+        error(res, 400, 'Please provide lat1, lon1, lat2 and lon2', `${version}/geo`);
+        return;
+    }
+
+    try {
+        const result = geo(lat1 as string, lon1 as string, lat2 as string, lon2 as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/geo`);
+    }
+});
+
 // GET planning error
 router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
@@ -242,6 +265,33 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
     }
 });
 
+// Generate a color palette from a base color
+router.get('/:version/palette', (req: Request, res: Response) => {
+    const { color, type } = req.query;
+    const { version } = req.params;
+
+    const palette = (req.module as { palette?: (c: string, t: string) => unknown }).palette;
+    if (!palette) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/palette`);
+        return;
+    }
+    if (!color) {
+        error(res, 400, 'Please provide a base color (?color=#ff6600)', `${version}/palette`);
+        return;
+    }
+    if (!type) {
+        error(res, 400, 'Please provide a palette type (&type=complementary)', `${version}/palette`);
+        return;
+    }
+
+    try {
+        const result = palette(color as string, type as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/palette`);
+    }
+});
+
 // Generate personal data
 router.get('/:version/personal', (req: Request, res: Response) => {
     try {
@@ -249,6 +299,32 @@ router.get('/:version/personal', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/personal`);
+    }
+});
+
+// Generate a placeholder image or skeleton
+router.get('/:version/placeholder', (req: Request, res: Response) => {
+    const { type = 'image' } = req.query;
+    const { version } = req.params;
+
+    const placeholder = (
+        req.module as {
+            placeholder?: (
+                t: string,
+                q: Record<string, string | undefined>,
+            ) => { type: string; contentType: string; body: Buffer | string };
+        }
+    ).placeholder;
+    if (!placeholder) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/placeholder`);
+        return;
+    }
+
+    try {
+        const result = placeholder(type as string, req.query as Record<string, string | undefined>);
+        res.type(result.contentType).send(result.body);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/placeholder`);
     }
 });
 
