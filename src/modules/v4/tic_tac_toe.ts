@@ -44,9 +44,41 @@ export default function tic_tac_toe(action: string, params: TicTacToeParams): Re
         return playMove(params, games, sessions, u, now);
     } else if (action === 'fetch') {
         return fetchGame(params, games, u);
+    } else if (action === 'forfeit') {
+        return forfeitGame(params, games, sessions);
     } else {
-        throw new Error('Invalid action. Use "play", "fetch", or "list"');
+        throw new Error('Invalid action. Use "play", "fetch", "list", or "forfeit"');
     }
+}
+
+function forfeitGame(
+    params: TicTacToeParams,
+    games: Record<string, TicTacToeGame>,
+    sessions: Record<string, { user: string; last: number }>,
+): Record<string, unknown> {
+    const { game, session } = params;
+
+    if (!game) throw new Error('Please provide a valid game ID');
+    if (!session) throw new Error('Please provide a valid session ID');
+    if (!games[game]) throw new Error('Game not found');
+
+    const u = params.username!.toLowerCase();
+    if (sessions[u] && sessions[u].user !== session) {
+        throw new Error('Session ID mismatch');
+    }
+
+    const players = games[game]!.players;
+    if (!players.includes(u)) throw new Error('You are not a player in this game');
+
+    const winner = players.find((p) => p !== u) ?? null;
+    delete games[game];
+    delete sessions[u];
+
+    return {
+        message: `${params.username} forfeited the game.${winner ? ` ${winner} wins.` : ''}`,
+        winner,
+        loser: params.username,
+    };
 }
 
 function playMove(
