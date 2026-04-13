@@ -52,6 +52,9 @@ describe('GET / (version listing)', () => {
         const endpoints = body.endpoints as Record<string, Record<string, string>>;
         assert.ok('dice' in endpoints.get!);
         assert.ok('encode' in endpoints.get!);
+        assert.ok('geo' in endpoints.get!);
+        assert.ok('palette' in endpoints.get!);
+        assert.ok('placeholder' in endpoints.get!);
         assert.ok('statistics' in endpoints.get!);
         assert.ok('text' in endpoints.get!);
         assert.ok('validate' in endpoints.get!);
@@ -151,6 +154,14 @@ describe('GET /v4/dice', () => {
     });
 });
 
+describe('GET /v4/domain', () => {
+    test('has TLD', async () => {
+        const { status, body } = await getJson('/v4/domain');
+        assert.equal(status, 200);
+        assert.match(body.domain as string, /\./);
+    });
+});
+
 describe('GET /v4/encode', () => {
     test('base64 encode', async () => {
         const { status, body } = await getJson('/v4/encode?method=base64encode&text=hello');
@@ -169,11 +180,16 @@ describe('GET /v4/encode', () => {
     });
 });
 
-describe('GET /v4/domain', () => {
-    test('has TLD', async () => {
-        const { status, body } = await getJson('/v4/domain');
-        assert.equal(status, 200);
-        assert.match(body.domain as string, /\./);
+describe('GET /v4/geo', () => {
+    test('Paris-NYC distance', async () => {
+        const { body } = await getJson('/v4/geo?lat1=48.8566&lon1=2.3522&lat2=40.7128&lon2=-74.006');
+        const distance = body.distance as { km: number };
+        assert.ok(Math.abs(distance.km - 5837) < 50);
+    });
+
+    test('missing param returns 400', async () => {
+        const { status } = await getJson('/v4/geo?lat1=0&lon1=0');
+        assert.equal(status, 400);
     });
 });
 
@@ -194,6 +210,18 @@ describe('GET /v4/levenshtein', () => {
     });
 });
 
+describe('GET /v4/palette', () => {
+    test('triadic returns 3 colors', async () => {
+        const { body } = await getJson('/v4/palette?color=%23ff6600&type=triadic');
+        assert.equal((body.colors as unknown[]).length, 3);
+    });
+
+    test('invalid type returns 400', async () => {
+        const { status } = await getJson('/v4/palette?color=%23ff6600&type=rainbow');
+        assert.equal(status, 400);
+    });
+});
+
 describe('GET /v4/personal', () => {
     test('returns generated identity', async () => {
         const { status, body } = await getJson('/v4/personal');
@@ -201,6 +229,22 @@ describe('GET /v4/personal', () => {
         assert.ok('name' in body);
         assert.ok('email' in body);
         assert.ok('card' in body);
+    });
+});
+
+describe('GET /v4/placeholder', () => {
+    test('image returns SVG', async () => {
+        const res = await fetch(`${baseUrl}/v4/placeholder?type=image&width=100&height=50`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/svg\+xml/);
+    });
+
+    test('skeleton returns SVG', async () => {
+        const res = await fetch(`${baseUrl}/v4/placeholder?type=skeleton&width=200&height=100`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/svg\+xml/);
+        const body = await res.text();
+        assert.match(body, /<svg/);
     });
 });
 
@@ -260,6 +304,16 @@ describe('GET /v4/time', () => {
     });
 });
 
+describe('GET /v4/username', () => {
+    test('has fields', async () => {
+        const { status, body } = await getJson('/v4/username');
+        assert.equal(status, 200);
+        assert.ok('username' in body);
+        assert.ok('adjective' in body);
+        assert.ok('animal' in body);
+    });
+});
+
 describe('GET /v4/validate', () => {
     test('valid luhn', async () => {
         const { body } = await getJson('/v4/validate?type=luhn&value=4111111111111111');
@@ -274,16 +328,6 @@ describe('GET /v4/validate', () => {
     test('invalid type returns 400', async () => {
         const { status } = await getJson('/v4/validate?type=foo&value=bar');
         assert.equal(status, 400);
-    });
-});
-
-describe('GET /v4/username', () => {
-    test('has fields', async () => {
-        const { status, body } = await getJson('/v4/username');
-        assert.equal(status, 200);
-        assert.ok('username' in body);
-        assert.ok('adjective' in body);
-        assert.ok('animal' in body);
     });
 });
 
@@ -327,10 +371,10 @@ describe('GET /v4/website', () => {
         assert.ok('stats' in body);
     });
 
-    test('?key=stats.5 returns sub-key', async () => {
-        const { status, body } = await getJson('/v4/website?key=stats.5');
+    test('?key=active returns sub-key', async () => {
+        const { status, body } = await getJson('/v4/website?key=active');
         assert.equal(status, 200);
-        assert.ok('stats.5' in body);
+        assert.ok('active' in body);
     });
 
     test('?key=invalid.path returns 404', async () => {
