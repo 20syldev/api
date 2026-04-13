@@ -9,6 +9,8 @@ import { versionCheckMiddleware, endpointCheckMiddleware } from './middleware/ve
 import indexRoutes from './routes/index.js';
 import getRoutes from './routes/get.js';
 import postRoutes from './routes/post.js';
+import patchRoutes from './routes/patch.js';
+import deleteRoutes from './routes/delete.js';
 
 const app = express();
 
@@ -37,6 +39,8 @@ app.use('/:version/:endpoint', endpointCheckMiddleware);
 // Versioned routes
 app.use(getRoutes);
 app.use(postRoutes);
+app.use(patchRoutes);
+app.use(deleteRoutes);
 
 // Start server
 if (process.env.NODE_ENV !== 'test') {
