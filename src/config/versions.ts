@@ -80,6 +80,12 @@ const v4 = {
     get: merge(v3.get, [
         { name: 'dice', path: '/dice?roll={NdX+M}' },
         { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
+        { name: 'geo', path: '/geo?lat1={lat}&lon1={lon}&lat2={lat}&lon2={lon}' },
+        { name: 'palette', path: '/palette?color={#hex}&type={type}' },
+        {
+            name: 'placeholder',
+            path: '/placeholder?type={image|skeleton}&width={w}&height={h}(&bg={hex}&color={hex}&text={text}&rows={n}&avatar={bool})',
+        },
         { name: 'statistics', path: '/statistics?values={n1,n2,n3,...}' },
         { name: 'text', path: '/text?method={method}(&value={value}&type={type}&count={count}&lang={lang})' },
         { name: 'validate', path: '/validate?type={type}&value={value}' },
