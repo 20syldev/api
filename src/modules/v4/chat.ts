@@ -34,8 +34,10 @@ export default function chat(action: string, params: ChatParams): ChatMessage[] 
         return getPrivateChat(params, privateChats);
     } else if (action === 'fetch') {
         return fetchMessages(messages);
+    } else if (action === 'clear') {
+        return clearPrivateChat(params, privateChats, sessions, u);
     } else {
-        throw new Error('Invalid action. Use "message", "private", or "fetch"');
+        throw new Error('Invalid action. Use "message", "private", "fetch", or "clear"');
     }
 }
 
@@ -96,4 +98,25 @@ function getPrivateChat(params: ChatParams, privateChats: Record<string, ChatMes
 function fetchMessages(messages: ChatMessage[]): ChatMessage[] {
     if (messages.length > 0) return messages;
     throw new Error('No messages stored.');
+}
+
+function clearPrivateChat(
+    params: ChatParams,
+    privateChats: Record<string, ChatMessage[]>,
+    sessions: Record<string, { user: string; last: number }>,
+    u: string,
+): { message: string } {
+    const { token, session } = params;
+
+    if (!token) throw new Error('Please provide a valid token');
+    if (!session) throw new Error('Please provide a valid session ID');
+    if (sessions[u] && sessions[u].user !== session) {
+        throw new Error('Session ID mismatch');
+    }
+    if (!privateChats[token]) throw new Error('Invalid or expired token.');
+
+    delete privateChats[token];
+    delete sessions[u];
+
+    return { message: 'Private chat cleared successfully' };
 }
