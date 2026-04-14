@@ -2,6 +2,8 @@ import { Router, type Request, type Response } from 'express';
 import { chatStorage, ticTacToeStorage } from '../storage/index.js';
 import { MIN_TOKEN_LENGTH, MAX_TOKEN_LENGTH } from '../constants.js';
 import { error } from '../utils/response.js';
+import { since } from '../utils/helpers.js';
+import type { HashResult } from '../modules/v4/hash.js';
 
 const router = Router();
 
@@ -64,7 +66,7 @@ router.post('/:version/chat/private', (req: Request, res: Response) => {
 
 // Generate hash
 router.post('/:version/hash', (req: Request, res: Response) => {
-    const { text, method } = (req.body as Record<string, string>) || {};
+    const { text, method, encoding } = (req.body as Record<string, string>) || {};
 
     if (!text) {
         error(res, 400, 'Please provide a text (?text={text})', `${req.version}/hash`);
@@ -76,8 +78,14 @@ router.post('/:version/hash', (req: Request, res: Response) => {
     }
 
     try {
-        const result = req.module.hash(text, method);
-        res.jsonResponse(result);
+        if (since(req.version, 4)) {
+            const hashFn = req.module.hash as (t: string, m: string, e?: string) => HashResult;
+            const result = hashFn(text, method, encoding);
+            res.jsonResponse(result);
+        } else {
+            const result = (req.module.hash as (t: string, m: string) => Record<string, string>)(text, method);
+            res.jsonResponse(result);
+        }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/hash`);
     }
