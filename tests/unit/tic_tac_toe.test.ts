@@ -36,7 +36,10 @@ describe('tic_tac_toe', () => {
     });
 
     test('throws on missing username', () => {
-        assert.throws(() => tic_tac_toe('play', { move: '1-1', session: 's', game: 'G', storage: makeStorage() }), /username/);
+        assert.throws(
+            () => tic_tac_toe('play', { move: '1-1', session: 's', game: 'G', storage: makeStorage() }),
+            /username/,
+        );
     });
 
     test('throws on missing move', () => {

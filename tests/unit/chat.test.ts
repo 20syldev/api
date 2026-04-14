@@ -37,7 +37,10 @@ describe('chat', () => {
     });
 
     test('throws on missing username', () => {
-        assert.throws(() => chat('message', { username: '', message: 'hi', session: 's', storage: makeStorage() }), /username/);
+        assert.throws(
+            () => chat('message', { username: '', message: 'hi', session: 's', storage: makeStorage() }),
+            /username/,
+        );
     });
 
     test('throws on invalid action', () => {
