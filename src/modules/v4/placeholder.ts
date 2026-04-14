@@ -1,3 +1,5 @@
+import { normalizeColor } from '../../utils/colors.js';
+
 type AvatarShape = 'circle' | 'rounded' | 'square';
 type AnimateMode = 'shimmer' | 'pulse' | 'none';
 
@@ -21,13 +23,6 @@ function parseSize(value: string | undefined, name: string, def: number): number
     if (isNaN(n)) throw new Error(`${name} must be a number`);
     if (n < 1 || n > 4000) throw new Error(`${name} must be between 1 and 4000`);
     return Math.floor(n);
-}
-
-function normalizeColor(value: string | undefined, def: string): string {
-    if (!value) return def;
-    const clean = value.startsWith('#') ? value : `#${value}`;
-    if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(clean)) throw new Error('Invalid color (use hex like #ff6600)');
-    return clean;
 }
 
 function escapeXml(str: string): string {
