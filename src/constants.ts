@@ -14,8 +14,6 @@ export const MAX_GCD_VALUE = 100_000;
 export const MAX_PRIME_LIST = 10_000;
 export const MAX_LEVENSHTEIN_LENGTH = 1000;
 export const MAX_STRING_LENGTH = 1000;
-export const MIN_TEMPERATURE = -273.15;
-export const MAX_TEMPERATURE = 1_000_000;
 export const DOCS_URL = 'https://docs.sylvain.sh';
 export const DEFAULT_PORT = 3000;
 
