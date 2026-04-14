@@ -1,4 +1,4 @@
-import { checkRateLimit } from './utils.js';
+import { checkRateLimit } from '../../utils/helpers.js';
 import { SESSION_TTL } from '../../constants.js';
 import type { ChatStorage, ChatMessage } from '../../types/storage.js';
 

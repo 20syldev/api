@@ -1,4 +1,4 @@
-import { random, randomNumber } from './utils.js';
+import { random, randomNumber } from '../../utils/helpers.js';
 
 interface Person {
     name: string;

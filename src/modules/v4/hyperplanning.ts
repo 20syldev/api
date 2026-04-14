@@ -1,4 +1,4 @@
-import { formatDate } from './utils.js';
+import { formatDate } from '../../utils/helpers.js';
 import ical from 'ical.js';
 
 interface CalendarEvent {

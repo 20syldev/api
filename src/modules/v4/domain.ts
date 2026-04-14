@@ -1,4 +1,4 @@
-import { random, genIP } from './utils.js';
+import { random, genIP } from '../../utils/helpers.js';
 
 export default function domain(): Record<string, unknown> {
     const subdomains = [

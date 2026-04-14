@@ -1,4 +1,4 @@
-import { random, randomNumber } from './utils.js';
+import { random, randomNumber } from '../../utils/helpers.js';
 
 export default function username(): Record<string, unknown> {
     const adj = [
