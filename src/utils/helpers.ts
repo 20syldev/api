@@ -1,24 +1,3 @@
-export function random<T>(arr: T[]): T {
-    return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-export function randomNumber(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-export function genIP(): string {
-    return `${randomNumber(0, 255)}.${randomNumber(0, 255)}.${randomNumber(0, 255)}.${randomNumber(0, 255)}`;
-}
-
-export function formatDate(date: Date): string {
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
-}
-
-export function envList(key: string): string[] | null {
-    const v = process.env[key];
-    return v && v !== 'undefined' ? v.split(' ') : null;
-}
-
 export function checkRateLimit(
     rateLimits: Record<string, number[]>,
     userId: string,
@@ -35,4 +14,29 @@ export function checkRateLimit(
 
     rateLimits[userId]!.push(timestamp);
     return false;
+}
+
+export function envList(key: string): string[] | null {
+    const v = process.env[key];
+    return v && v !== 'undefined' ? v.split(' ') : null;
+}
+
+export function formatDate(date: Date): string {
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
+}
+
+export function genIP(): string {
+    return `${randomNumber(0, 255)}.${randomNumber(0, 255)}.${randomNumber(0, 255)}.${randomNumber(0, 255)}`;
+}
+
+export function random<T>(arr: T[]): T {
+    return arr[Math.floor(Math.random() * arr.length)]!;
+}
+
+export function randomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function since(version: string, min: number): boolean {
+    return parseInt(version.replace('v', '')) >= min;
 }
