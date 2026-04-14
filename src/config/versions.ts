@@ -78,10 +78,20 @@ const v3 = {
 
 const v4 = {
     get: merge(v3.get, [
+        {
+            name: 'captcha',
+            path: '/captcha(&text={text}&length={n}&width={px}&height={px}&noise={low|medium|high}&bg={hex}&color={hex})',
+        },
+        { name: 'color', path: '/color(&hex={hex})' },
+        { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
         { name: 'dice', path: '/dice?roll={NdX+M}' },
         { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
         { name: 'geo', path: '/geo?lat1={lat}&lon1={lon}&lat2={lat}&lon2={lon}' },
         { name: 'palette', path: '/palette?color={#hex}&type={type}' },
+        {
+            name: 'qrcode',
+            path: '/qrcode?url={URL}(&size={px}&margin={n}&correction={L|M|Q|H}&dark={hex}&light={hex}&icon={URL}&iconSize={px}&iconPadding={px}&iconRadius={px}&format={png|base64})',
+        },
         {
             name: 'placeholder',
             path: '/placeholder?type={image|skeleton}&width={w}&height={h}(&bg={hex}&color={hex}&text={text}&rows={n}&avatar={bool})',
