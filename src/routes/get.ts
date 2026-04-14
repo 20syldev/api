@@ -5,6 +5,10 @@ import { ipLimits } from '../storage/index.js';
 import { chatStorage } from '../storage/index.js';
 import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
 import { error } from '../utils/response.js';
+import { since } from '../utils/helpers.js';
+import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
+import type { CaptchaOptions, CaptchaResult } from '../modules/v4/captcha.js';
+import type { ColorResult } from '../modules/v4/color.js';
 
 const router = Router();
 
@@ -72,16 +76,29 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
 
 // Generate captcha
 router.get('/:version/captcha', (req: Request, res: Response) => {
-    const text = req.query.text as string;
-
-    if (!text) {
-        error(res, 400, 'Please provide a valid argument (?text={text})', `${req.version}/captcha`);
-        return;
-    }
-
     try {
-        const result = req.module.captcha(text);
-        res.type('png').send(result);
+        if (since(req.version, 4)) {
+            const captchaFn = req.module.captcha as (o: CaptchaOptions) => CaptchaResult;
+            const result = captchaFn({
+                text: req.query.text as string | undefined,
+                length: req.query.length ? Number(req.query.length) : undefined,
+                width: req.query.width ? Number(req.query.width) : undefined,
+                height: req.query.height ? Number(req.query.height) : undefined,
+                noise: req.query.noise as CaptchaOptions['noise'],
+                bg: req.query.bg as string | undefined,
+                color: req.query.color as string | undefined,
+            });
+            res.set('X-Captcha-Text', result.text);
+            res.type('png').send(result.body);
+        } else {
+            const text = req.query.text as string;
+            if (!text) {
+                error(res, 400, 'Please provide a valid argument (?text={text})', `${req.version}/captcha`);
+                return;
+            }
+            const result = (req.module.captcha as (t: string) => Buffer)(text);
+            res.type('png').send(result);
+        }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/captcha`);
     }
@@ -108,8 +125,15 @@ router.get('/:version/chat/private', (_req: Request, res: Response) => {
 // Generate color
 router.get('/:version/color', (req: Request, res: Response) => {
     try {
-        const result = req.module.color();
-        res.jsonResponse(result);
+        if (since(req.version, 4)) {
+            const colorFn = req.module.color as (hex?: string) => ColorResult;
+            const hex = req.query.hex as string | undefined;
+            const result = colorFn(hex || undefined);
+            res.jsonResponse(result);
+        } else {
+            const result = (req.module.color as () => Record<string, string>)();
+            res.jsonResponse(result);
+        }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/color`);
     }
@@ -133,8 +157,18 @@ router.get('/:version/convert', (req: Request, res: Response) => {
     }
 
     try {
-        const result = req.module.convert(value as string, from as string, to as string);
-        res.jsonResponse(result);
+        if (since(req.version, 4)) {
+            const convertFn = req.module.convert as (v: number, f: string, t: string) => Record<string, unknown>;
+            const result = convertFn(Number(value), from as string, to as string);
+            res.jsonResponse(result);
+        } else {
+            const result = (req.module.convert as (v: string, f: string, t: string) => Record<string, unknown>)(
+                value as string,
+                from as string,
+                to as string,
+            );
+            res.jsonResponse(result);
+        }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/convert`);
     }
@@ -338,8 +372,30 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await req.module.qrcode(url as string);
-        res.jsonResponse(result);
+        if (since(req.version, 4)) {
+            const qrcodeFn = req.module.qrcode as (o: QRCodeOptions) => Promise<QRCodeResult>;
+            const result = await qrcodeFn({
+                url: url as string,
+                size: req.query.size ? Number(req.query.size) : undefined,
+                margin: req.query.margin ? Number(req.query.margin) : undefined,
+                correction: req.query.correction as QRCodeOptions['correction'],
+                dark: req.query.dark as string | undefined,
+                light: req.query.light as string | undefined,
+                icon: req.query.icon as string | undefined,
+                iconSize: req.query.iconSize ? Number(req.query.iconSize) : undefined,
+                iconPadding: req.query.iconPadding ? Number(req.query.iconPadding) : undefined,
+                iconRadius: req.query.iconRadius ? Number(req.query.iconRadius) : undefined,
+                format: req.query.format as QRCodeOptions['format'],
+            });
+            if (result.contentType === 'application/json') {
+                res.jsonResponse(result.body);
+            } else {
+                res.type(result.contentType).send(result.body);
+            }
+        } else {
+            const result = await (req.module.qrcode as (u: string) => Promise<string>)(url as string);
+            res.jsonResponse(result);
+        }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/qrcode`);
     }
