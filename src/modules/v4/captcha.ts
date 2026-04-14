@@ -1,49 +1,106 @@
 import { createCanvas } from 'canvas';
+import { normalizeColor } from '../../utils/colors.js';
 
-export default function captcha(text: string): Buffer {
-    if (!text) throw new Error('Text is required to generate a captcha.');
+export interface CaptchaOptions {
+    text?: string;
+    length?: number;
+    width?: number;
+    height?: number;
+    noise?: 'low' | 'medium' | 'high';
+    bg?: string;
+    color?: string;
+}
 
-    const size = 60,
-        font = '60px Comic Sans Ms',
-        width = text.length * size,
-        height = 120;
-    const canvas = createCanvas(width, height),
-        ctx = canvas.getContext('2d');
+export interface CaptchaResult {
+    contentType: string;
+    body: Buffer;
+    text: string;
+}
 
-    ctx.fillStyle = 'white';
+const NOISE_LEVELS = new Set(['low', 'medium', 'high']);
+const NOISE_CONFIG = { low: { lines: 8, dots: 80 }, medium: { lines: 25, dots: 300 }, high: { lines: 50, dots: 600 } };
+const CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+
+function generateText(length: number): string {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += CHARSET[Math.floor(Math.random() * CHARSET.length)];
+    }
+    return result;
+}
+
+function clamp(value: number | undefined, name: string, def: number, min: number, max: number): number {
+    if (value === undefined) return def;
+    if (isNaN(value)) throw new Error(`${name} must be a number`);
+    if (value < min || value > max) throw new Error(`${name} must be between ${min} and ${max}`);
+    return Math.floor(value);
+}
+
+export default function captcha(options: CaptchaOptions): CaptchaResult {
+    const text = options.text || generateText(clamp(options.length, 'length', 6, 1, 20));
+    const height = clamp(options.height, 'height', 120, 50, 400);
+    const width = clamp(options.width, 'width', text.length * 60, 100, 800);
+
+    const noise = options.noise ?? 'medium';
+    if (!NOISE_LEVELS.has(noise)) throw new Error('noise must be one of: low, medium, high');
+    const { lines, dots } = NOISE_CONFIG[noise];
+
+    const bg = normalizeColor(options.bg, '#ffffff');
+    const baseColor = options.color ? normalizeColor(options.color, '#000000') : undefined;
+
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, width, height);
 
-    for (let i = 0; i < 20; i++) {
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+    for (let i = 0; i < lines; i++) {
+        ctx.strokeStyle = `rgba(${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)}, ${0.3 + Math.random() * 0.4})`;
         ctx.beginPath();
-        ctx.moveTo(Math.random() * width, Math.random() * height);
-        ctx.lineTo(Math.random() * width, Math.random() * height);
-        ctx.lineWidth = Math.random() * 2;
+        const x0 = Math.random() * width,
+            y0 = Math.random() * height;
+        ctx.moveTo(x0, y0);
+        ctx.bezierCurveTo(
+            Math.random() * width,
+            Math.random() * height,
+            Math.random() * width,
+            Math.random() * height,
+            Math.random() * width,
+            Math.random() * height,
+        );
+        ctx.lineWidth = 1 + Math.random() * 2;
         ctx.stroke();
     }
 
-    let x = (canvas.width + 20 - width) / 2;
+    const baseFontSize = Math.floor(height * 0.5);
+    const charWidth = width / (text.length + 0.5);
+    let x = charWidth * 0.25;
 
     for (let i = 0; i < text.length; i++) {
-        const offsetX = Math.cos(i * 0.3) * 10,
-            y = height / 2.5 + Math.floor(Math.random() * (height / 2));
+        const size = Math.floor(baseFontSize * (0.8 + Math.random() * 0.4));
+        const y = height / 2 + (Math.random() - 0.5) * height * 0.3;
 
-        ctx.font = font;
-        ctx.fillStyle = `rgb(${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)}, ${Math.floor(Math.random() * 192)})`;
+        ctx.font = `${size}px Comic Sans Ms`;
+        if (baseColor) {
+            ctx.fillStyle = baseColor;
+        } else {
+            ctx.fillStyle = `rgb(${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)})`;
+        }
 
         ctx.save();
-        ctx.translate(x + size / 2, y);
-        ctx.rotate((Math.random() - 0.5) * 0.5);
-        ctx.fillText(text[i]!, -size / 2 + offsetX, 0);
+        ctx.translate(x + charWidth / 2, y);
+        ctx.rotate((Math.random() - 0.5) * 1.2);
+        ctx.fillText(text[i]!, -charWidth / 2, 0);
         ctx.restore();
 
-        x += size;
+        x += charWidth;
     }
 
-    for (let i = 0; i < 200; i++) {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(Math.floor(Math.random() * width), Math.floor(Math.random() * height), 1.2, 1.2);
+    for (let i = 0; i < dots; i++) {
+        ctx.fillStyle = `rgba(${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)}, ${Math.floor(Math.random() * 180)}, ${0.4 + Math.random() * 0.5})`;
+        const dotSize = 1 + Math.random() * 2;
+        ctx.fillRect(Math.floor(Math.random() * width), Math.floor(Math.random() * height), dotSize, dotSize);
     }
 
-    return canvas.toBuffer('image/png');
+    return { contentType: 'image/png', body: canvas.toBuffer('image/png'), text };
 }
