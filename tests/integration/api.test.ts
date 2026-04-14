@@ -90,15 +90,23 @@ describe('GET /v4/algorithms', () => {
 });
 
 describe('GET /v4/captcha', () => {
-    test('returns PNG', async () => {
+    test('returns PNG with provided text', async () => {
         const res = await fetch(`${baseUrl}/v4/captcha?text=hello`);
         assert.equal(res.status, 200);
         assert.match(res.headers.get('content-type') ?? '', /image\/png/);
+        assert.equal(res.headers.get('x-captcha-text'), 'hello');
     });
 
-    test('without text returns 400', async () => {
-        const { status } = await getJson('/v4/captcha');
-        assert.equal(status, 400);
+    test('auto-generates text when none provided', async () => {
+        const res = await fetch(`${baseUrl}/v4/captcha`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/png/);
+        assert.ok(res.headers.get('x-captcha-text')!.length > 0);
+    });
+
+    test('accepts noise and dimensions', async () => {
+        const res = await fetch(`${baseUrl}/v4/captcha?text=AB&noise=high&width=200&height=80`);
+        assert.equal(res.status, 200);
     });
 });
 
@@ -117,13 +125,19 @@ describe('GET /v4/chat', () => {
 });
 
 describe('GET /v4/color', () => {
-    test('returns color formats', async () => {
+    test('returns random color formats', async () => {
         const { status, body } = await getJson('/v4/color');
         assert.equal(status, 200);
         assert.match(body.hex as string, /^#[0-9a-f]{6}$/);
         assert.ok('rgb' in body);
         assert.ok('hsl' in body);
         assert.ok('cmyk' in body);
+    });
+
+    test('accepts hex input', async () => {
+        const { status, body } = await getJson('/v4/color?hex=ff6600');
+        assert.equal(status, 200);
+        assert.equal(body.hex, '#ff6600');
     });
 });
 
@@ -132,6 +146,12 @@ describe('GET /v4/convert', () => {
         const { status, body } = await getJson('/v4/convert?value=100&from=celsius&to=fahrenheit');
         assert.equal(status, 200);
         assert.equal(body.result, 212);
+    });
+
+    test('km to mi', async () => {
+        const { status, body } = await getJson('/v4/convert?value=1&from=km&to=mi');
+        assert.equal(status, 200);
+        assert.ok(Math.abs((body.result as number) - 0.621371) < 0.001);
     });
 
     test('missing value returns 400', async () => {
@@ -249,8 +269,16 @@ describe('GET /v4/placeholder', () => {
 });
 
 describe('GET /v4/qrcode', () => {
-    test('returns data URL', async () => {
-        const { status, body } = await getJson('/v4/qrcode?url=https%3A%2F%2Fexample.com');
+    test('returns PNG image by default', async () => {
+        const res = await fetch(`${baseUrl}/v4/qrcode?url=https%3A%2F%2Fexample.com`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/png/);
+        const buf = Buffer.from(await res.arrayBuffer());
+        assert.ok(buf.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47])));
+    });
+
+    test('returns data URL with format=base64', async () => {
+        const { status, body } = await getJson('/v4/qrcode?url=https%3A%2F%2Fexample.com&format=base64');
         assert.equal(status, 200);
         assert.match(body as unknown as string, /^data:image\/png;base64,/);
     });
@@ -425,11 +453,27 @@ describe('POST /v4/hash', () => {
         const { status, body } = await sendJson('POST', '/v4/hash', { text: 'hello', method: 'sha256' });
         assert.equal(status, 200);
         assert.equal(body.hash, '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+        assert.equal(body.encoding, 'hex');
     });
 
     test('md5', async () => {
         const { body } = await sendJson('POST', '/v4/hash', { text: 'hello', method: 'md5' });
         assert.equal(body.hash, '5d41402abc4b2a76b9719d911017c592');
+    });
+
+    test('base64 encoding', async () => {
+        const { status, body } = await sendJson('POST', '/v4/hash', {
+            text: 'hello',
+            method: 'sha256',
+            encoding: 'base64',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.encoding, 'base64');
+    });
+
+    test('unsupported method returns 400', async () => {
+        const { status } = await sendJson('POST', '/v4/hash', { text: 'hello', method: 'fakehash' });
+        assert.equal(status, 400);
     });
 
     test('missing text returns 400', async () => {
