@@ -83,8 +83,10 @@ function generateSkeleton(opts: PlaceholderOptions): string {
     const rx = opts.radius ?? 4;
 
     const pad = Math.round(width * 0.06);
-    const gap = Math.round(Math.max(6, Math.min(14, height * 0.04)));
-    const lineH = Math.round(Math.max(8, Math.min(16, ((height - pad * 2) / (rows + (avatar ? 4 : 0))) * 0.65)));
+    const slots = rows + (avatar ? 4 : 0);
+    const available = height - pad * 2;
+    const lineH = Math.round(Math.max(8, (available / Math.max(1, slots)) * 0.65));
+    const gap = Math.round(Math.max(6, (available / Math.max(1, slots)) * 0.35));
 
     const shapes: string[] = [];
     let y = pad;
