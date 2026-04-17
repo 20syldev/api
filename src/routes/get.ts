@@ -61,7 +61,7 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
     const { version } = req.params;
 
     const algorithms = req.module.algorithms as Record<string, (v: string, v2?: string) => unknown>;
-    if (!algorithms || !algorithms[method as string]) {
+    if (!algorithms || !method || !Object.hasOwn(algorithms, method as string)) {
         error(res, 400, 'Please provide a valid algorithm (?method={algorithm})', `${version}/algorithms`);
         return;
     }
@@ -217,7 +217,7 @@ router.get('/:version/encode', (req: Request, res: Response) => {
         error(res, 404, `Endpoint not available in ${version}.`, `${version}/encode`);
         return;
     }
-    if (!method || !encode[method as string]) {
+    if (!method || !Object.hasOwn(encode, method as string)) {
         error(res, 400, 'Please provide a valid method (?method={method})', `${version}/encode`);
         return;
     }
@@ -434,7 +434,7 @@ router.get('/:version/text', (req: Request, res: Response) => {
         error(res, 404, `Endpoint not available in ${version}.`, `${version}/text`);
         return;
     }
-    if (!method || !textMod[method as string]) {
+    if (!method || !Object.hasOwn(textMod, method as string)) {
         error(res, 400, 'Please provide a valid method (?method={slug|stats|lorem|number})', `${version}/text`);
         return;
     }
@@ -471,7 +471,7 @@ router.get('/:version/validate', (req: Request, res: Response) => {
         error(res, 404, `Endpoint not available in ${version}.`, `${version}/validate`);
         return;
     }
-    if (!type || !validate[type as string]) {
+    if (!type || !Object.hasOwn(validate, type as string)) {
         error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})', `${version}/validate`);
         return;
     }
