@@ -11,8 +11,34 @@ interface CalendarEvent {
     end: string;
 }
 
+function blocked(hostname: string): boolean {
+    const list = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', 'metadata.google.internal'];
+    if (list.includes(hostname)) return true;
+
+    const parts = hostname.split('.').map(Number);
+    if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
+        if (parts[0] === 10) return true;
+        if (parts[0] === 172 && parts[1]! >= 16 && parts[1]! <= 31) return true;
+        if (parts[0] === 192 && parts[1] === 168) return true;
+        if (parts[0] === 169 && parts[1] === 254) return true;
+        if (parts[0] === 0) return true;
+    }
+
+    return false;
+}
+
 export default async function hyperplanning(url: string, detail?: string): Promise<CalendarEvent[]> {
-    const response = await fetch(url);
+    let parsed: URL;
+    try {
+        parsed = new URL(url);
+    } catch {
+        throw new Error('Invalid URL.');
+    }
+
+    if (parsed.protocol !== 'https:') throw new Error('Only HTTPS URLs are allowed.');
+    if (blocked(parsed.hostname)) throw new Error('Access to private/internal hosts is not allowed.');
+
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
 
     if (!response.ok || !(response.headers.get('content-type') || '').includes('text/calendar')) {
         throw new Error('Invalid ICS file format.');
