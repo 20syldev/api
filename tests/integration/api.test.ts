@@ -536,3 +536,41 @@ describe('POST /v4/token', () => {
         assert.equal(status, 400);
     });
 });
+
+// --- Security ---
+
+describe('Security headers', () => {
+    test('returns X-Content-Type-Options and X-Frame-Options', async () => {
+        const res = await fetch(`${baseUrl}/v4/color`);
+        assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
+        assert.equal(res.headers.get('x-frame-options'), 'DENY');
+    });
+});
+
+describe('Payload size limit', () => {
+    test('body > 10kb returns 413', async () => {
+        const res = await fetch(`${baseUrl}/v4/hash`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: 'A'.repeat(20000), method: 'sha256' }),
+        });
+        assert.equal(res.status, 413);
+    });
+});
+
+describe('Prototype access on dynamic endpoints', () => {
+    test('algorithms?method=toString returns 400', async () => {
+        const { status } = await getJson('/v4/algorithms?method=toString');
+        assert.equal(status, 400);
+    });
+
+    test('encode?method=constructor returns 400', async () => {
+        const { status } = await getJson('/v4/encode?method=constructor&text=hello');
+        assert.equal(status, 400);
+    });
+
+    test('validate?type=hasOwnProperty returns 400', async () => {
+        const { status } = await getJson('/v4/validate?type=hasOwnProperty&value=test');
+        assert.equal(status, 400);
+    });
+});
