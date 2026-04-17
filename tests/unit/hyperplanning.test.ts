@@ -70,6 +70,25 @@ describe('hyperplanning', () => {
         const events = await hyperplanning('https://fake.test/cal.ics');
         assert.equal(events.length, 0);
     });
+
+    test('throws on HTTP URL', async () => {
+        await assert.rejects(() => hyperplanning('http://fake.test/cal.ics'), /Only HTTPS/);
+    });
+
+    test('throws on private IP', async () => {
+        await assert.rejects(() => hyperplanning('https://127.0.0.1/cal.ics'), /private/);
+        await assert.rejects(() => hyperplanning('https://192.168.1.1/cal.ics'), /private/);
+        await assert.rejects(() => hyperplanning('https://10.0.0.1/cal.ics'), /private/);
+        await assert.rejects(() => hyperplanning('https://169.254.169.254/latest'), /private/);
+    });
+
+    test('throws on localhost', async () => {
+        await assert.rejects(() => hyperplanning('https://localhost/cal.ics'), /private/);
+    });
+
+    test('throws on invalid URL', async () => {
+        await assert.rejects(() => hyperplanning('not-a-url'), /Invalid URL/);
+    });
 });
 
 before(() => {
