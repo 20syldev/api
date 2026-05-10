@@ -157,6 +157,14 @@ function parseAnimate(value: string | undefined): AnimateMode {
     throw new Error('animate must be one of: shimmer, pulse, none');
 }
 
+/**
+ * Generates an SVG placeholder image or skeleton loader with configurable dimensions and style.
+ *
+ * @param type - Placeholder type: "image" or "skeleton"
+ * @param query - Query parameters including width, height, bg, color, text, rows, avatar, animate, speed, and radius
+ * @returns Object containing the SVG body, content type, and placeholder type
+ * @throws Error if any parameter is invalid or out of range
+ */
 export default function placeholder(type: string, query: Record<string, string | undefined>): PlaceholderResult {
     const speed = query.speed ? parseFloat(query.speed) : 1.5;
     if (isNaN(speed) || speed < 0.1 || speed > 10) throw new Error('speed must be between 0.1 and 10');

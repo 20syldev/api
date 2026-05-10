@@ -142,6 +142,13 @@ export interface TextStats {
     mostFrequentChar: string;
 }
 
+/**
+ * Analyzes a text string and returns character, word, sentence, and reading time statistics.
+ *
+ * @param value - The text to analyze
+ * @returns Object containing character counts, word/sentence/paragraph counts, reading time, and most frequent character
+ * @throws Error if value is missing, not a string, or too long
+ */
 export function stats(value: string): TextStats {
     checkText(value);
 
@@ -168,6 +175,13 @@ export function stats(value: string): TextStats {
     return { characters, charactersNoSpaces, words, sentences, paragraphs, readingTime, mostFrequentChar };
 }
 
+/**
+ * Converts a string to a URL-friendly slug.
+ *
+ * @param value - The string to slugify
+ * @returns Lowercase hyphenated slug with diacritics and special characters removed
+ * @throws Error if value is missing, not a string, or too long
+ */
 export function slug(value: string): string {
     checkText(value);
     return value
@@ -179,6 +193,14 @@ export function slug(value: string): string {
         .replace(/[\s-]+/g, '-');
 }
 
+/**
+ * Generates Lorem Ipsum placeholder text.
+ *
+ * @param type - Content type: "words", "sentences", or "paragraphs"
+ * @param count - Number of words, sentences, or paragraphs to generate
+ * @returns Generated Lorem Ipsum text
+ * @throws Error if count is out of range or type is not one of the accepted values
+ */
 export function lorem(type: string, count: string): string {
     const n = Number(count) || 5;
     if (n < 1 || n > 500) throw new Error('Count must be between 1 and 500');
@@ -283,6 +305,14 @@ function numberToEnglish(n: number): string {
     throw new Error('Number must be less than 1 billion');
 }
 
+/**
+ * Converts an integer to its written-out word form in French or English.
+ *
+ * @param value - The integer to convert (must be less than 1 billion)
+ * @param lang - Language: "fr" for French or "en" for English
+ * @returns The number written out in words
+ * @throws Error if value is not an integer, exceeds the maximum, or lang is not supported
+ */
 export function number(value: string, lang: string): string {
     const n = Number(value);
     if (isNaN(n)) throw new Error('Value must be a number');

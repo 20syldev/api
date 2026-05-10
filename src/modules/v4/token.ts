@@ -2,6 +2,14 @@ import { randomBytes } from 'crypto';
 import { v4 } from 'uuid';
 import { MIN_TOKEN_LENGTH, MAX_TOKEN_LENGTH } from '../../constants.js';
 
+/**
+ * Generates a cryptographically random token of the specified length and type.
+ *
+ * @param len - Token length (must be between 12 and 4096)
+ * @param type - Character set to use: "alpha", "alphanum", "base64", "hex", "num", "punct", "urlsafe", or "uuid"
+ * @returns The generated token string
+ * @throws Error if length is out of range or the type is not valid
+ */
 export default function token(len: number, type: string = 'alphanum'): string {
     if (isNaN(len) || len < MIN_TOKEN_LENGTH) {
         throw new Error('Length must be a number greater than or equal to 12');

@@ -41,6 +41,13 @@ function rgbToCmyk(r: number, g: number, b: number): [number, number, number, nu
     return [c * 100, m * 100, y * 100, k * 100];
 }
 
+/**
+ * Converts a hex color to all major color space representations, or generates a random color.
+ *
+ * @param hex - Optional hex color string (e.g. "#ff5733"); generates a random color if omitted
+ * @returns Color in hex, RGB, HSL, HSV, HWB, and CMYK formats
+ * @throws Error if the hex string is invalid
+ */
 export default function color(hex?: string): ColorResult {
     let r: number, g: number, b: number;
 

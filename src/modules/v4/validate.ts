@@ -7,6 +7,13 @@ function checkValue(value: string): void {
         throw new Error(`Value must be less than ${MAX_STRING_LENGTH} characters long`);
 }
 
+/**
+ * Validates a credit/debit card number using the Luhn algorithm.
+ *
+ * @param value - Card number string (digits, spaces, or dashes allowed)
+ * @returns Object containing the validity result and the sanitized digit string
+ * @throws Error if value is missing, contains non-digit characters, or has an invalid length
+ */
 export function luhn(value: string): { valid: boolean; value: string } {
     checkValue(value);
     const digits = value.replace(/\s|-/g, '');
@@ -28,6 +35,13 @@ export function luhn(value: string): { valid: boolean; value: string } {
     return { valid: sum % 10 === 0, value: digits };
 }
 
+/**
+ * Validates an IBAN using the mod-97 checksum algorithm.
+ *
+ * @param value - IBAN string (spaces allowed)
+ * @returns Object containing the validity result, sanitized IBAN, and country code
+ * @throws Error if value is missing, has an invalid format, or is out of length bounds
+ */
 export function iban(value: string): { valid: boolean; value: string; country?: string } {
     checkValue(value);
     const cleaned = value.replace(/\s/g, '').toUpperCase();
@@ -48,6 +62,13 @@ export function iban(value: string): { valid: boolean; value: string; country?: 
     return { valid: remainder === 1, value: cleaned, country: cleaned.slice(0, 2) };
 }
 
+/**
+ * Validates an email address against a basic format check.
+ *
+ * @param value - The email address string to validate
+ * @returns Object containing the validity result and the original value
+ * @throws Error if value is missing, not a string, or too long
+ */
 export function email(value: string): { valid: boolean; value: string } {
     checkValue(value);
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

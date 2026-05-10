@@ -24,6 +24,17 @@ const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo',
 type TimeFormat = (typeof validFormats)[number];
 type Timezone = (typeof validTimezones)[number];
 
+/**
+ * Returns the current or a random date/time in various formats and timezones.
+ *
+ * @param type - "live" for the current time or "random" for a random date within a range
+ * @param start - Optional start date for random mode (YYYY-MM-DD)
+ * @param end - Optional end date for random mode (YYYY-MM-DD)
+ * @param format - Optional specific format to return (e.g. "iso", "timestamp", "year")
+ * @param timezone - Optional timezone (e.g. "UTC", "Europe/Paris")
+ * @returns Object containing all time formats, or a single format if specified
+ * @throws Error if type, format, or timezone is invalid
+ */
 export default function time(
     type: string = 'live',
     start?: string,
