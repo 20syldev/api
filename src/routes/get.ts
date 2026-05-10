@@ -6,9 +6,11 @@ import { chatStorage } from '../storage/index.js';
 import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
 import { error } from '../utils/response.js';
 import { since } from '../utils/helpers.js';
-import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
+import type { UserAgentResult } from '../modules/v4/agent.js';
 import type { CaptchaOptions, CaptchaResult } from '../modules/v4/captcha.js';
 import type { ColorResult } from '../modules/v4/color.js';
+import type { IpResult } from '../modules/v4/ip.js';
+import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
 
 const router = Router();
 
@@ -171,6 +173,54 @@ router.get('/:version/convert', (req: Request, res: Response) => {
         }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/convert`);
+    }
+});
+
+// Echo request headers
+router.get('/:version/headers', (req: Request, res: Response) => {
+    const redacted = new Set(['authorization', 'cookie', 'set-cookie', 'proxy-authorization']);
+    let headers: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(req.headers)) {
+        headers[k] = redacted.has(k) ? '[redacted]' : v;
+    }
+
+    const filter = req.query.filter as string | undefined;
+    if (filter) {
+        const keys = new Set(filter.split(',').map((k) => k.trim().toLowerCase()));
+        headers = Object.fromEntries(Object.entries(headers).filter(([k]) => keys.has(k)));
+    }
+
+    res.jsonResponse({
+        count: Object.keys(headers).length,
+        headers,
+        ip: req.ip,
+        method: req.method,
+        url: req.originalUrl,
+    });
+});
+
+// Analyze an IP address
+router.get('/:version/ip', (req: Request, res: Response) => {
+    const address = (req.query.address as string | undefined) ?? req.ip ?? '';
+    try {
+        const ipFn = (req.module as Record<string, unknown>).ip as (a: string) => IpResult;
+        const result = ipFn(address);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/ip`);
+    }
+});
+
+// Parse a User-Agent string
+router.get('/:version/agent', (req: Request, res: Response) => {
+    const ua = (req.query.ua as string | undefined) ?? (req.headers['user-agent'] as string) ?? '';
+    try {
+        const agentFn = (req.module as Record<string, unknown>).agent as (ua: string) => UserAgentResult;
+        const result = agentFn(ua);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/agent`);
     }
 });
 
