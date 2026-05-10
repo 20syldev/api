@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { v4 } from 'uuid';
 
 import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../../constants.js';
@@ -20,11 +20,8 @@ export default function token(len: number, type: string = 'alphanum'): string {
         throw new Error('Length cannot exceed 4096');
     }
 
-    const genToken = (chars: string, length: number): string => {
-        return Array.from({ length }, () => {
-            return chars[Math.floor(Math.random() * chars.length)];
-        }).join('');
-    };
+    const genToken = (chars: string, length: number): string =>
+        Array.from({ length }, () => chars[randomInt(chars.length)]).join('');
 
     const tokenTypes: Record<string, () => string> = {
         alpha: () => genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', len),
@@ -40,7 +37,11 @@ export default function token(len: number, type: string = 'alphanum'): string {
         num: () => genToken('0123456789', len),
         punct: () => genToken('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', len),
         urlsafe: () => genToken('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_', len),
-        uuid: () => v4().replace(/-/g, '').slice(0, len),
+        uuid: () => {
+            let result = '';
+            while (result.length < len) result += v4().replace(/-/g, '');
+            return result.slice(0, len);
+        },
     };
 
     const lowerType = type.toLowerCase();
