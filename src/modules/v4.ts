@@ -1,3 +1,4 @@
+export { default as address } from './v4/address.js';
 export { default as agent } from './v4/agent.js';
 export * as algorithms from './v4/algorithms.js';
 export { default as captcha } from './v4/captcha.js';
@@ -13,6 +14,7 @@ export { default as hyperplanning } from './v4/hyperplanning.js';
 export { default as ip } from './v4/ip.js';
 export { default as levenshtein } from './v4/levenshtein.js';
 export { default as palette } from './v4/palette.js';
+export { default as password } from './v4/password.js';
 export { default as personal } from './v4/personal.js';
 export { default as placeholder } from './v4/placeholder.js';
 export { default as qrcode } from './v4/qrcode.js';
