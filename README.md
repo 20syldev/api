@@ -2,7 +2,7 @@
   <a href="https://api.sylvain.sh"><img src="https://api.sylvain.sh/favicon.ico" alt="Logo" width="25%" height="auto"/></a>
 
   # API Personnelle
-  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v4.6.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+  [![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v4.7.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 </div>
 
 ---
@@ -32,10 +32,10 @@ Pour démarrer un serveur local avec tous les endpoints :
 $ npm run build && npm start
 ```
 ```console
-> @20syldev/api@4.6.0 build
+> @20syldev/api@4.7.0 build
 > tsc
 
-> @20syldev/api@4.6.0 start
+> @20syldev/api@4.7.0 start
 > node dist/app.js
 
 API is running on
@@ -88,6 +88,7 @@ L'API v4 expose plusieurs modules que vous pouvez importer :
 
 ```js
 import {
+    address,           // Génération d'adresses postales aléatoires
     agent,             // Analyse de User-Agent (navigateur, OS, appareil)
     algorithms,        // Fonctions algorithmiques diverses
     captcha,           // Génération d'images captcha
@@ -103,6 +104,7 @@ import {
     ip,                // Analyse d'adresses IPv4/IPv6
     levenshtein,       // Distance entre chaînes
     palette,           // Génération de palettes de couleurs
+    password,          // Génération de mots de passe sécurisés
     personal,          // Informations personnelles aléatoires
     placeholder,       // Génération d'images placeholder
     qrcode,            // Génération de QR codes
