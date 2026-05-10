@@ -1,4 +1,5 @@
 import { random, randomNumber } from '../../utils/helpers.js';
+import addressFn from './address.js';
 
 interface Person {
     name: string;
@@ -47,21 +48,6 @@ export default function personal(): Record<string, unknown> {
 
     const jobs = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Doctor'];
     const hobbies = ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Fitness', 'Music', 'Photography', 'Writing'];
-    const cities = [
-        'New York',
-        'Paris',
-        'London',
-        'Madrid',
-        'Berlin',
-        'Rome',
-        'Tokyo',
-        'Los Angeles',
-        'Sydney',
-        'São Paulo',
-        'Toronto',
-    ];
-    const streets = ['Main St', '2nd Ave', 'Broadway', 'Park Lane', 'Elm St', 'Sunset Blvd', 'Maple St', 'Highland Rd'];
-
     const card = Array.from({ length: 4 }, () => randomNumber(1000, 9999)).join(' ');
     const cvc = randomNumber(100, 999);
     const expiration = `${String(randomNumber(1, 12)).padStart(2, '0')}/${(new Date().getFullYear() + randomNumber(0, 3)).toString().slice(-2)}`;
@@ -69,6 +55,8 @@ export default function personal(): Record<string, unknown> {
     const person = random(people);
     const social = person.social;
     const country = person.country;
+    const countryCodes: Record<string, string> = { US: 'us', FR: 'fr', UK: 'uk', ES: 'es', DE: 'de' };
+    const addrCountry = countryCodes[country] ?? 'us';
     const countryInfo = countries[country]!;
     const phone = countryInfo.tel;
     const lang = countryInfo.lang;
@@ -129,7 +117,7 @@ export default function personal(): Record<string, unknown> {
         card,
         cvc,
         expiration,
-        address: `${randomNumber(1, 9999)} ${random(streets)}, ${random(cities)}`,
+        address: addressFn(addrCountry).addresses[0]!,
         birthday,
         civil_status: civilStatus,
         children,
