@@ -3,10 +3,12 @@ import { type Request, type Response, Router } from 'express';
 import { env } from '../config/env.js';
 import { versions } from '../config/versions.js';
 import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
+import type { AddressResult } from '../modules/v4/address.js';
 import type { UserAgentResult } from '../modules/v4/agent.js';
 import type { CaptchaOptions, CaptchaResult } from '../modules/v4/captcha.js';
 import type { ColorResult } from '../modules/v4/color.js';
 import type { IpResult } from '../modules/v4/ip.js';
+import type { PasswordResult } from '../modules/v4/password.js';
 import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
 import { chatStorage, ipLimits } from '../storage/index.js';
 import { since } from '../utils/helpers.js';
@@ -173,6 +175,27 @@ router.get('/:version/convert', (req: Request, res: Response) => {
         }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/convert`);
+    }
+});
+
+// Generate a fictional postal address
+router.get('/:version/address', (req: Request, res: Response) => {
+    const { country, count } = req.query;
+    const { version } = req.params;
+
+    const addressFn = (req.module as { address?: (c?: string, n?: number) => AddressResult }).address;
+    if (!addressFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/address`);
+        return;
+    }
+
+    const parsedCount = count !== undefined ? parseInt(count as string, 10) : 1;
+
+    try {
+        const result = addressFn(country as string | undefined, parsedCount);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/address`);
     }
 });
 
@@ -373,6 +396,41 @@ router.get('/:version/palette', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/palette`);
+    }
+});
+
+// Generate a password or passphrase
+router.get('/:version/password', (req: Request, res: Response) => {
+    const { type, length, uppercase, lowercase, digits, symbols, exclude, count, separator } = req.query;
+    const { version } = req.params;
+
+    const passwordFn = (
+        req.module as { password?: (t: string, l: number, o: Record<string, unknown>) => PasswordResult }
+    ).password;
+    if (!passwordFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/password`);
+        return;
+    }
+
+    const parseBool = (v: unknown, def: boolean): boolean => (v === undefined ? def : v !== 'false');
+
+    try {
+        const result = passwordFn(
+            (type as string) ?? 'random',
+            length !== undefined ? parseInt(length as string, 10) : 16,
+            {
+                uppercase: parseBool(uppercase, true),
+                lowercase: parseBool(lowercase, true),
+                digits: parseBool(digits, true),
+                symbols: parseBool(symbols, false),
+                exclude: (exclude as string) ?? '',
+                count: count !== undefined ? parseInt(count as string, 10) : 1,
+                separator: (separator as string) ?? '-',
+            },
+        );
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/password`);
     }
 });
 
