@@ -78,6 +78,7 @@ const v3 = {
 
 const v4 = {
     get: merge(v3.get, [
+        { name: 'address', path: '/address(&country={code}&count={n})' },
         { name: 'agent', path: '/agent(&ua={string})' },
         {
             name: 'captcha',
@@ -91,6 +92,10 @@ const v4 = {
         { name: 'headers', path: '/headers(&filter={header1,header2})' },
         { name: 'ip', path: '/ip(&address={ip})' },
         { name: 'palette', path: '/palette?color={#hex}&type={type}' },
+        {
+            name: 'password',
+            path: '/password(&type={random|passphrase}&length={n}&uppercase={bool}&lowercase={bool}&digits={bool}&symbols={bool}&exclude={chars}&count={n}&separator={char})',
+        },
         {
             name: 'placeholder',
             path: '/placeholder?type={image|skeleton}&width={w}&height={h}(&bg={hex}&color={hex}&text={text}&rows={n}&avatar={bool})',
