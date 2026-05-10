@@ -1,5 +1,6 @@
 import { createLogger } from '@20syldev/logger.ts';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+
 import { MAX_LOG_ENTRIES } from '../constants.js';
 
 export const logger = createLogger({

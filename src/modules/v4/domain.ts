@@ -1,4 +1,4 @@
-import { random, genIP } from '../../utils/helpers.js';
+import { genIP, random } from '../../utils/helpers.js';
 
 /**
  * Generates a randomized fictional domain profile with metadata.

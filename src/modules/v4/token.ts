@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { v4 } from 'uuid';
-import { MIN_TOKEN_LENGTH, MAX_TOKEN_LENGTH } from '../../constants.js';
+
+import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../../constants.js';
 
 /**
  * Generates a cryptographically random token of the specified length and type.

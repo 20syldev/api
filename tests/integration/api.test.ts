@@ -1,7 +1,8 @@
-import { test, describe, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
-import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { after, before, describe, test } from 'node:test';
+
 import app from '../../src/app.js';
 
 let server: Server;

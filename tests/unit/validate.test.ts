@@ -1,6 +1,7 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { luhn, iban, email } from '../../src/modules/v4/validate.js';
+import { describe, test } from 'node:test';
+
+import { email, iban, luhn } from '../../src/modules/v4/validate.js';
 
 describe('validate', () => {
     describe('luhn', () => {

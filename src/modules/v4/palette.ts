@@ -1,4 +1,4 @@
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex } from '../../utils/colors.js';
+import { hexToRgb, hslToRgb, rgbToHex, rgbToHsl } from '../../utils/colors.js';
 
 export interface PaletteColor {
     hex: string;

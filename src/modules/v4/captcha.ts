@@ -1,4 +1,5 @@
 import { createCanvas } from 'canvas';
+
 import { normalizeColor } from '../../utils/colors.js';
 
 export interface CaptchaOptions {

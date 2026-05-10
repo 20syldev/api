@@ -1,6 +1,6 @@
-import { checkRateLimit } from '../../utils/helpers.js';
 import { SESSION_TTL } from '../../constants.js';
-import type { ChatStorage, ChatMessage } from '../../types/storage.js';
+import type { ChatMessage, ChatStorage } from '../../types/storage.js';
+import { checkRateLimit } from '../../utils/helpers.js';
 
 interface ChatParams {
     username: string;

@@ -1,4 +1,5 @@
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response, Router } from 'express';
+
 import { chatStorage, ticTacToeStorage } from '../storage/index.js';
 import { error } from '../utils/response.js';
 

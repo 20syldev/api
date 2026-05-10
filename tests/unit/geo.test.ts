@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import geo from '../../src/modules/v4/geo.js';
 
 describe('geo', () => {

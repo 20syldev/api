@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import statistics from '../../src/modules/v4/statistics.js';
 
 describe('statistics', () => {

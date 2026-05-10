@@ -1,16 +1,17 @@
 import express from 'express';
+
 import { env } from './config/env.js';
 import { setupCors } from './middleware/cors.js';
-import { jsonResponseMiddleware } from './middleware/json.js';
-import { rateLimitMiddleware } from './middleware/ratelimit.js';
-import { loggerMiddleware } from './middleware/logger.js';
 import { errorHandler } from './middleware/error.js';
-import { versionCheckMiddleware, endpointCheckMiddleware } from './middleware/version.js';
-import indexRoutes from './routes/index.js';
-import getRoutes from './routes/get.js';
-import postRoutes from './routes/post.js';
-import patchRoutes from './routes/patch.js';
+import { jsonResponseMiddleware } from './middleware/json.js';
+import { loggerMiddleware } from './middleware/logger.js';
+import { rateLimitMiddleware } from './middleware/ratelimit.js';
+import { endpointCheckMiddleware, versionCheckMiddleware } from './middleware/version.js';
 import deleteRoutes from './routes/delete.js';
+import getRoutes from './routes/get.js';
+import indexRoutes from './routes/index.js';
+import patchRoutes from './routes/patch.js';
+import postRoutes from './routes/post.js';
 
 const app = express();
 

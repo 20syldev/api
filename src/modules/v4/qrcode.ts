@@ -1,5 +1,6 @@
-import { toBuffer, toDataURL, toCanvas as qrToCanvas } from 'qrcode';
 import { createCanvas, loadImage } from 'canvas';
+import { toBuffer, toCanvas as qrToCanvas, toDataURL } from 'qrcode';
+
 import { normalizeColor } from '../../utils/colors.js';
 
 export interface QRCodeOptions {

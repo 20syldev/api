@@ -1,8 +1,9 @@
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response, Router } from 'express';
+
 import { versions } from '../config/versions.js';
-import { ipLimits } from '../storage/index.js';
-import { logger } from '../middleware/logger.js';
 import { APP_VERSION, DOCS_URL, START_TIME } from '../constants.js';
+import { logger } from '../middleware/logger.js';
+import { ipLimits } from '../storage/index.js';
 
 const router = Router();
 

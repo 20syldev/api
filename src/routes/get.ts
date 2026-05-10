@@ -1,16 +1,16 @@
-import { Router, type Request, type Response } from 'express';
-import { versions } from '../config/versions.js';
+import { type Request, type Response, Router } from 'express';
+
 import { env } from '../config/env.js';
-import { ipLimits } from '../storage/index.js';
-import { chatStorage } from '../storage/index.js';
+import { versions } from '../config/versions.js';
 import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
-import { error } from '../utils/response.js';
-import { since } from '../utils/helpers.js';
 import type { UserAgentResult } from '../modules/v4/agent.js';
 import type { CaptchaOptions, CaptchaResult } from '../modules/v4/captcha.js';
 import type { ColorResult } from '../modules/v4/color.js';
 import type { IpResult } from '../modules/v4/ip.js';
 import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
+import { chatStorage, ipLimits } from '../storage/index.js';
+import { since } from '../utils/helpers.js';
+import { error } from '../utils/response.js';
 
 const router = Router();
 

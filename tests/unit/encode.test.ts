@@ -1,16 +1,17 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import {
-    base64encode,
     base64decode,
-    urlencode,
-    urldecode,
-    morse,
-    unmorse,
-    rot13,
-    caesar,
+    base64encode,
     binary,
+    caesar,
+    morse,
+    rot13,
     unbinary,
+    unmorse,
+    urldecode,
+    urlencode,
 } from '../../src/modules/v4/encode.js';
 
 describe('encode', () => {

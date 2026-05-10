@@ -1,9 +1,10 @@
-import { Router, type Request, type Response } from 'express';
-import { chatStorage, ticTacToeStorage } from '../storage/index.js';
-import { MIN_TOKEN_LENGTH, MAX_TOKEN_LENGTH } from '../constants.js';
-import { error } from '../utils/response.js';
-import { since } from '../utils/helpers.js';
+import { type Request, type Response, Router } from 'express';
+
+import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../constants.js';
 import type { HashResult } from '../modules/v4/hash.js';
+import { chatStorage, ticTacToeStorage } from '../storage/index.js';
+import { since } from '../utils/helpers.js';
+import { error } from '../utils/response.js';
 
 const router = Router();
 

@@ -1,5 +1,6 @@
-import { test, describe, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { after, before, describe, test } from 'node:test';
+
 import hyperplanning from '../../src/modules/v4/hyperplanning.js';
 
 const ORIGINAL_FETCH = globalThis.fetch;

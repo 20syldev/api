@@ -1,4 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+
 import { error } from '../utils/response.js';
 
 export function errorHandler(

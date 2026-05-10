@@ -1,6 +1,6 @@
 export * as algorithms from './v3/algorithms.js';
-export { default as chat } from './v3/chat.js';
 export { default as captcha } from './v3/captcha.js';
+export { default as chat } from './v3/chat.js';
 export { default as color } from './v3/color.js';
 export { default as convert } from './v3/convert.js';
 export { default as domain } from './v3/domain.js';

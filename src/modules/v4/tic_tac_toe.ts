@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
-import { SESSION_TTL, GAME_CLEANUP_TTL, RATE_LIMIT_WINDOW, RATE_LIMIT_MAX } from '../../constants.js';
-import type { TicTacToeStorage, TicTacToeMove, TicTacToeGame } from '../../types/storage.js';
+
+import { GAME_CLEANUP_TTL, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW, SESSION_TTL } from '../../constants.js';
+import type { TicTacToeGame, TicTacToeMove, TicTacToeStorage } from '../../types/storage.js';
 
 interface TicTacToeParams {
     username?: string;

@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import domain from '../../src/modules/v4/domain.js';
 
 describe('domain', () => {

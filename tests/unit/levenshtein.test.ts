@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import levenshtein from '../../src/modules/v4/levenshtein.js';
 
 describe('levenshtein', () => {

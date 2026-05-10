@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+
 import { DEFAULT_PORT } from '../constants.js';
 
 dotenv.config();

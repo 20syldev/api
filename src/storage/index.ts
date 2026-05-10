@@ -1,4 +1,4 @@
-import type { ChatStorage, TicTacToeStorage, IpLimits } from '../types/storage.js';
+import type { ChatStorage, IpLimits, TicTacToeStorage } from '../types/storage.js';
 
 export const ipLimits: IpLimits = {};
 

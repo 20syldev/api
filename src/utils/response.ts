@@ -1,4 +1,5 @@
 import type { Response } from 'express';
+
 import { DOCS_URL, STATUS_MESSAGES } from '../constants.js';
 
 /**

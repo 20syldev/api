@@ -1,4 +1,4 @@
-import { getHashes, createHash } from 'crypto';
+import { createHash, getHashes } from 'crypto';
 
 export interface HashResult {
     method: string;

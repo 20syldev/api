@@ -1,6 +1,7 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { slug, stats, lorem, number } from '../../src/modules/v4/text.js';
+import { describe, test } from 'node:test';
+
+import { lorem, number, slug, stats } from '../../src/modules/v4/text.js';
 
 describe('text', () => {
     describe('slug', () => {

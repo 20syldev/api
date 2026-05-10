@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import chat from '../../src/modules/v4/chat.js';
 import type { ChatStorage } from '../../src/types/storage.js';
 

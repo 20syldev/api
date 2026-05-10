@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { describe, test } from 'node:test';
+
 import tic_tac_toe from '../../src/modules/v4/tic_tac_toe.js';
 import type { TicTacToeStorage } from '../../src/types/storage.js';
 
