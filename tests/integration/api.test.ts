@@ -558,6 +558,90 @@ describe('Payload size limit', () => {
     });
 });
 
+describe('GET /v4/headers', () => {
+    test('returns headers object with count, ip, method, url', async () => {
+        const { status, body } = await getJson('/v4/headers');
+        assert.equal(status, 200);
+        assert.ok(typeof body.count === 'number');
+        assert.ok(typeof body.headers === 'object');
+        assert.ok('method' in body);
+        assert.equal(body.method, 'GET');
+        assert.ok((body.url as string).includes('/v4/headers'));
+    });
+
+    test('filter param returns only matching headers', async () => {
+        const { body } = await getJson('/v4/headers?filter=host');
+        const headers = body.headers as Record<string, unknown>;
+        assert.ok('host' in headers);
+        assert.equal(body.count, 1);
+    });
+
+    test('cookie header is redacted', async () => {
+        const res = await fetch(`${baseUrl}/v4/headers`, {
+            headers: { Cookie: 'session=secret123' },
+        });
+        const body = (await res.json()) as Record<string, unknown>;
+        const headers = body.headers as Record<string, unknown>;
+        assert.equal(headers['cookie'], '[redacted]');
+    });
+});
+
+describe('GET /v4/ip', () => {
+    test('returns valid ip result with no address param', async () => {
+        const { status, body } = await getJson('/v4/ip');
+        assert.equal(status, 200);
+        assert.ok(['IPv4', 'IPv6'].includes(body.version as string));
+        assert.ok(typeof body.binary === 'string');
+        assert.ok(typeof body.reverse === 'string');
+    });
+
+    test('loopback 127.0.0.1', async () => {
+        const { status, body } = await getJson('/v4/ip?address=127.0.0.1');
+        assert.equal(status, 200);
+        assert.equal(body.type, 'loopback');
+        assert.equal(body.version, 'IPv4');
+    });
+
+    test('private 192.168.1.1', async () => {
+        const { body } = await getJson('/v4/ip?address=192.168.1.1');
+        assert.equal(body.type, 'private');
+        assert.equal(body.decimal, 3232235777);
+    });
+
+    test('invalid address returns 400', async () => {
+        const { status } = await getJson('/v4/ip?address=notanip');
+        assert.equal(status, 400);
+    });
+});
+
+describe('GET /v4/agent', () => {
+    test('returns parsed result with browser, os, device, engine, bot', async () => {
+        const { status, body } = await getJson('/v4/agent');
+        assert.equal(status, 200);
+        assert.ok(typeof body.browser === 'object');
+        assert.ok(typeof body.os === 'object');
+        assert.ok(typeof body.device === 'object');
+        assert.ok(typeof body.engine === 'object');
+        assert.ok(typeof body.bot === 'boolean');
+    });
+
+    test('custom ua param is parsed', async () => {
+        const ua = encodeURIComponent(
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        );
+        const { body } = await getJson(`/v4/agent?ua=${ua}`);
+        const browser = body.browser as Record<string, string>;
+        assert.equal(browser.name, 'Firefox');
+        assert.equal(browser.major, '121');
+    });
+
+    test('bot ua detected', async () => {
+        const ua = encodeURIComponent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
+        const { body } = await getJson(`/v4/agent?ua=${ua}`);
+        assert.equal(body.bot, true);
+    });
+});
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
