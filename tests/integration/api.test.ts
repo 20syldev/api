@@ -643,6 +643,61 @@ describe('GET /v4/agent', () => {
     });
 });
 
+describe('GET /v4/address', () => {
+    test('returns one address by default', async () => {
+        const { status, body } = await getJson('/v4/address');
+        assert.equal(status, 200);
+        assert.equal((body.addresses as unknown[]).length, 1);
+    });
+
+    test('country=fr returns a French address', async () => {
+        const { body } = await getJson('/v4/address?country=fr');
+        const a = (body.addresses as Record<string, string>[])[0]!;
+        assert.equal(a.countryCode, 'FR');
+    });
+
+    test('count=3 returns 3 addresses', async () => {
+        const { body } = await getJson('/v4/address?count=3');
+        assert.equal((body.addresses as unknown[]).length, 3);
+    });
+
+    test('unknown country returns 400', async () => {
+        const { status } = await getJson('/v4/address?country=xx');
+        assert.equal(status, 400);
+    });
+});
+
+describe('GET /v4/password', () => {
+    test('returns one password by default', async () => {
+        const { status, body } = await getJson('/v4/password');
+        assert.equal(status, 200);
+        assert.equal((body.passwords as string[]).length, 1);
+        assert.equal((body.passwords as string[])[0]!.length, 16);
+    });
+
+    test('length param is respected', async () => {
+        const { body } = await getJson('/v4/password?length=32');
+        assert.equal((body.passwords as string[])[0]!.length, 32);
+    });
+
+    test('passphrase mode returns words', async () => {
+        const { body } = await getJson('/v4/password?type=passphrase&length=4');
+        assert.equal(body.type, 'passphrase');
+        assert.equal((body.passwords as string[])[0]!.split('-').length, 4);
+    });
+
+    test('count=5 returns 5 passwords', async () => {
+        const { body } = await getJson('/v4/password?count=5');
+        assert.equal((body.passwords as string[]).length, 5);
+    });
+
+    test('no charset active returns 400', async () => {
+        const { status } = await getJson('/v4/password?uppercase=false&lowercase=false&digits=false&symbols=false');
+        assert.equal(status, 400);
+    });
+});
+
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
