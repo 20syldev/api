@@ -88,6 +88,7 @@ L'API v4 expose plusieurs modules que vous pouvez importer :
 
 ```js
 import {
+    agent,             // Analyse de User-Agent (navigateur, OS, appareil)
     algorithms,        // Fonctions algorithmiques diverses
     captcha,           // Génération d'images captcha
     chat,              // Système de chat temporaire
@@ -96,15 +97,19 @@ import {
     dice,              // Lanceur de dés RPG
     domain,            // Informations de domaine aléatoires
     encode,            // Encodage / décodage (base64, morse, rot13, caesar, binaire)
+    geo,               // Informations de géolocalisation
     hash,              // Hachage de texte
     hyperplanning,     // Analyse de calendriers
+    ip,                // Analyse d'adresses IPv4/IPv6
     levenshtein,       // Distance entre chaînes
+    palette,           // Génération de palettes de couleurs
     personal,          // Informations personnelles aléatoires
+    placeholder,       // Génération d'images placeholder
     qrcode,            // Génération de QR codes
     statistics,        // Statistiques descriptives
+    text,              // Utilitaires texte (slug, stats, lorem, nombre en lettres)
     tic_tac_toe,       // Jeu de morpion
     time,              // Informations temporelles
-    text,              // Utilitaires texte (slug, stats, lorem, nombre en lettres)
     token,             // Génération de jetons sécurisés
     username,          // Génération de noms d'utilisateur
     validate           // Validation (Luhn, IBAN, email)
