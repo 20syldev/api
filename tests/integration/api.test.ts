@@ -331,6 +331,19 @@ describe('GET /v4/time', () => {
         assert.ok(ts >= new Date('2020-01-01').getTime());
         assert.ok(ts <= new Date('2020-12-31').getTime());
     });
+
+    test('countdown future returns direction and remaining', async () => {
+        const future = new Date(Date.now() + 10 * 24 * 3600 * 1000).toISOString();
+        const { status, body } = await getJson(`/v4/time?type=countdown&target=${encodeURIComponent(future)}`);
+        assert.equal(status, 200);
+        assert.equal(body.direction, 'future');
+        assert.ok(typeof body.human === 'string');
+    });
+
+    test('countdown missing target returns 400', async () => {
+        const { status } = await getJson('/v4/time?type=countdown');
+        assert.equal(status, 400);
+    });
 });
 
 describe('GET /v4/username', () => {
@@ -696,7 +709,6 @@ describe('GET /v4/password', () => {
         assert.equal(status, 400);
     });
 });
-
 
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
