@@ -1,10 +1,13 @@
 export { default as address } from './v4/address.js';
 export { default as agent } from './v4/agent.js';
 export * as algorithms from './v4/algorithms.js';
+export { default as avatar } from './v4/avatar.js';
+export { default as barcode } from './v4/barcode.js';
 export { default as captcha } from './v4/captcha.js';
 export { default as chat } from './v4/chat.js';
 export { default as color } from './v4/color.js';
 export { default as convert } from './v4/convert.js';
+export { default as credit } from './v4/credit.js';
 export { default as cron } from './v4/cron.js';
 export { default as dice } from './v4/dice.js';
 export { default as domain } from './v4/domain.js';
