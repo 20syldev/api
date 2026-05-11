@@ -27,6 +27,7 @@ export const STATUS_MESSAGES: Record<number, string> = {
 // Modules
 export const EARTH_RADIUS_KM = 6371;
 export const MAX_ADDRESS_COUNT = 10;
+export const MAX_CREDIT_COUNT = 10;
 export const MAX_COUNTDOWN_YEARS = 100;
 export const MAX_CRON_ITERATIONS = 365 * 24 * 60;
 export const MAX_CRON_RESULTS = 20;
