@@ -710,6 +710,26 @@ describe('GET /v4/password', () => {
     });
 });
 
+describe('GET /v4/regex', () => {
+    test('basic match returns count and matches', async () => {
+        const { status, body } = await getJson('/v4/regex?pattern=hello&text=hello%20world');
+        assert.equal(status, 200);
+        assert.equal(body.valid, true);
+        assert.ok((body.count as number) >= 1);
+    });
+
+    test('invalid pattern returns valid: false with 200', async () => {
+        const { status, body } = await getJson('/v4/regex?pattern=%5Binvalid&text=hello');
+        assert.equal(status, 200);
+        assert.equal(body.valid, false);
+    });
+
+    test('missing pattern returns 400', async () => {
+        const { status } = await getJson('/v4/regex?text=hello');
+        assert.equal(status, 400);
+    });
+});
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
