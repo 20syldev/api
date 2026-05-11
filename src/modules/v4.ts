@@ -5,6 +5,7 @@ export { default as captcha } from './v4/captcha.js';
 export { default as chat } from './v4/chat.js';
 export { default as color } from './v4/color.js';
 export { default as convert } from './v4/convert.js';
+export { default as cron } from './v4/cron.js';
 export { default as dice } from './v4/dice.js';
 export { default as domain } from './v4/domain.js';
 export * as encode from './v4/encode.js';
