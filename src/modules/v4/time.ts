@@ -1,6 +1,6 @@
 import { MAX_COUNTDOWN_YEARS } from '../../constants.js';
 
-const validFormats = [
+const VALID_FORMATS = [
     'iso',
     'utc',
     'timestamp',
@@ -21,10 +21,10 @@ const validFormats = [
     'timezoneOffset',
 ] as const;
 
-export const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'] as const;
+export const VALID_TIMEZONES = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'] as const;
 
-type TimeFormat = (typeof validFormats)[number];
-type Timezone = (typeof validTimezones)[number];
+type TimeFormat = (typeof VALID_FORMATS)[number];
+type Timezone = (typeof VALID_TIMEZONES)[number];
 
 /**
  * Returns the current or a random date/time in various formats and timezones,
@@ -51,8 +51,8 @@ export default function time(
         throw new Error('Please provide a valid type (live, random or countdown)');
     }
 
-    if (timezone && !validTimezones.includes(timezone as Timezone)) {
-        throw new Error(`Please provide a valid timezone. Options: ${validTimezones.join(', ')}`);
+    if (timezone && !VALID_TIMEZONES.includes(timezone as Timezone)) {
+        throw new Error(`Please provide a valid timezone. Options: ${VALID_TIMEZONES.join(', ')}`);
     }
 
     if (type === 'countdown') {
@@ -104,8 +104,8 @@ export default function time(
         throw new Error('Please provide a valid end date (YYYY-MM-DD)');
     }
 
-    if (format && !validFormats.includes(format as TimeFormat)) {
-        throw new Error(`Please provide a valid format. Options: ${validFormats.join(', ')}`);
+    if (format && !VALID_FORMATS.includes(format as TimeFormat)) {
+        throw new Error(`Please provide a valid format. Options: ${VALID_FORMATS.join(', ')}`);
     }
 
     const getTimeFormats = (date: Date, tz: string): Record<string, unknown> => {
@@ -135,7 +135,7 @@ export default function time(
         const startDate = start ? new Date(start).getTime() : new Date('1900-01-01').getTime();
         const endDate = end ? new Date(end).getTime() : new Date('2100-12-31').getTime();
         const randomDate = new Date(startDate + Math.random() * (endDate - startDate));
-        const tz = timezone || validTimezones[Math.floor(Math.random() * validTimezones.length)]!;
+        const tz = timezone || VALID_TIMEZONES[Math.floor(Math.random() * VALID_TIMEZONES.length)]!;
         const formats = getTimeFormats(randomDate, tz);
 
         return format ? { date: formats[format] } : formats;

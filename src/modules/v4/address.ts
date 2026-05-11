@@ -364,7 +364,7 @@ const countries: Record<string, CountryData> = {
     },
 };
 
-const countryKeys = Object.keys(countries);
+const COUNTRY_KEYS = Object.keys(countries);
 
 export interface Address {
     street: string;
@@ -392,9 +392,9 @@ export default function address(countryCode?: string, count: number = 1): Addres
         throw new Error(`Count must be between 1 and ${MAX_ADDRESS_COUNT}`);
     }
 
-    const code = (countryCode ?? random(countryKeys)).toLowerCase();
+    const code = (countryCode ?? random(COUNTRY_KEYS)).toLowerCase();
     if (!countries[code]) {
-        throw new Error(`Unknown country code "${code}". Supported: ${countryKeys.join(', ')}`);
+        throw new Error(`Unknown country code "${code}". Supported: ${COUNTRY_KEYS.join(', ')}`);
     }
 
     const data = countries[code]!;
