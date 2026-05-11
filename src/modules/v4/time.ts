@@ -1,3 +1,5 @@
+import { MAX_COUNTDOWN_YEARS } from '../../constants.js';
+
 const validFormats = [
     'iso',
     'utc',
@@ -19,21 +21,23 @@ const validFormats = [
     'timezoneOffset',
 ] as const;
 
-const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'] as const;
+export const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'] as const;
 
 type TimeFormat = (typeof validFormats)[number];
 type Timezone = (typeof validTimezones)[number];
 
 /**
- * Returns the current or a random date/time in various formats and timezones.
+ * Returns the current or a random date/time in various formats and timezones,
+ * or computes a countdown/elapsed time to/from a target date.
  *
- * @param type - "live" for the current time or "random" for a random date within a range
+ * @param type - "live" for the current time, "random" for a random date, or "countdown" for a time diff
  * @param start - Optional start date for random mode (YYYY-MM-DD)
  * @param end - Optional end date for random mode (YYYY-MM-DD)
  * @param format - Optional specific format to return (e.g. "iso", "timestamp", "year")
  * @param timezone - Optional timezone (e.g. "UTC", "Europe/Paris")
- * @returns Object containing all time formats, or a single format if specified
- * @throws Error if type, format, or timezone is invalid
+ * @param target - Required for countdown mode: target date in ISO 8601 or YYYY-MM-DD format
+ * @returns Object containing all time formats, a single format, or a countdown result
+ * @throws Error if type, format, timezone, or target is invalid
  */
 export default function time(
     type: string = 'live',
@@ -41,9 +45,55 @@ export default function time(
     end?: string,
     format?: string,
     timezone?: string,
+    target?: string,
 ): Record<string, unknown> {
-    if (type !== 'live' && type !== 'random') {
-        throw new Error('Please provide a valid type (live or random)');
+    if (type !== 'live' && type !== 'random' && type !== 'countdown') {
+        throw new Error('Please provide a valid type (live, random or countdown)');
+    }
+
+    if (timezone && !validTimezones.includes(timezone as Timezone)) {
+        throw new Error(`Please provide a valid timezone. Options: ${validTimezones.join(', ')}`);
+    }
+
+    if (type === 'countdown') {
+        if (!target) {
+            throw new Error('Please provide a target date (?target=YYYY-MM-DD)');
+        }
+
+        const targetDate = new Date(target);
+        if (isNaN(targetDate.getTime())) {
+            throw new Error('Please provide a valid target date (ISO 8601 or YYYY-MM-DD)');
+        }
+
+        const now = new Date();
+        const maxMs = MAX_COUNTDOWN_YEARS * 365.25 * 24 * 3600 * 1000;
+
+        if (Math.abs(targetDate.getTime() - now.getTime()) > maxMs) {
+            throw new Error(`Target date must be within ${MAX_COUNTDOWN_YEARS} years from now`);
+        }
+
+        const direction: 'future' | 'past' = targetDate > now ? 'future' : 'past';
+        const diffMs = Math.abs(targetDate.getTime() - now.getTime());
+        const total_seconds = Math.floor(diffMs / 1000);
+
+        const days = Math.floor(total_seconds / 86400);
+        const hours = Math.floor((total_seconds % 86400) / 3600);
+        const minutes = Math.floor((total_seconds % 3600) / 60);
+        const seconds = total_seconds % 60;
+
+        const parts: string[] = [];
+        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+        if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+        if (seconds > 0) parts.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+
+        return {
+            target: targetDate.toISOString(),
+            now: now.toISOString(),
+            direction,
+            remaining: { total_seconds, days, hours, minutes, seconds },
+            human: parts.length > 0 ? parts.join(', ') : '0 seconds',
+        };
     }
 
     if (start && !Date.parse(start)) {
@@ -56,10 +106,6 @@ export default function time(
 
     if (format && !validFormats.includes(format as TimeFormat)) {
         throw new Error(`Please provide a valid format. Options: ${validFormats.join(', ')}`);
-    }
-
-    if (timezone && !validTimezones.includes(timezone as Timezone)) {
-        throw new Error(`Please provide a valid timezone. Options: ${validTimezones.join(', ')}`);
     }
 
     const getTimeFormats = (date: Date, tz: string): Record<string, unknown> => {
