@@ -710,6 +710,30 @@ describe('GET /v4/password', () => {
     });
 });
 
+describe('GET /v4/cron', () => {
+    test('returns next dates for * * * * *', async () => {
+        const { status, body } = await getJson('/v4/cron?expr=*%20*%20*%20*%20*');
+        assert.equal(status, 200);
+        assert.equal((body.next as string[]).length, 5);
+        assert.ok(typeof body.description === 'string');
+    });
+
+    test('count param is respected', async () => {
+        const { body } = await getJson('/v4/cron?expr=*%20*%20*%20*%20*&count=3');
+        assert.equal((body.next as string[]).length, 3);
+    });
+
+    test('invalid expression returns 400', async () => {
+        const { status } = await getJson('/v4/cron?expr=invalid');
+        assert.equal(status, 400);
+    });
+
+    test('missing expr returns 400', async () => {
+        const { status } = await getJson('/v4/cron');
+        assert.equal(status, 400);
+    });
+});
+
 describe('GET /v4/regex', () => {
     test('basic match returns count and matches', async () => {
         const { status, body } = await getJson('/v4/regex?pattern=hello&text=hello%20world');
