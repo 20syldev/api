@@ -70,7 +70,7 @@ const v3 = {
         { name: 'levenshtein', path: '/levenshtein?str1={string}&str2={string}' },
         {
             name: 'time',
-            path: '/time(?type={type}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
+            path: '/time(?type={live|random|countdown}&target={date}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
         },
     ]),
     post: merge(v2.post, [{ name: 'hyperplanning', path: '/hyperplanning' }]),
