@@ -200,7 +200,6 @@ export default function cron(expr: string, count: number = 5, from?: string, tim
         hour12: false,
     });
 
-    // Always start from the next minute (never include the current minute)
     let currentMs = (Math.floor(fromMs / 60000) + 1) * 60000;
 
     const next: string[] = [];
@@ -209,11 +208,26 @@ export default function cron(expr: string, count: number = 5, from?: string, tim
     while (next.length < count && iterations < MAX_CRON_ITERATIONS) {
         const { minute, hour, dom, month, dow } = getComponents(new Date(currentMs), formatter);
 
-        if (minuteSet.has(minute) && hourSet.has(hour) && domSet.has(dom) && monthSet.has(month) && dowSet.has(dow)) {
+        if (!monthSet.has(month)) {
+            const d = new Date(currentMs);
+            d.setUTCMonth(d.getUTCMonth() + 1, 1);
+            d.setUTCHours(0, 0, 0, 0);
+            d.setTime(d.getTime() - 14 * 3600000);
+            while (getComponents(d, formatter).month === month) {
+                d.setTime(d.getTime() + 3600000);
+            }
+            currentMs = d.getTime();
+        } else if (!domSet.has(dom) || !dowSet.has(dow)) {
+            currentMs += (24 * 60 - hour * 60 - minute) * 60000;
+        } else if (!hourSet.has(hour)) {
+            currentMs += (60 - minute) * 60000;
+        } else if (!minuteSet.has(minute)) {
+            currentMs += 60000;
+        } else {
             next.push(new Date(currentMs).toISOString());
+            currentMs += 60000;
         }
 
-        currentMs += 60000;
         iterations++;
     }
 
