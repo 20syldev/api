@@ -609,60 +609,26 @@ router.get('/:version/tic-tac-toe/list', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
 });
 
-// Display or generate time informations
+// Display or generate time informations, or compute a countdown
 router.get('/:version/time', (req: Request, res: Response) => {
-    const { type = 'live', start, end, format, timezone } = req.query;
-
-    const validFormats = [
-        'iso',
-        'utc',
-        'timestamp',
-        'locale',
-        'date',
-        'time',
-        'year',
-        'month',
-        'day',
-        'hour',
-        'minute',
-        'second',
-        'ms',
-        'dayOfWeek',
-        'dayOfYear',
-        'weekNumber',
-        'timezone',
-        'timezoneOffset',
-    ];
-    const validTimezones = ['UTC', 'America/New_York', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'];
-
-    if (type !== 'live' && type !== 'random') {
-        error(res, 400, 'Please provide a valid type (?type={type})', `${req.version}/time`);
-        return;
-    }
-    if (start && !Date.parse(start as string)) {
-        error(res, 400, 'Please provide a valid start date (?start={YYYY-MM-DD})', `${req.version}/time`);
-        return;
-    }
-    if (end && !Date.parse(end as string)) {
-        error(res, 400, 'Please provide a valid end date (?end={YYYY-MM-DD})', `${req.version}/time`);
-        return;
-    }
-    if (format && !validFormats.includes(format as string)) {
-        error(res, 400, 'Please provide a valid format (?format={format})', `${req.version}/time`);
-        return;
-    }
-    if (timezone && !validTimezones.includes(timezone as string)) {
-        error(res, 400, 'Please provide a valid timezone (?timezone={timezone})', `${req.version}/time`);
-        return;
-    }
+    const { type = 'live', start, end, format, timezone, target } = req.query;
 
     try {
-        const time = req.module.time(
+        const timeFn = req.module.time as (
+            t: string,
+            s?: string,
+            e?: string,
+            f?: string,
+            tz?: string,
+            target?: string,
+        ) => Record<string, unknown>;
+        const time = timeFn(
             type as string,
             start as string,
             end as string,
             format as string,
             timezone as string,
+            target as string,
         );
         res.jsonResponse(time);
     } catch (err) {
