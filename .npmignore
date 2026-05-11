@@ -1,0 +1,8 @@
+.github/
+src/
+tests/
+tsconfig*.json
+.env
+.prettierrc
+eslint.config.js
+robots.txt
