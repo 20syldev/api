@@ -81,11 +81,20 @@ const v4 = {
         { name: 'address', path: '/address(&country={code}&count={n})' },
         { name: 'agent', path: '/agent(&ua={string})' },
         {
+            name: 'avatar',
+            path: '/avatar(&seed={string}&size={50-2000}&type={identicon|pixel}&bg={hex}&format={png|svg})',
+        },
+        {
+            name: 'barcode',
+            path: '/barcode?data={string}(&type={type}&width={px}&height={px}&format={svg|png}&color={hex}&bg={hex})',
+        },
+        {
             name: 'captcha',
             path: '/captcha(&text={text}&length={n}&width={px}&height={px}&noise={low|medium|high}&bg={hex}&color={hex})',
         },
         { name: 'color', path: '/color(&hex={hex})' },
         { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
+        { name: 'credit', path: '/credit(&brand={visa|mastercard|amex|discover}&count={n}&format={full|masked})' },
         { name: 'cron', path: '/cron?expr={expression}(&count={n}&from={date}&timezone={timezone})' },
         { name: 'dice', path: '/dice?roll={NdX+M}' },
         { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
