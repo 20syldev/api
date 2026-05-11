@@ -104,6 +104,7 @@ const v4 = {
             name: 'qrcode',
             path: '/qrcode?url={URL}(&size={px}&margin={n}&correction={L|M|Q|H}&dark={hex}&light={hex}&icon={URL}&iconSize={px}&iconPadding={px}&iconRadius={px}&format={png|base64})',
         },
+        { name: 'regex', path: '/regex?pattern={regex}&text={string}(&flags={flags})' },
         { name: 'statistics', path: '/statistics?values={n1,n2,n3,...}' },
         { name: 'text', path: '/text?method={method}(&value={value}&type={type}&count={count}&lang={lang})' },
         { name: 'validate', path: '/validate?type={type}&value={value}' },
