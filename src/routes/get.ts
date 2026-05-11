@@ -257,6 +257,34 @@ router.get('/:version/domain', (req: Request, res: Response) => {
     }
 });
 
+// Parse a cron expression and compute next execution dates
+router.get('/:version/cron', (req: Request, res: Response) => {
+    const { expr, count, from, timezone } = req.query;
+    const { version } = req.params;
+
+    const cronFn = (req.module as { cron?: (e: string, n?: number, f?: string, tz?: string) => unknown }).cron;
+    if (!cronFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/cron`);
+        return;
+    }
+    if (!expr) {
+        error(res, 400, 'Please provide a cron expression (?expr=* * * * *)', `${version}/cron`);
+        return;
+    }
+
+    try {
+        const result = cronFn(
+            expr as string,
+            count !== undefined ? parseInt(count as string, 10) : 5,
+            from as string | undefined,
+            (timezone as string) ?? 'UTC',
+        );
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/cron`);
+    }
+});
+
 // RPG Dice roller
 router.get('/:version/dice', (req: Request, res: Response) => {
     const { roll } = req.query;
