@@ -5,8 +5,11 @@ import { versions } from '../config/versions.js';
 import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
 import type { AddressResult } from '../modules/v4/address.js';
 import type { UserAgentResult } from '../modules/v4/agent.js';
+import type { AvatarOptions, AvatarResult } from '../modules/v4/avatar.js';
+import type { BarcodeOptions, BarcodeResult } from '../modules/v4/barcode.js';
 import type { CaptchaOptions, CaptchaResult } from '../modules/v4/captcha.js';
 import type { ColorResult } from '../modules/v4/color.js';
+import type { CreditResult } from '../modules/v4/credit.js';
 import type { IpResult } from '../modules/v4/ip.js';
 import type { PasswordResult } from '../modules/v4/password.js';
 import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
@@ -244,6 +247,77 @@ router.get('/:version/agent', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/agent`);
+    }
+});
+
+// Generate an identicon or pixel-art avatar from a seed
+router.get('/:version/avatar', (req: Request, res: Response) => {
+    const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
+    if (!avatarFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/avatar`);
+        return;
+    }
+    const { seed, size, type, bg, format } = req.query;
+    try {
+        const { contentType, body } = avatarFn({
+            seed: seed as string | undefined,
+            size: size !== undefined ? parseInt(size as string, 10) : undefined,
+            type: type as string | undefined,
+            bg: bg as string | undefined,
+            format: format as string | undefined,
+        });
+        res.type(contentType).send(body);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/avatar`);
+    }
+});
+
+// Generate a barcode image
+router.get('/:version/barcode', (req: Request, res: Response) => {
+    const barcodeFn = (req.module as { barcode?: (opts: BarcodeOptions) => BarcodeResult }).barcode;
+    if (!barcodeFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/barcode`);
+        return;
+    }
+    const { data, type, width, height, format, color, bg } = req.query;
+    if (!data) {
+        error(res, 400, 'Please provide data to encode (?data={string})', `${req.version}/barcode`);
+        return;
+    }
+    try {
+        const { contentType, body } = barcodeFn({
+            data: data as string,
+            type: type as string | undefined,
+            width: width !== undefined ? parseInt(width as string, 10) : undefined,
+            height: height !== undefined ? parseInt(height as string, 10) : undefined,
+            format: format as string | undefined,
+            color: color as string | undefined,
+            bg: bg as string | undefined,
+        });
+        res.type(contentType).send(body);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/barcode`);
+    }
+});
+
+// Generate fictitious credit card numbers
+router.get('/:version/credit', (req: Request, res: Response) => {
+    const creditFn = (req.module as { credit?: (brand?: string, count?: number, format?: string) => CreditResult })
+        .credit;
+    if (!creditFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/credit`);
+        return;
+    }
+    const { brand, count, format } = req.query;
+    try {
+        const result = creditFn(
+            brand as string | undefined,
+            count !== undefined ? parseInt(count as string, 10) : 1,
+            format as string | undefined,
+        );
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/credit`);
     }
 });
 
