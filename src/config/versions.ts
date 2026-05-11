@@ -86,6 +86,7 @@ const v4 = {
         },
         { name: 'color', path: '/color(&hex={hex})' },
         { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
+        { name: 'cron', path: '/cron?expr={expression}(&count={n}&from={date}&timezone={timezone})' },
         { name: 'dice', path: '/dice?roll={NdX+M}' },
         { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
         { name: 'geo', path: '/geo?lat1={lat}&lon1={lon}&lat2={lat}&lon2={lon}' },
