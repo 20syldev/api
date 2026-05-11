@@ -1,5 +1,6 @@
 import { random, randomNumber } from '../../utils/helpers.js';
 import addressFn from './address.js';
+import creditFn from './credit.js';
 
 interface Person {
     name: string;
@@ -48,9 +49,12 @@ export default function personal(): Record<string, unknown> {
 
     const jobs = ['Writer', 'Artist', 'Musician', 'Explorer', 'Scientist', 'Engineer', 'Athlete', 'Doctor'];
     const hobbies = ['Reading', 'Traveling', 'Gaming', 'Cooking', 'Fitness', 'Music', 'Photography', 'Writing'];
-    const card = Array.from({ length: 4 }, () => randomNumber(1000, 9999)).join(' ');
-    const cvc = randomNumber(100, 999);
-    const expiration = `${String(randomNumber(1, 12)).padStart(2, '0')}/${(new Date().getFullYear() + randomNumber(0, 3)).toString().slice(-2)}`;
+    const {
+        cards: [generatedCard],
+    } = creditFn(undefined, 1, 'full');
+    const card = generatedCard!.formatted;
+    const cvc = generatedCard!.cvv;
+    const expiration = generatedCard!.expiry;
 
     const person = random(people);
     const social = person.social;
