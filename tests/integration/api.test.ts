@@ -754,6 +754,92 @@ describe('GET /v4/regex', () => {
     });
 });
 
+describe('GET /v4/barcode', () => {
+    test('returns SVG by default', async () => {
+        const res = await fetch(`${baseUrl}/v4/barcode?data=Hello123`);
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type')?.includes('image/svg+xml'));
+        const text = await res.text();
+        assert.ok(text.includes('<svg'));
+    });
+
+    test('EAN-13 with 12 digits auto-calculates check digit', async () => {
+        const res = await fetch(`${baseUrl}/v4/barcode?data=978030640615&type=ean13`);
+        assert.equal(res.status, 200);
+    });
+
+    test('PNG format returns image/png', async () => {
+        const res = await fetch(`${baseUrl}/v4/barcode?data=Hello&format=png`);
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type')?.includes('image/png'));
+    });
+
+    test('missing data returns 400', async () => {
+        const { status } = await getJson('/v4/barcode');
+        assert.equal(status, 400);
+    });
+
+    test('invalid type returns 400', async () => {
+        const { status } = await getJson('/v4/barcode?data=test&type=qr');
+        assert.equal(status, 400);
+    });
+});
+
+describe('GET /v4/avatar', () => {
+    test('returns PNG by default', async () => {
+        const res = await fetch(`${baseUrl}/v4/avatar?seed=test`);
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type')?.includes('image/png'));
+    });
+
+    test('SVG format returns SVG content type', async () => {
+        const res = await fetch(`${baseUrl}/v4/avatar?seed=test&format=svg`);
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type')?.includes('image/svg+xml'));
+        const text = await res.text();
+        assert.ok(text.includes('<svg'));
+    });
+
+    test('same seed is deterministic', async () => {
+        const [a, b] = await Promise.all([
+            fetch(`${baseUrl}/v4/avatar?seed=fixed`).then((r) => r.arrayBuffer()),
+            fetch(`${baseUrl}/v4/avatar?seed=fixed`).then((r) => r.arrayBuffer()),
+        ]);
+        assert.deepEqual(Buffer.from(a!), Buffer.from(b!));
+    });
+
+    test('invalid type returns 400', async () => {
+        const { status } = await getJson('/v4/avatar?seed=test&type=geometric');
+        assert.equal(status, 400);
+    });
+});
+
+describe('GET /v4/credit', () => {
+    test('returns cards array by default', async () => {
+        const { status, body } = await getJson('/v4/credit');
+        assert.equal(status, 200);
+        assert.ok(Array.isArray(body.cards));
+        assert.equal(body.cards.length, 1);
+    });
+
+    test('brand param respected', async () => {
+        const { status, body } = await getJson('/v4/credit?brand=visa');
+        assert.equal(status, 200);
+        assert.equal((body as { cards: { brand: string }[] }).cards[0]!.brand, 'visa');
+    });
+
+    test('count param respected', async () => {
+        const { status, body } = await getJson('/v4/credit?count=3');
+        assert.equal(status, 200);
+        assert.equal((body as { cards: unknown[] }).cards.length, 3);
+    });
+
+    test('unknown brand returns 400', async () => {
+        const { status } = await getJson('/v4/credit?brand=diners');
+        assert.equal(status, 400);
+    });
+});
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
