@@ -509,6 +509,33 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
     }
 });
 
+// Test a regex pattern against a text
+router.get('/:version/regex', (req: Request, res: Response) => {
+    const { pattern, text, flags } = req.query;
+    const { version } = req.params;
+
+    const regexFn = (req.module as { regex?: (p: string, t: string, f?: string) => unknown }).regex;
+    if (!regexFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/regex`);
+        return;
+    }
+    if (!pattern) {
+        error(res, 400, 'Please provide a pattern (?pattern={regex})', `${version}/regex`);
+        return;
+    }
+    if (!text) {
+        error(res, 400, 'Please provide a text (&text={string})', `${version}/regex`);
+        return;
+    }
+
+    try {
+        const result = regexFn(pattern as string, text as string, flags as string | undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/regex`);
+    }
+});
+
 // Statistics on a list of numbers
 router.get('/:version/statistics', (req: Request, res: Response) => {
     const { values } = req.query;
