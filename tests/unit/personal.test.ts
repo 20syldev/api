@@ -28,15 +28,15 @@ describe('personal', () => {
         }
     });
 
-    test('card has 4 groups of 4 digits', () => {
+    test('card is a valid formatted card number', () => {
         const result = personal();
-        assert.match(result.card as string, /^\d{4} \d{4} \d{4} \d{4}$/);
+        // Visa/MC/Discover: 4-4-4-4, Amex: 4-6-5
+        assert.match(result.card as string, /^(\d{4} \d{4} \d{4} \d{4}|\d{4} \d{6} \d{5})$/);
     });
 
-    test('cvc is 3 digits', () => {
+    test('cvc is 3 or 4 digit string', () => {
         const result = personal();
-        const cvc = result.cvc as number;
-        assert.ok(cvc >= 100 && cvc <= 999);
+        assert.match(result.cvc as string, /^\d{3,4}$/);
     });
 
     test('expiration MM/YY format', () => {
