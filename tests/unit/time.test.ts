@@ -65,4 +65,51 @@ describe('time', () => {
         const result = time('live', undefined, undefined, undefined, 'Europe/Paris');
         assert.equal(result.timezone, 'Europe/Paris');
     });
+
+    describe('countdown', () => {
+        test('future date returns direction future', () => {
+            const future = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+            const r = time('countdown', undefined, undefined, undefined, undefined, future);
+            assert.equal(r.direction, 'future');
+        });
+
+        test('past date returns direction past', () => {
+            const past = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+            const r = time('countdown', undefined, undefined, undefined, undefined, past);
+            assert.equal(r.direction, 'past');
+        });
+
+        test('remaining breakdown is correct', () => {
+            const target = new Date(Date.now() + 2 * 86400 * 1000 + 3 * 3600 * 1000).toISOString();
+            const r = time('countdown', undefined, undefined, undefined, undefined, target);
+            const rem = r.remaining as { days: number; hours: number };
+            assert.equal(rem.days, 2);
+            assert.equal(rem.hours, 3);
+        });
+
+        test('human skips zero units', () => {
+            const target = new Date(Date.now() + 3 * 86400 * 1000).toISOString();
+            const r = time('countdown', undefined, undefined, undefined, undefined, target);
+            assert.ok(!(r.human as string).includes('hour'));
+            assert.ok(!(r.human as string).includes('minute'));
+        });
+
+        test('throws on missing target', () => {
+            assert.throws(() => time('countdown'), /target date/);
+        });
+
+        test('throws on invalid target', () => {
+            assert.throws(
+                () => time('countdown', undefined, undefined, undefined, undefined, 'not-a-date'),
+                /valid target date/,
+            );
+        });
+
+        test('throws if target is more than 100 years away', () => {
+            assert.throws(
+                () => time('countdown', undefined, undefined, undefined, undefined, '2200-01-01'),
+                /100 years/,
+            );
+        });
+    });
 });
