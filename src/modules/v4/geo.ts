@@ -5,7 +5,8 @@ export interface GeoResult {
     to: { lat: number; lon: number };
 }
 
-const EARTH_RADIUS_KM = 6371;
+import { EARTH_RADIUS_KM } from '../../constants.js';
+
 const CARDINALS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
 function toRad(deg: number): number {

@@ -1,6 +1,5 @@
+import { MAX_ADDRESS_COUNT } from '../../constants.js';
 import { random, randomNumber } from '../../utils/helpers.js';
-
-const MAX_COUNT = 10;
 
 interface CountryData {
     name: string;
@@ -389,8 +388,8 @@ export interface AddressResult {
  * @throws Error if the country code is invalid or count is out of range
  */
 export default function address(countryCode?: string, count: number = 1): AddressResult {
-    if (count < 1 || count > MAX_COUNT) {
-        throw new Error(`Count must be between 1 and ${MAX_COUNT}`);
+    if (count < 1 || count > MAX_ADDRESS_COUNT) {
+        throw new Error(`Count must be between 1 and ${MAX_ADDRESS_COUNT}`);
     }
 
     const code = (countryCode ?? random(countryKeys)).toLowerCase();

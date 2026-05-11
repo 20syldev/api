@@ -1,8 +1,6 @@
 import { randomInt } from 'crypto';
 
-const MIN_LENGTH = 8;
-const MAX_LENGTH = 128;
-const MAX_COUNT = 20;
+import { MAX_PASSWORD_COUNT, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../constants.js';
 
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
@@ -327,8 +325,8 @@ export default function password(
         separator = '-',
     } = options;
 
-    if (count < 1 || count > MAX_COUNT) {
-        throw new Error(`Count must be between 1 and ${MAX_COUNT}`);
+    if (count < 1 || count > MAX_PASSWORD_COUNT) {
+        throw new Error(`Count must be between 1 and ${MAX_PASSWORD_COUNT}`);
     }
 
     if (type === 'passphrase') {
@@ -348,8 +346,8 @@ export default function password(
         throw new Error('Type must be "random" or "passphrase"');
     }
 
-    if (isNaN(length) || length < MIN_LENGTH || length > MAX_LENGTH) {
-        throw new Error(`Length must be between ${MIN_LENGTH} and ${MAX_LENGTH}`);
+    if (isNaN(length) || length < MIN_PASSWORD_LENGTH || length > MAX_PASSWORD_LENGTH) {
+        throw new Error(`Length must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH}`);
     }
 
     let charset = '';

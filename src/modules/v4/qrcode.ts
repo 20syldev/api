@@ -1,6 +1,7 @@
 import { createCanvas, loadImage } from 'canvas';
 import { toBuffer, toCanvas as qrToCanvas, toDataURL } from 'qrcode';
 
+import { MAX_QRCODE_LOGO_BYTES } from '../../constants.js';
 import { normalizeColor } from '../../utils/colors.js';
 
 export interface QRCodeOptions {
@@ -24,7 +25,6 @@ export interface QRCodeResult {
 
 const CORRECTIONS = new Set(['L', 'M', 'Q', 'H']);
 const FORMATS = new Set(['png', 'base64']);
-const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 function clamp(value: number | undefined, name: string, def: number, min: number, max: number): number {
     if (value === undefined) return def;
@@ -44,7 +44,7 @@ async function fetchIcon(url: string): Promise<Buffer> {
     if (!contentType.startsWith('image/')) throw new Error('Icon URL must point to an image');
 
     const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.length > MAX_LOGO_BYTES) throw new Error('Icon must be under 2MB');
+    if (buffer.length > MAX_QRCODE_LOGO_BYTES) throw new Error('Icon must be under 2MB');
 
     return buffer;
 }
