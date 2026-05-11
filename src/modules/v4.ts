@@ -18,6 +18,7 @@ export { default as password } from './v4/password.js';
 export { default as personal } from './v4/personal.js';
 export { default as placeholder } from './v4/placeholder.js';
 export { default as qrcode } from './v4/qrcode.js';
+export { default as regex } from './v4/regex.js';
 export { default as statistics } from './v4/statistics.js';
 export * as text from './v4/text.js';
 export { default as tic_tac_toe } from './v4/tic_tac_toe.js';
