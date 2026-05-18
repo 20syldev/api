@@ -120,6 +120,11 @@ const v4 = {
         { name: 'validate', path: '/validate?type={type}&value={value}' },
     ]),
     post: [...v3.post],
+    patch: [{ name: 'tic-tac-toe', path: '/tic-tac-toe/:game' }],
+    delete: [
+        { name: 'chat', path: '/chat/:token' },
+        { name: 'tic-tac-toe', path: '/tic-tac-toe/:game' },
+    ],
 };
 
 export const versions: Record<string, VersionConfig> = {
