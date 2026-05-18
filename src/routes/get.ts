@@ -62,6 +62,39 @@ router.get('/:version', (req: Request, res: Response) => {
     });
 });
 
+// Generate a fictional postal address
+router.get('/:version/address', (req: Request, res: Response) => {
+    const { country, count } = req.query;
+    const { version } = req.params;
+
+    const addressFn = (req.module as { address?: (c?: string, n?: number) => AddressResult }).address;
+    if (!addressFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/address`);
+        return;
+    }
+
+    const parsedCount = count !== undefined ? parseInt(count as string, 10) : 1;
+
+    try {
+        const result = addressFn(country as string | undefined, parsedCount);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/address`);
+    }
+});
+
+// Parse a User-Agent string
+router.get('/:version/agent', (req: Request, res: Response) => {
+    const ua = (req.query.ua as string | undefined) ?? (req.headers['user-agent'] as string) ?? '';
+    try {
+        const agentFn = (req.module as Record<string, unknown>).agent as (ua: string) => UserAgentResult;
+        const result = agentFn(ua);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/agent`);
+    }
+});
+
 // Algorithms
 router.get('/:version/algorithms', (req: Request, res: Response) => {
     const { method, value, value2 } = req.query;
@@ -78,6 +111,56 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
         res.jsonResponse({ answer });
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/algorithms`);
+    }
+});
+
+// Generate an identicon or pixel-art avatar from a seed
+router.get('/:version/avatar', (req: Request, res: Response) => {
+    const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
+    if (!avatarFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/avatar`);
+        return;
+    }
+    const { seed, size, type, bg, format } = req.query;
+    try {
+        const { contentType, body } = avatarFn({
+            seed: seed as string | undefined,
+            size: size !== undefined ? parseInt(size as string, 10) : undefined,
+            type: type as string | undefined,
+            bg: bg as string | undefined,
+            format: format as string | undefined,
+        });
+        res.type(contentType).send(body);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/avatar`);
+    }
+});
+
+// Generate a barcode image
+router.get('/:version/barcode', (req: Request, res: Response) => {
+    const barcodeFn = (req.module as { barcode?: (opts: BarcodeOptions) => BarcodeResult }).barcode;
+    if (!barcodeFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/barcode`);
+        return;
+    }
+    const { data, type, width, height, format, color, bg } = req.query;
+    if (!data) {
+        error(res, 400, 'Please provide data to encode (?data={string})', `${req.version}/barcode`);
+        return;
+    }
+    try {
+        const { contentType, body } = barcodeFn({
+            data: data as string,
+            type: type as string | undefined,
+            width: width !== undefined ? parseInt(width as string, 10) : undefined,
+            height: height !== undefined ? parseInt(height as string, 10) : undefined,
+            format: format as string | undefined,
+            color: color as string | undefined,
+            bg: bg as string | undefined,
+        });
+        res.type(contentType).send(body);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/barcode`);
     }
 });
 
@@ -110,6 +193,7 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
         error(res, 400, (err as Error).message, `${req.version}/captcha`);
     }
 });
+
 
 // Display stored data
 router.get('/:version/chat', (req: Request, res: Response) => {
@@ -181,125 +265,6 @@ router.get('/:version/convert', (req: Request, res: Response) => {
     }
 });
 
-// Generate a fictional postal address
-router.get('/:version/address', (req: Request, res: Response) => {
-    const { country, count } = req.query;
-    const { version } = req.params;
-
-    const addressFn = (req.module as { address?: (c?: string, n?: number) => AddressResult }).address;
-    if (!addressFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${version}/address`);
-        return;
-    }
-
-    const parsedCount = count !== undefined ? parseInt(count as string, 10) : 1;
-
-    try {
-        const result = addressFn(country as string | undefined, parsedCount);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/address`);
-    }
-});
-
-// Echo request headers
-router.get('/:version/headers', (req: Request, res: Response) => {
-    const redacted = new Set(['authorization', 'cookie', 'set-cookie', 'proxy-authorization']);
-    let headers: Record<string, unknown> = {};
-
-    for (const [k, v] of Object.entries(req.headers)) {
-        headers[k] = redacted.has(k) ? '[redacted]' : v;
-    }
-
-    const filter = req.query.filter as string | undefined;
-    if (filter) {
-        const keys = new Set(filter.split(',').map((k) => k.trim().toLowerCase()));
-        headers = Object.fromEntries(Object.entries(headers).filter(([k]) => keys.has(k)));
-    }
-
-    res.jsonResponse({
-        count: Object.keys(headers).length,
-        headers,
-        ip: req.ip,
-        method: req.method,
-        url: req.originalUrl,
-    });
-});
-
-// Analyze an IP address
-router.get('/:version/ip', (req: Request, res: Response) => {
-    const address = (req.query.address as string | undefined) ?? req.ip ?? '';
-    try {
-        const ipFn = (req.module as Record<string, unknown>).ip as (a: string) => IpResult;
-        const result = ipFn(address);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/ip`);
-    }
-});
-
-// Parse a User-Agent string
-router.get('/:version/agent', (req: Request, res: Response) => {
-    const ua = (req.query.ua as string | undefined) ?? (req.headers['user-agent'] as string) ?? '';
-    try {
-        const agentFn = (req.module as Record<string, unknown>).agent as (ua: string) => UserAgentResult;
-        const result = agentFn(ua);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/agent`);
-    }
-});
-
-// Generate an identicon or pixel-art avatar from a seed
-router.get('/:version/avatar', (req: Request, res: Response) => {
-    const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
-    if (!avatarFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/avatar`);
-        return;
-    }
-    const { seed, size, type, bg, format } = req.query;
-    try {
-        const { contentType, body } = avatarFn({
-            seed: seed as string | undefined,
-            size: size !== undefined ? parseInt(size as string, 10) : undefined,
-            type: type as string | undefined,
-            bg: bg as string | undefined,
-            format: format as string | undefined,
-        });
-        res.type(contentType).send(body);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/avatar`);
-    }
-});
-
-// Generate a barcode image
-router.get('/:version/barcode', (req: Request, res: Response) => {
-    const barcodeFn = (req.module as { barcode?: (opts: BarcodeOptions) => BarcodeResult }).barcode;
-    if (!barcodeFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.version}/barcode`);
-        return;
-    }
-    const { data, type, width, height, format, color, bg } = req.query;
-    if (!data) {
-        error(res, 400, 'Please provide data to encode (?data={string})', `${req.version}/barcode`);
-        return;
-    }
-    try {
-        const { contentType, body } = barcodeFn({
-            data: data as string,
-            type: type as string | undefined,
-            width: width !== undefined ? parseInt(width as string, 10) : undefined,
-            height: height !== undefined ? parseInt(height as string, 10) : undefined,
-            format: format as string | undefined,
-            color: color as string | undefined,
-            bg: bg as string | undefined,
-        });
-        res.type(contentType).send(body);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/barcode`);
-    }
-});
-
 // Generate fictitious credit card numbers
 router.get('/:version/credit', (req: Request, res: Response) => {
     const creditFn = (req.module as { credit?: (brand?: string, count?: number, format?: string) => CreditResult })
@@ -318,16 +283,6 @@ router.get('/:version/credit', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/credit`);
-    }
-});
-
-// Generate domain informations
-router.get('/:version/domain', (req: Request, res: Response) => {
-    try {
-        const result = req.module.domain();
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/domain`);
     }
 });
 
@@ -382,6 +337,16 @@ router.get('/:version/dice', (req: Request, res: Response) => {
     }
 });
 
+// Generate domain informations
+router.get('/:version/domain', (req: Request, res: Response) => {
+    try {
+        const result = req.module.domain();
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/domain`);
+    }
+});
+
 // Encode / decode text
 router.get('/:version/encode', (req: Request, res: Response) => {
     const { method, text, shift } = req.query;
@@ -404,6 +369,7 @@ router.get('/:version/encode', (req: Request, res: Response) => {
         error(res, 400, (err as Error).message, `${req.version}/encode`);
     }
 });
+
 
 // Geographic distance and bearing between two coordinates
 router.get('/:version/geo', (req: Request, res: Response) => {
@@ -428,13 +394,37 @@ router.get('/:version/geo', (req: Request, res: Response) => {
     }
 });
 
-// GET planning error
-router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
+// GET hash error
+router.get('/:version/hash', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
 });
 
-// GET hash error
-router.get('/:version/hash', (_req: Request, res: Response) => {
+// Echo request headers
+router.get('/:version/headers', (req: Request, res: Response) => {
+    const redacted = new Set(['authorization', 'cookie', 'set-cookie', 'proxy-authorization']);
+    let headers: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(req.headers)) {
+        headers[k] = redacted.has(k) ? '[redacted]' : v;
+    }
+
+    const filter = req.query.filter as string | undefined;
+    if (filter) {
+        const keys = new Set(filter.split(',').map((k) => k.trim().toLowerCase()));
+        headers = Object.fromEntries(Object.entries(headers).filter(([k]) => keys.has(k)));
+    }
+
+    res.jsonResponse({
+        count: Object.keys(headers).length,
+        headers,
+        ip: req.ip,
+        method: req.method,
+        url: req.originalUrl,
+    });
+});
+
+// GET planning error
+router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
 });
 
@@ -451,6 +441,18 @@ router.get('/:version/infos', (req: Request, res: Response) => {
         github: 'https://github.com/20syldev/api',
         creation: 'November 25th 2024',
     });
+});
+
+// Analyze an IP address
+router.get('/:version/ip', (req: Request, res: Response) => {
+    const address = (req.query.address as string | undefined) ?? req.ip ?? '';
+    try {
+        const ipFn = (req.module as Record<string, unknown>).ip as (a: string) => IpResult;
+        const result = ipFn(address);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/ip`);
+    }
 });
 
 // Calculate Levenshtein distance
@@ -473,6 +475,7 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
         error(res, 400, (err as Error).message, `${req.version}/levenshtein`);
     }
 });
+
 
 // Generate a color palette from a base color
 router.get('/:version/palette', (req: Request, res: Response) => {
@@ -698,33 +701,6 @@ router.get('/:version/text', (req: Request, res: Response) => {
     }
 });
 
-// Validate data (luhn, iban, email)
-router.get('/:version/validate', (req: Request, res: Response) => {
-    const { type, value } = req.query;
-    const { version } = req.params;
-
-    const validate = (req.module as { validate?: Record<string, (v: string) => unknown> }).validate;
-    if (!validate) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${version}/validate`);
-        return;
-    }
-    if (!type || !Object.hasOwn(validate, type as string)) {
-        error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})', `${version}/validate`);
-        return;
-    }
-    if (!value) {
-        error(res, 400, 'Please provide a value (&value={value})', `${version}/validate`);
-        return;
-    }
-
-    try {
-        const result = validate[type as string]!(value as string);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/validate`);
-    }
-});
-
 // GET tic-tac-toe errors
 router.get('/:version/tic-tac-toe', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
@@ -777,6 +753,33 @@ router.get('/:version/username', (req: Request, res: Response) => {
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/username`);
+    }
+});
+
+// Validate data (luhn, iban, email)
+router.get('/:version/validate', (req: Request, res: Response) => {
+    const { type, value } = req.query;
+    const { version } = req.params;
+
+    const validate = (req.module as { validate?: Record<string, (v: string) => unknown> }).validate;
+    if (!validate) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${version}/validate`);
+        return;
+    }
+    if (!type || !Object.hasOwn(validate, type as string)) {
+        error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})', `${version}/validate`);
+        return;
+    }
+    if (!value) {
+        error(res, 400, 'Please provide a value (&value={value})', `${version}/validate`);
+        return;
+    }
+
+    try {
+        const result = validate[type as string]!(value as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/validate`);
     }
 });
 
