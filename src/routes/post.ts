@@ -8,6 +8,35 @@ import { error } from '../utils/response.js';
 
 const router = Router();
 
+// Generate a chart as SVG
+router.post('/:version/chart', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { type, data, title, width, height, colors, bg, legend, mode } = body;
+    const { version } = req.params;
+
+    type ChartOutput = { contentType: string; body: string | Record<string, unknown> };
+    const chartMod = (req.module as { chart?: Record<string, (d: unknown, o: unknown) => ChartOutput> }).chart;
+    if (!chartMod) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/chart`);
+        return;
+    }
+    if (!type || typeof type !== 'string' || !Object.hasOwn(chartMod, type)) {
+        error(res, 400, 'Please provide a valid chart type (?type=bar|line|pie|donut)', `${version}/chart`);
+        return;
+    }
+
+    try {
+        const output = chartMod[type]!(data, { title, width, height, colors, bg, legend, mode });
+        if (output.contentType === 'application/json') {
+            res.jsonResponse(output.body as Record<string, unknown>);
+        } else {
+            res.type(output.contentType).send(output.body as string);
+        }
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/chart`);
+    }
+});
+
 // Store chat messages
 router.post('/:version/chat', (req: Request, res: Response) => {
     const { username, message, timestamp, session, token } = (req.body as Record<string, string>) || {};
@@ -106,6 +135,55 @@ router.post('/:version/hyperplanning', async (req: Request, res: Response) => {
         res.jsonResponse(hyperplanning);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/hyperplanning`);
+    }
+});
+
+// Matrix operations
+router.post('/:version/matrix', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { operation, matrix: m, matrix2, scalar } = body;
+    const { version } = req.params;
+
+    const matrixMod = (req.module as { matrix?: Record<string, (...args: unknown[]) => unknown> }).matrix;
+    if (!matrixMod) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/matrix`);
+        return;
+    }
+    if (!operation || typeof operation !== 'string' || !Object.hasOwn(matrixMod, operation)) {
+        error(
+            res,
+            400,
+            'Please provide a valid operation (?operation=add|subtract|multiply|scalar|transpose|determinant|inverse|identity)',
+            `${version}/matrix`,
+        );
+        return;
+    }
+
+    try {
+        let result: unknown;
+        switch (operation) {
+            case 'add':
+            case 'subtract':
+            case 'multiply':
+                result = matrixMod[operation]!(m, matrix2);
+                break;
+            case 'scalar':
+                result = matrixMod.scalar!(m, scalar);
+                break;
+            case 'transpose':
+            case 'determinant':
+            case 'inverse':
+                result = matrixMod[operation]!(m);
+                break;
+            case 'identity':
+                result = matrixMod.identity!(scalar);
+                break;
+            default:
+                throw new Error('Unknown operation');
+        }
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/matrix`);
     }
 });
 

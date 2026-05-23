@@ -194,6 +194,11 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
     }
 });
 
+// GET chart error
+router.get('/:version/chart', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
+});
+
 // Display stored data
 router.get('/:version/chat', (req: Request, res: Response) => {
     try {
@@ -495,6 +500,11 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/levenshtein`);
     }
+});
+
+// GET matrix error
+router.get('/:version/matrix', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
 });
 
 // Generate a color palette from a base color
