@@ -1,5 +1,6 @@
 import * as apiv3 from '../modules/v3.js';
 import * as apiv4 from '../modules/v4.js';
+import * as apiv5 from '../modules/v5.js';
 
 export interface Endpoint {
     name: string;
@@ -14,7 +15,7 @@ export interface VersionConfig {
         patch?: Endpoint[];
         delete?: Endpoint[];
     };
-    modules: typeof apiv3 | typeof apiv4;
+    modules: typeof apiv3 | typeof apiv4 | typeof apiv5;
 }
 
 /**
@@ -127,9 +128,20 @@ const v4 = {
     ],
 };
 
+const v5 = {
+    get: merge(v4.get, [{ name: 'evaluate', path: '/evaluate?expr={expression}(&precision={0-15})' }]),
+    post: merge(v4.post, [
+        { name: 'chart', path: '/chart' },
+        { name: 'matrix', path: '/matrix' },
+    ]),
+    patch: [...v4.patch!],
+    delete: [...v4.delete!],
+};
+
 export const versions: Record<string, VersionConfig> = {
     v1: { endpoints: v1, modules: apiv3 },
     v2: { endpoints: v2, modules: apiv3 },
     v3: { endpoints: v3, modules: apiv3 },
     v4: { endpoints: v4, modules: apiv4 },
+    v5: { endpoints: v5, modules: apiv5 },
 };
