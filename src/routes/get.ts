@@ -369,6 +369,29 @@ router.get('/:version/encode', (req: Request, res: Response) => {
     }
 });
 
+// Evaluate a math expression
+router.get('/:version/evaluate', (req: Request, res: Response) => {
+    const { expr, precision } = req.query;
+    const { version } = req.params;
+
+    const evaluateFn = (req.module as { evaluate?: (e: string, p?: number) => unknown }).evaluate;
+    if (!evaluateFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/evaluate`);
+        return;
+    }
+    if (!expr || typeof expr !== 'string') {
+        error(res, 400, 'Please provide a math expression (?expr={expression})', `${version}/evaluate`);
+        return;
+    }
+
+    try {
+        const result = evaluateFn(expr, precision !== undefined ? parseInt(precision as string, 10) : undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/evaluate`);
+    }
+});
+
 // Geographic distance and bearing between two coordinates
 router.get('/:version/geo', (req: Request, res: Response) => {
     const { lat1, lon1, lat2, lon2 } = req.query;
