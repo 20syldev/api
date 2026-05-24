@@ -44,6 +44,8 @@ async function sendJson(
     return { status: res.status, body: data };
 }
 
+// --- v4 endpoints ---
+
 // --- GET endpoints ---
 
 describe('GET / (version listing)', () => {
@@ -837,6 +839,241 @@ describe('GET /v4/credit', () => {
     test('unknown brand returns 400', async () => {
         const { status } = await getJson('/v4/credit?brand=diners');
         assert.equal(status, 400);
+    });
+});
+
+// --- v5 endpoints ---
+
+// --- GET endpoints ---
+
+describe('GET / (version listing)', () => {
+    test('v5 endpoints listed', async () => {
+        const { body } = await getJson('/v5');
+        assert.equal(body.version, 'v5');
+        const endpoints = body.endpoints as Record<string, Record<string, string>>;
+        assert.ok('evaluate' in endpoints.get!);
+        assert.ok('chart' in endpoints.post!);
+        assert.ok('matrix' in endpoints.post!);
+    });
+});
+
+describe('GET /v5/evaluate', () => {
+    test('basic expression returns correct result', async () => {
+        const { status, body } = await getJson('/v5/evaluate?expr=2%2B3*4');
+        assert.equal(status, 200);
+        assert.equal(body.result, 14);
+        assert.equal(body.expression, '2+3*4');
+    });
+    test('precision param is respected', async () => {
+        const { body } = await getJson('/v5/evaluate?expr=1%2F3&precision=2');
+        assert.equal(body.result, 0.33);
+        assert.equal(body.precision, 2);
+    });
+    test('constants work', async () => {
+        const { status, body } = await getJson('/v5/evaluate?expr=pi&precision=5');
+        assert.equal(status, 200);
+        assert.equal(body.result, 3.14159);
+    });
+    test('missing expr returns 400', async () => {
+        const { status } = await getJson('/v5/evaluate');
+        assert.equal(status, 400);
+    });
+    test('division by zero returns 400', async () => {
+        const { status } = await getJson('/v5/evaluate?expr=1%2F0');
+        assert.equal(status, 400);
+    });
+    test('unknown identifier returns 400', async () => {
+        const { status } = await getJson('/v5/evaluate?expr=foo');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson('/v4/evaluate?expr=1%2B1');
+        assert.equal(status, 404);
+    });
+});
+
+// --- POST endpoints ---
+
+describe('POST /v5/chart', () => {
+    test('bar chart returns SVG content type', async () => {
+        const res = await fetch(`${baseUrl}/v5/chart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'bar',
+                data: { labels: ['A', 'B'], datasets: [{ label: 'X', values: [10, 20] }] },
+            }),
+        });
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type')?.includes('image/svg+xml'));
+        const svg = await res.text();
+        assert.ok(svg.startsWith('<svg'));
+        assert.ok(svg.includes('<rect'));
+    });
+    test('line chart returns SVG', async () => {
+        const res = await fetch(`${baseUrl}/v5/chart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'line',
+                data: { labels: ['A', 'B'], datasets: [{ label: '', values: [1, 2] }] },
+            }),
+        });
+        assert.equal(res.status, 200);
+        const svg = await res.text();
+        assert.ok(svg.includes('<polyline'));
+    });
+    test('pie chart returns SVG', async () => {
+        const res = await fetch(`${baseUrl}/v5/chart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'pie',
+                data: { labels: ['X', 'Y'], values: [60, 40] },
+            }),
+        });
+        assert.equal(res.status, 200);
+        const svg = await res.text();
+        assert.ok(svg.includes('<path'));
+    });
+    test('missing type returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/chart', {
+            data: { labels: ['A'], datasets: [{ label: '', values: [1] }] },
+        });
+        assert.equal(status, 400);
+    });
+    test('invalid type returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/chart', {
+            type: 'histogram',
+            data: { labels: ['A'], datasets: [{ label: '', values: [1] }] },
+        });
+        assert.equal(status, 400);
+    });
+    test('missing data returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/chart', { type: 'bar' });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/chart returns 405', async () => {
+        const { status } = await getJson('/v5/chart');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/chart', { type: 'bar' });
+        assert.equal(status, 404);
+    });
+    test('mode=data returns JSON with labels and scale', async () => {
+        const { status, body } = await sendJson('POST', '/v5/chart', {
+            type: 'bar',
+            data: { labels: ['Jan', 'Fév'], datasets: [{ label: 'Sales', values: [10, 20] }] },
+            mode: 'data',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.type, 'bar');
+        assert.deepEqual(body.labels, ['Jan', 'Fév']);
+        assert.ok(body.scale);
+    });
+    test('mode=data pie returns slices', async () => {
+        const { status, body } = await sendJson('POST', '/v5/chart', {
+            type: 'pie',
+            data: { labels: ['A', 'B'], values: [60, 40] },
+            mode: 'data',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.type, 'pie');
+        assert.ok(Array.isArray(body.slices));
+    });
+});
+
+describe('POST /v5/matrix', () => {
+    test('add operation', async () => {
+        const { status, body } = await sendJson('POST', '/v5/matrix', {
+            operation: 'add',
+            matrix: [
+                [1, 2],
+                [3, 4],
+            ],
+            matrix2: [
+                [5, 6],
+                [7, 8],
+            ],
+        });
+        assert.equal(status, 200);
+        assert.deepEqual(body.result, [
+            [6, 8],
+            [10, 12],
+        ]);
+    });
+    test('multiply operation', async () => {
+        const { status, body } = await sendJson('POST', '/v5/matrix', {
+            operation: 'multiply',
+            matrix: [
+                [1, 2],
+                [3, 4],
+            ],
+            matrix2: [
+                [5, 6],
+                [7, 8],
+            ],
+        });
+        assert.equal(status, 200);
+        assert.deepEqual(body.result, [
+            [19, 22],
+            [43, 50],
+        ]);
+    });
+    test('transpose operation', async () => {
+        const { status, body } = await sendJson('POST', '/v5/matrix', {
+            operation: 'transpose',
+            matrix: [
+                [1, 2, 3],
+                [4, 5, 6],
+            ],
+        });
+        assert.equal(status, 200);
+        assert.deepEqual(body.result, [
+            [1, 4],
+            [2, 5],
+            [3, 6],
+        ]);
+    });
+    test('identity operation', async () => {
+        const { status, body } = await sendJson('POST', '/v5/matrix', {
+            operation: 'identity',
+            scalar: 3,
+        });
+        assert.equal(status, 200);
+        assert.deepEqual(body.result, [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+        ]);
+    });
+    test('missing operation returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/matrix', { matrix: [[1]] });
+        assert.equal(status, 400);
+    });
+    test('invalid operation returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/matrix', { operation: 'unknown', matrix: [[1]] });
+        assert.equal(status, 400);
+    });
+    test('dimension mismatch returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/matrix', {
+            operation: 'add',
+            matrix: [[1, 2]],
+            matrix2: [
+                [1, 2],
+                [3, 4],
+            ],
+        });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/matrix returns 405', async () => {
+        const { status } = await getJson('/v5/matrix');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/matrix', { operation: 'add', matrix: [[1]], matrix2: [[1]] });
+        assert.equal(status, 404);
     });
 });
 
