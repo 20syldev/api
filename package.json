@@ -1,5 +1,5 @@
 {
-    "version": "4.9.0",
+    "version": "5.0.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
     "main": "dist/app.js",
@@ -22,7 +22,8 @@
         "./v1": "./dist/modules/v1.js",
         "./v2": "./dist/modules/v2.js",
         "./v3": "./dist/modules/v3.js",
-        "./v4": "./dist/modules/v4.js"
+        "./v4": "./dist/modules/v4.js",
+        "./v5": "./dist/modules/v5.js"
     },
     "dependencies": {
         "@20syldev/logger.ts": "^1.0.1",
