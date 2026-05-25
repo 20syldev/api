@@ -41,10 +41,10 @@ $ npm run build && npm start
 ```
 
 ```console
-> @20syldev/api@4.9.0 build
+> @20syldev/api@5.0.0 build
 > tsc
 
-> @20syldev/api@4.9.0 start
+> @20syldev/api@5.0.0 start
 > node dist/app.js
 
 API is running on
@@ -63,22 +63,22 @@ $ npm run dev
 Vous pouvez également importer les modules spécifiques dont vous avez besoin :
 
 ```js
-// Importer des modules spécifiques depuis la v4
-import { color, token, username } from '@20syldev/api/v4';
+// Importer des modules spécifiques depuis la v5
+import { evaluate, color, username } from '@20syldev/api/v5';
+
+// Évaluer une expression mathématique
+const expr = evaluate('sin(pi / 2) + sqrt(4)', 5);
+console.log(expr.result);     // 3
+console.log(expr.expression); // "sin(pi / 2) + sqrt(4)"
 
 // Générer une couleur aléatoire
 const couleur = color();
 console.log(`Couleur HEX: ${couleur.hex}`);
 console.log(`Couleur RGB: ${couleur.rgb}`);
-console.log(`Couleur HSL: ${couleur.hsl}`);
 
 // Générer un nom d'utilisateur aléatoire
 const utilisateur = username();
 console.log(`Nom d'utilisateur: ${utilisateur.username}`);
-
-// Générer un jeton sécurisé
-const jeton = token(16, 'hex');
-console.log(`Jeton: ${jeton}`);
 ```
 
 ## Scripts disponibles
@@ -93,66 +93,67 @@ console.log(`Jeton: ${jeton}`);
 | `npm run format` | Formatage avec Prettier                                            |
 | `npm run check`  | Vérification TypeScript + ESLint                                   |
 
-## Endpoints disponibles (v4)
+## Endpoints disponibles (v5)
 
 | Endpoint            | Méthode    | Description                                             |
 | ------------------- | ---------- | ------------------------------------------------------- |
-| `/v4/address`       | GET        | Génération d'adresses postales aléatoires               |
-| `/v4/agent`         | GET        | Analyse de User-Agent                                   |
-| `/v4/algorithms`    | GET        | Fonctions algorithmiques (tri, fibonacci, factorielle…) |
-| `/v4/avatar`        | GET        | Génération d'avatars identicon/pixel                    |
-| `/v4/barcode`       | GET        | Génération de codes-barres (Code128, EAN-13/8, Code39)  |
-| `/v4/captcha`       | GET        | Génération d'images captcha                             |
-| `/v4/chat`          | GET / POST | Système de chat temporaire                              |
-| `/v4/color`         | GET        | Génération de couleurs aléatoires                       |
-| `/v4/convert`       | GET        | Conversions d'unités                                    |
-| `/v4/credit`        | GET        | Génération de cartes bancaires fictives (Luhn valide)   |
-| `/v4/cron`          | GET        | Analyse d'expressions cron                              |
-| `/v4/dice`          | GET        | Lanceur de dés RPG                                      |
-| `/v4/domain`        | GET        | Informations de domaine aléatoires                      |
-| `/v4/encode`        | GET        | Encodage / décodage                                     |
-| `/v4/geo`           | GET        | Calcul de distance géographique                         |
-| `/v4/hash`          | POST       | Hachage de texte                                        |
-| `/v4/headers`       | GET        | Informations des en-têtes HTTP                          |
-| `/v4/hyperplanning` | POST       | Analyse de calendriers HyperPlanning                    |
-| `/v4/infos`         | GET        | Informations sur l'API                                  |
-| `/v4/ip`            | GET        | Analyse d'adresses IP                                   |
-| `/v4/levenshtein`   | GET        | Distance entre chaînes                                  |
-| `/v4/palette`       | GET        | Génération de palettes de couleurs                      |
-| `/v4/password`      | GET        | Génération de mots de passe sécurisés                   |
-| `/v4/personal`      | GET        | Profil personnel aléatoire                              |
-| `/v4/placeholder`   | GET        | Génération d'images placeholder                         |
-| `/v4/qrcode`        | GET        | Génération de QR codes                                  |
-| `/v4/regex`         | GET        | Test d'expressions régulières                           |
-| `/v4/statistics`    | GET        | Statistiques descriptives                               |
-| `/v4/text`          | GET        | Utilitaires texte                                       |
-| `/v4/tic-tac-toe`   | GET / POST | Jeu de morpion                                          |
-| `/v4/time`          | GET        | Informations temporelles                                |
-| `/v4/token`         | POST       | Génération de jetons sécurisés                          |
-| `/v4/username`      | GET        | Génération de noms d'utilisateur                        |
-| `/v4/validate`      | GET        | Validation (Luhn, IBAN, email)                          |
+| `/v5/address`       | GET        | Génération d'adresses postales aléatoires               |
+| `/v5/agent`         | GET        | Analyse de User-Agent                                   |
+| `/v5/algorithms`    | GET        | Fonctions algorithmiques (tri, fibonacci, factorielle…) |
+| `/v5/avatar`        | GET        | Génération d'avatars identicon/pixel                    |
+| `/v5/barcode`       | GET        | Génération de codes-barres (Code128, EAN-13/8, Code39)  |
+| `/v5/captcha`       | GET        | Génération d'images captcha                             |
+| `/v5/chart`         | POST       | Génération de graphiques SVG (bar, line, pie, donut)    |
+| `/v5/chat`          | GET / POST | Système de chat temporaire                              |
+| `/v5/color`         | GET        | Génération de couleurs aléatoires                       |
+| `/v5/convert`       | GET        | Conversions d'unités                                    |
+| `/v5/credit`        | GET        | Génération de cartes bancaires fictives (Luhn valide)   |
+| `/v5/cron`          | GET        | Analyse d'expressions cron                              |
+| `/v5/dice`          | GET        | Lanceur de dés RPG                                      |
+| `/v5/domain`        | GET        | Informations de domaine aléatoires                      |
+| `/v5/encode`        | GET        | Encodage / décodage                                     |
+| `/v5/evaluate`      | GET        | Évaluation d'expressions mathématiques                  |
+| `/v5/geo`           | GET        | Calcul de distance géographique                         |
+| `/v5/hash`          | POST       | Hachage de texte                                        |
+| `/v5/headers`       | GET        | Informations des en-têtes HTTP                          |
+| `/v5/hyperplanning` | POST       | Analyse de calendriers HyperPlanning                    |
+| `/v5/infos`         | GET        | Informations sur l'API                                  |
+| `/v5/ip`            | GET        | Analyse d'adresses IP                                   |
+| `/v5/levenshtein`   | GET        | Distance entre chaînes                                  |
+| `/v5/matrix`        | POST       | Opérations matricielles (add, multiply, inverse…)       |
+| `/v5/palette`       | GET        | Génération de palettes de couleurs                      |
+| `/v5/password`      | GET        | Génération de mots de passe sécurisés                   |
+| `/v5/personal`      | GET        | Profil personnel aléatoire                              |
+| `/v5/placeholder`   | GET        | Génération d'images placeholder                         |
+| `/v5/qrcode`        | GET        | Génération de QR codes                                  |
+| `/v5/regex`         | GET        | Test d'expressions régulières                           |
+| `/v5/statistics`    | GET        | Statistiques descriptives                               |
+| `/v5/text`          | GET        | Utilitaires texte                                       |
+| `/v5/tic-tac-toe`   | GET / POST | Jeu de morpion                                          |
+| `/v5/time`          | GET        | Informations temporelles                                |
+| `/v5/token`         | POST       | Génération de jetons sécurisés                          |
+| `/v5/username`      | GET        | Génération de noms d'utilisateur                        |
+| `/v5/validate`      | GET        | Validation (Luhn, IBAN, email)                          |
 
 ## Exemples d'utilisation
 
 ```js
-import { avatar, barcode, credit, cron } from '@20syldev/api/v4';
+import { chart, evaluate, matrix } from '@20syldev/api/v5';
 
-// Générer une carte bancaire fictive Luhn-valide
-const { cards } = credit('visa', 1, 'full');
-console.log(cards[0].formatted); // "4532 9876 5432 1098"
-console.log(cards[0].cvv);       // "847"
+// Évaluer une expression mathématique
+const { result } = evaluate('log2(8) * (3 + pi)', 4);
+console.log(result); // 18.4248
 
-// Générer un avatar identicon SVG déterministe
-const { body } = avatar({ seed: 'john', format: 'svg', size: 200 });
-// body contient une chaîne SVG
+// Opération matricielle — produit de deux matrices
+const { result: product } = matrix.multiply([[1, 2], [3, 4]], [[5, 6], [7, 8]]);
+console.log(product); // [[19, 22], [43, 50]]
 
-// Générer un code-barres Code128
-const { body: svg } = barcode({ data: 'Hello World' });
-// body contient une chaîne SVG
-
-// Analyser une expression cron
-const { next } = cron('0 9 * * 1-5', 3);
-console.log(next); // ["2026-05-12T09:00:00.000Z", ...]
+// Générer un graphique SVG en mémoire
+const { body: svg } = chart.bar(
+    { labels: ['Jan', 'Fév', 'Mar'], datasets: [{ label: 'Ventes', values: [120, 85, 200] }] },
+    { width: 600, height: 300 },
+);
+// body contient une chaîne SVG prête à l'emploi
 ```
 
 _Visitez la [documentation](https://docs.sylvain.sh) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.sh) !_
