@@ -7,7 +7,7 @@ const router = Router();
 
 // Play a tic-tac-toe move
 router.patch('/:version/tic-tac-toe/:game', (req: Request, res: Response) => {
-    if (req.version !== 'v4') {
+    if (parseInt(req.version.slice(1)) < 4) {
         error(res, 405, 'PATCH is only supported in v4+.', `${req.version}/tic-tac-toe`);
         return;
     }
