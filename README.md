@@ -121,6 +121,7 @@ console.log(`Nom d'utilisateur: ${utilisateur.username}`);
 | `/v5/ip`            | GET        | Analyse d'adresses IP                                   |
 | `/v5/levenshtein`   | GET        | Distance entre chaînes                                  |
 | `/v5/matrix`        | POST       | Opérations matricielles (add, multiply, inverse…)       |
+| `/v5/otp`           | POST       | Génération et vérification de codes TOTP/HOTP           |
 | `/v5/palette`       | GET        | Génération de palettes de couleurs                      |
 | `/v5/password`      | GET        | Génération de mots de passe sécurisés                   |
 | `/v5/personal`      | GET        | Profil personnel aléatoire                              |
@@ -128,6 +129,7 @@ console.log(`Nom d'utilisateur: ${utilisateur.username}`);
 | `/v5/qrcode`        | GET        | Génération de QR codes                                  |
 | `/v5/regex`         | GET        | Test d'expressions régulières                           |
 | `/v5/statistics`    | GET        | Statistiques descriptives                               |
+| `/v5/symmetric`     | POST       | Chiffrement symétrique AES (encrypt/decrypt)            |
 | `/v5/text`          | GET        | Utilitaires texte                                       |
 | `/v5/tic-tac-toe`   | GET / POST | Jeu de morpion                                          |
 | `/v5/time`          | GET        | Informations temporelles                                |
@@ -138,7 +140,7 @@ console.log(`Nom d'utilisateur: ${utilisateur.username}`);
 ## Exemples d'utilisation
 
 ```js
-import { chart, evaluate, matrix } from '@20syldev/api/v5';
+import { chart, evaluate, matrix, otp, symmetric } from '@20syldev/api/v5';
 
 // Évaluer une expression mathématique
 const { result } = evaluate('log2(8) * (3 + pi)', 4);
@@ -154,6 +156,17 @@ const { body: svg } = chart.bar(
     { width: 600, height: 300 },
 );
 // body contient une chaîne SVG prête à l'emploi
+
+// Chiffrement symétrique AES-256-GCM
+const { result: blob } = symmetric('encrypt', 'message secret', 'motdepasse');
+const { result: plain } = symmetric('decrypt', blob, 'motdepasse');
+console.log(plain); // 'message secret'
+
+// Générer un secret TOTP et vérifier un code
+const { secret } = otp('secret', {});
+const { code } = otp('generate', { secret });
+const { valid } = otp('verify', { secret, code });
+console.log(valid); // true
 ```
 
 _Visitez la [documentation](https://docs.sylvain.sh) dédiée, vous y retrouverez des exemples de requêtes et des codes simples pour tester l'[API](https://api.sylvain.sh) !_
