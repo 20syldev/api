@@ -187,6 +187,72 @@ router.post('/:version/matrix', (req: Request, res: Response) => {
     }
 });
 
+// Generate or verify OTP codes
+router.post('/:version/otp', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { action, secret, code, algorithm, digits, period, counter, label, issuer } = body;
+    const { version } = req.params;
+
+    const otpFn = (req.module as { otp?: (a: string, o: Record<string, unknown>) => unknown }).otp;
+    if (!otpFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/otp`);
+        return;
+    }
+    if (!action) {
+        error(res, 400, 'Please provide an action (?action=secret|generate|verify)', `${version}/otp`);
+        return;
+    }
+
+    try {
+        const result = otpFn(action as string, {
+            secret: secret as string | undefined,
+            code: code as string | undefined,
+            algorithm: algorithm as string | undefined,
+            digits: digits !== undefined ? Number(digits) : undefined,
+            period: period !== undefined ? Number(period) : undefined,
+            counter: counter !== undefined ? Number(counter) : undefined,
+            label: label as string | undefined,
+            issuer: issuer as string | undefined,
+        });
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/otp`);
+    }
+});
+
+// Symmetric encrypt or decrypt text
+router.post('/:version/symmetric', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { action, text, key, algorithm } = body;
+    const { version } = req.params;
+
+    const symmetricFn = (req.module as { symmetric?: (a: string, t: string, k: string, alg?: string) => unknown })
+        .symmetric;
+    if (!symmetricFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/symmetric`);
+        return;
+    }
+    if (!action) {
+        error(res, 400, 'Please provide an action (?action=encrypt|decrypt)', `${version}/symmetric`);
+        return;
+    }
+    if (!text) {
+        error(res, 400, 'Please provide a text (&text={text})', `${version}/symmetric`);
+        return;
+    }
+    if (!key) {
+        error(res, 400, 'Please provide a key (&key={key})', `${version}/symmetric`);
+        return;
+    }
+
+    try {
+        const result = symmetricFn(action as string, text as string, key as string, algorithm as string | undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/symmetric`);
+    }
+});
+
 // Store tic tac toe games
 router.post('/:version/tic-tac-toe', (req: Request, res: Response) => {
     const { username, move, session, game } = (req.body as Record<string, string>) || {};

@@ -507,6 +507,11 @@ router.get('/:version/matrix', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
 });
 
+// GET otp error
+router.get('/:version/otp', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
+});
+
 // Generate a color palette from a base color
 router.get('/:version/palette', (req: Request, res: Response) => {
     const { color, type } = req.query;
@@ -692,6 +697,11 @@ router.get('/:version/statistics', (req: Request, res: Response) => {
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/statistics`);
     }
+});
+
+// GET symmetric error
+router.get('/:version/symmetric', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
 });
 
 // Text utilities (slug, stats, lorem, number)
