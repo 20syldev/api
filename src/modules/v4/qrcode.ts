@@ -61,7 +61,7 @@ export default async function qrcode(options: QRCodeOptions): Promise<QRCodeResu
     if (!url || typeof url !== 'string') throw new Error('Please provide a valid URL');
 
     const format = options.format ?? 'png';
-    if (!FORMATS.has(format)) throw new Error('format must be one of: png, base64');
+    if (!FORMATS.has(format)) throw new Error('Format must be one of: png, base64');
 
     const size = clamp(options.size, 'size', 200, 50, 2000);
     const margin = clamp(options.margin, 'margin', 4, 0, 10);
@@ -69,7 +69,7 @@ export default async function qrcode(options: QRCodeOptions): Promise<QRCodeResu
     const light = normalizeColor(options.light, '#ffffff');
 
     let correction = options.correction ?? 'M';
-    if (!CORRECTIONS.has(correction)) throw new Error('correction must be one of: L, M, Q, H');
+    if (!CORRECTIONS.has(correction)) throw new Error('Correction must be one of: L, M, Q, H');
     if (options.icon) correction = 'H';
 
     const qrOpts = {

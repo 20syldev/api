@@ -50,7 +50,7 @@ export default function captcha(options: CaptchaOptions): CaptchaResult {
     const width = clamp(options.width, 'width', text.length * 60, 100, 800);
 
     const noise = options.noise ?? 'medium';
-    if (!NOISE_LEVELS.has(noise)) throw new Error('noise must be one of: low, medium, high');
+    if (!NOISE_LEVELS.has(noise)) throw new Error('Noise must be one of: low, medium, high');
     const { lines, dots } = NOISE_CONFIG[noise];
 
     const bg = normalizeColor(options.bg, '#ffffff');

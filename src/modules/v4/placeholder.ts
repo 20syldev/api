@@ -148,13 +148,13 @@ function parseAvatar(value: string | undefined): AvatarShape | undefined {
     if (!value) return undefined;
     if (value === 'true' || value === '1') return 'circle';
     if (AVATAR_SHAPES.has(value)) return value as AvatarShape;
-    throw new Error('avatar must be one of: circle, rounded, square');
+    throw new Error('Avatar must be one of: circle, rounded, square');
 }
 
 function parseAnimate(value: string | undefined): AnimateMode {
     if (!value) return 'shimmer';
     if (ANIMATE_MODES.has(value)) return value as AnimateMode;
-    throw new Error('animate must be one of: shimmer, pulse, none');
+    throw new Error('Animate must be one of: shimmer, pulse, none');
 }
 
 /**
@@ -167,10 +167,10 @@ function parseAnimate(value: string | undefined): AnimateMode {
  */
 export default function placeholder(type: string, query: Record<string, string | undefined>): PlaceholderResult {
     const speed = query.speed ? parseFloat(query.speed) : 1.5;
-    if (isNaN(speed) || speed < 0.1 || speed > 10) throw new Error('speed must be between 0.1 and 10');
+    if (isNaN(speed) || speed < 0.1 || speed > 10) throw new Error('Speed must be between 0.1 and 10');
 
     const radius = query.radius ? parseInt(query.radius, 10) : 4;
-    if (isNaN(radius) || radius < 0 || radius > 50) throw new Error('radius must be between 0 and 50');
+    if (isNaN(radius) || radius < 0 || radius > 50) throw new Error('Radius must be between 0 and 50');
 
     const opts: PlaceholderOptions = {
         width: parseSize(query.width, 'width', 800),
