@@ -133,6 +133,8 @@ const v5 = {
     post: merge(v4.post, [
         { name: 'chart', path: '/chart' },
         { name: 'matrix', path: '/matrix' },
+        { name: 'otp', path: '/otp' },
+        { name: 'symmetric', path: '/symmetric' },
     ]),
     patch: [...v4.patch!],
     delete: [...v4.delete!],
