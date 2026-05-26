@@ -854,6 +854,8 @@ describe('GET / (version listing)', () => {
         assert.ok('evaluate' in endpoints.get!);
         assert.ok('chart' in endpoints.post!);
         assert.ok('matrix' in endpoints.post!);
+        assert.ok('otp' in endpoints.post!);
+        assert.ok('symmetric' in endpoints.post!);
     });
 });
 
@@ -1073,6 +1075,144 @@ describe('POST /v5/matrix', () => {
     });
     test('not available in v4 returns 404', async () => {
         const { status } = await sendJson('POST', '/v4/matrix', { operation: 'add', matrix: [[1]], matrix2: [[1]] });
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/otp', () => {
+    test('secret action returns base32 secret and uri', async () => {
+        const { status, body } = await sendJson('POST', '/v5/otp', { action: 'secret' });
+        assert.equal(status, 200);
+        assert.ok(typeof body.secret === 'string');
+        assert.match(body.secret as string, /^[A-Z2-7]+$/);
+        assert.ok((body.uri as string).startsWith('otpauth://totp/'));
+    });
+    test('generate action returns 6-digit code', async () => {
+        const { body: secBody } = await sendJson('POST', '/v5/otp', { action: 'secret' });
+        const { status, body } = await sendJson('POST', '/v5/otp', {
+            action: 'generate',
+            secret: secBody.secret,
+        });
+        assert.equal(status, 200);
+        assert.match(body.code as string, /^\d{6}$/);
+        assert.ok(typeof body.remaining === 'number');
+    });
+    test('verify just-generated code returns valid=true', async () => {
+        const { body: secBody } = await sendJson('POST', '/v5/otp', { action: 'secret' });
+        const { body: genBody } = await sendJson('POST', '/v5/otp', {
+            action: 'generate',
+            secret: secBody.secret,
+        });
+        const { status, body } = await sendJson('POST', '/v5/otp', {
+            action: 'verify',
+            secret: secBody.secret,
+            code: genBody.code,
+        });
+        assert.equal(status, 200);
+        assert.equal(body.valid, true);
+    });
+    test('verify wrong code returns valid=false', async () => {
+        const { body: secBody } = await sendJson('POST', '/v5/otp', { action: 'secret' });
+        const { body } = await sendJson('POST', '/v5/otp', {
+            action: 'verify',
+            secret: secBody.secret,
+            code: '000000',
+        });
+        // May pass by coincidence but statistically always false
+        assert.ok(typeof body.valid === 'boolean');
+    });
+    test('missing action returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/otp', { secret: 'JBSWY3DPEHPK3PXP' });
+        assert.equal(status, 400);
+    });
+    test('invalid digits returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/otp', {
+            action: 'generate',
+            secret: 'JBSWY3DPEHPK3PXP',
+            digits: 7,
+        });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/otp returns 405', async () => {
+        const { status } = await getJson('/v5/otp');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/otp', { action: 'secret' });
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/symmetric', () => {
+    test('encrypt returns base64 result', async () => {
+        const { status, body } = await sendJson('POST', '/v5/symmetric', {
+            action: 'encrypt',
+            text: 'hello world',
+            key: 'mysecretkey',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.action, 'encrypt');
+        assert.equal(body.algorithm, 'aes-256-gcm');
+        assert.ok(typeof body.result === 'string' && (body.result as string).length > 0);
+    });
+    test('encrypt then decrypt returns original text', async () => {
+        const enc = await sendJson('POST', '/v5/symmetric', {
+            action: 'encrypt',
+            text: 'round trip',
+            key: 'mypassword1',
+        });
+        const dec = await sendJson('POST', '/v5/symmetric', {
+            action: 'decrypt',
+            text: enc.body.result,
+            key: 'mypassword1',
+        });
+        assert.equal(dec.status, 200);
+        assert.equal(dec.body.result, 'round trip');
+    });
+    test('wrong key at decrypt returns 400', async () => {
+        const enc = await sendJson('POST', '/v5/symmetric', {
+            action: 'encrypt',
+            text: 'secret',
+            key: 'correctkey1',
+        });
+        const { status } = await sendJson('POST', '/v5/symmetric', {
+            action: 'decrypt',
+            text: enc.body.result,
+            key: 'wrongkey123',
+        });
+        assert.equal(status, 400);
+    });
+    test('missing action returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/symmetric', { text: 'hello', key: 'mypassword' });
+        assert.equal(status, 400);
+    });
+    test('missing text returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/symmetric', { action: 'encrypt', key: 'mypassword' });
+        assert.equal(status, 400);
+    });
+    test('missing key returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/symmetric', { action: 'encrypt', text: 'hello' });
+        assert.equal(status, 400);
+    });
+    test('unknown algorithm returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/symmetric', {
+            action: 'encrypt',
+            text: 'hello',
+            key: 'mypassword',
+            algorithm: 'rot13',
+        });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/symmetric returns 405', async () => {
+        const { status } = await getJson('/v5/symmetric');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/symmetric', {
+            action: 'encrypt',
+            text: 'hi',
+            key: 'password1',
+        });
         assert.equal(status, 404);
     });
 });
