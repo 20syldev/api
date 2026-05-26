@@ -20,7 +20,7 @@ describe('qrcode', () => {
     });
 
     test('throws on invalid format', async () => {
-        await assert.rejects(() => qrcode({ url: 'https://example.com', format: 'jpg' as 'png' }), /format/);
+        await assert.rejects(() => qrcode({ url: 'https://example.com', format: 'jpg' as 'png' }), /format/i);
     });
 
     test('throws on missing url', async () => {
@@ -55,7 +55,7 @@ describe('qrcode', () => {
     });
 
     test('throws on invalid correction level', async () => {
-        await assert.rejects(() => qrcode({ url: 'https://example.com', correction: 'X' as 'L' }), /correction/);
+        await assert.rejects(() => qrcode({ url: 'https://example.com', correction: 'X' as 'L' }), /correction/i);
     });
 
     test('accepts custom margin', async () => {

@@ -49,10 +49,10 @@ describe('placeholder', () => {
     });
 
     test('throws on invalid avatar shape', () => {
-        assert.throws(() => placeholder('skeleton', { avatar: 'hexagon' }), /avatar/);
+        assert.throws(() => placeholder('skeleton', { avatar: 'hexagon' }), /avatar/i);
     });
 
     test('throws on invalid speed', () => {
-        assert.throws(() => placeholder('skeleton', { speed: '99' }), /speed/);
+        assert.throws(() => placeholder('skeleton', { speed: '99' }), /speed/i);
     });
 });

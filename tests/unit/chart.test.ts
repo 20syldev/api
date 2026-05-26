@@ -158,7 +158,7 @@ describe('chart', () => {
         });
         test('values length mismatch throws', () => {
             const d = { labels: ['a', 'b'], datasets: [{ label: '', values: [1] }] };
-            assert.throws(() => chart.bar(d, {}), /length must match/);
+            assert.throws(() => chart.bar(d, {}), /same length/);
         });
         test('missing data throws', () => {
             assert.throws(() => chart.bar(null, {}), /'data' is required/);

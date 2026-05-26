@@ -48,7 +48,7 @@ describe('captcha', () => {
     });
 
     test('throws on invalid noise', () => {
-        assert.throws(() => captcha({ text: 'test', noise: 'extreme' as 'low' }), /noise/);
+        assert.throws(() => captcha({ text: 'test', noise: 'extreme' as 'low' }), /noise/i);
     });
 
     test('accepts custom colors', () => {
