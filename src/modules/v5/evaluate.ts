@@ -281,10 +281,10 @@ function evalNode(node: ASTNode): number {
                 case 'exp':
                     return Math.exp(args[0]!);
                 case 'min':
-                    if (args.length !== 2) throw new Error('min() requires exactly 2 arguments');
+                    if (args.length !== 2) throw new Error('Function min() requires exactly 2 arguments');
                     return Math.min(args[0]!, args[1]!);
                 case 'max':
-                    if (args.length !== 2) throw new Error('max() requires exactly 2 arguments');
+                    if (args.length !== 2) throw new Error('Function max() requires exactly 2 arguments');
                     return Math.max(args[0]!, args[1]!);
                 default:
                     throw new Error(`Unknown function: '${node.name}'`);

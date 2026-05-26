@@ -49,13 +49,15 @@ const MARGIN = { top: 30, right: 40, bottom: 40, left: 50 };
 const TITLE_HEIGHT = 30;
 const LEGEND_ROW_H = 18;
 
+// ─── Helpers ───
 function escapeXml(str: string): string {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
 function parseDisplaySize(v: unknown, name: string): number | null {
     if (v === undefined || v === null) return null;
     const n = Number(v);
-    if (!isFinite(n) || n <= 0) throw new Error(`'${name}' must be a positive number`);
+    if (!isFinite(n) || n <= 0) throw new Error(`Field '${name}' must be a positive number`);
     return Math.floor(n);
 }
 
@@ -71,6 +73,7 @@ function getColors(colors: unknown, n: number): string[] {
     }
     return result;
 }
+
 function svgOpen(
     bg: string,
     renderW: number,
@@ -82,24 +85,31 @@ function svgOpen(
     const hAttr = displayH !== null ? ` height="${displayH}"` : '';
     return `<svg xmlns="http://www.w3.org/2000/svg"${wAttr}${hAttr} viewBox="0 0 ${renderW} ${renderH}">\n  <rect width="${renderW}" height="${renderH}" fill="${bg}"/>\n`;
 }
+
 function validateBarLine(data: unknown): BarLineData {
-    if (!data || typeof data !== 'object') throw new Error("'data' is required");
+    if (!data || typeof data !== 'object') throw new Error("Field 'data' is required");
+
     const d = data as Record<string, unknown>;
+
     if (!Array.isArray(d['labels']) || d['labels'].length === 0)
-        throw new Error("'data.labels' must be a non-empty array");
-    if (!Array.isArray(d['datasets']) || d['datasets'].length === 0)
-        throw new Error("'data.datasets' must be a non-empty array");
+        throw new Error("Field 'data.labels' must be a non-empty array");
     if (d['labels'].length > MAX_CHART_LABELS) throw new Error(`Cannot exceed ${MAX_CHART_LABELS} labels`);
+
+    if (!Array.isArray(d['datasets']) || d['datasets'].length === 0)
+        throw new Error("Field 'data.datasets' must be a non-empty array");
     if (d['datasets'].length > MAX_CHART_DATASETS) throw new Error(`Cannot exceed ${MAX_CHART_DATASETS} datasets`);
+
     for (const ds of d['datasets'] as unknown[]) {
         const dataset = ds as Record<string, unknown>;
-        if (!Array.isArray(dataset['values']) || dataset['values'].length !== d['labels'].length) {
-            throw new Error("Each dataset's 'values' length must match 'labels' length");
-        }
+
+        if (!Array.isArray(dataset['values']) || dataset['values'].length !== d['labels'].length)
+            throw new Error("Each dataset's 'values' must have the same length as 'labels'");
+
         for (const v of dataset['values']) {
             if (typeof v !== 'number' || !isFinite(v)) throw new Error('Dataset values must be finite numbers');
         }
     }
+
     return {
         labels: (d['labels'] as unknown[]).map(String),
         datasets: (d['datasets'] as Record<string, unknown>[]).map((ds) => ({
@@ -108,27 +118,34 @@ function validateBarLine(data: unknown): BarLineData {
         })),
     };
 }
+
 function validatePieDonut(data: unknown): PieDonutData {
-    if (!data || typeof data !== 'object') throw new Error("'data' is required");
+    if (!data || typeof data !== 'object') throw new Error("Field 'data' is required");
+
     const d = data as Record<string, unknown>;
+
     if (!Array.isArray(d['labels']) || d['labels'].length === 0)
-        throw new Error("'data.labels' must be a non-empty array");
+        throw new Error("Field 'data.labels' must be a non-empty array");
     if (!Array.isArray(d['values']) || d['values'].length === 0)
-        throw new Error("'data.values' must be a non-empty array");
+        throw new Error("Field 'data.values' must be a non-empty array");
     if (d['labels'].length !== d['values'].length)
-        throw new Error("'data.labels' and 'data.values' must have the same length");
+        throw new Error("Fields 'data.labels' and 'data.values' must have the same length");
     if (d['labels'].length > MAX_CHART_LABELS) throw new Error(`Cannot exceed ${MAX_CHART_LABELS} labels`);
+
     for (const v of d['values'] as unknown[]) {
         if (typeof v !== 'number' || !isFinite(v) || v < 0)
             throw new Error('Pie/donut values must be non-negative finite numbers');
     }
+
     const total = (d['values'] as number[]).reduce((s, v) => s + v, 0);
     if (total <= 0) throw new Error('At least one pie/donut value must be positive');
+
     return {
         labels: (d['labels'] as unknown[]).map(String),
         values: d['values'] as number[],
     };
 }
+
 function yScale(values: number[]): { min: number; max: number; gridCount: number } {
     const dataMax = Math.max(...values, 0);
     const dataMin = Math.min(...values, 0);

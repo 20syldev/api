@@ -11,17 +11,17 @@ export interface MatrixResult {
 // ─── Validation ───
 function validateMatrix(m: unknown, name = 'matrix'): Matrix {
     if (!Array.isArray(m) || m.length === 0) {
-        throw new Error(`'${name}' must be a non-empty 2D array`);
+        throw new Error(`Field '${name}' must be a non-empty 2D array`);
     }
     const cols = (m[0] as unknown[]).length;
-    if (cols === 0) throw new Error(`'${name}' rows must be non-empty`);
+    if (cols === 0) throw new Error(`Field '${name}' rows must be non-empty`);
     for (const row of m) {
         if (!Array.isArray(row) || row.length !== cols) {
             throw new Error(`All rows in '${name}' must have the same length`);
         }
         for (const cell of row) {
             if (typeof cell !== 'number' || !isFinite(cell)) {
-                throw new Error(`'${name}' must contain finite numbers only`);
+                throw new Error(`Field '${name}' must contain finite numbers only`);
             }
         }
     }
@@ -37,7 +37,7 @@ function dims(m: Matrix): { rows: number; cols: number } {
 
 function assertSquare(m: Matrix, op: string): void {
     const { rows, cols } = dims(m);
-    if (rows !== cols) throw new Error(`'${op}' requires a square matrix`);
+    if (rows !== cols) throw new Error(`Operation '${op}' requires a square matrix`);
 }
 
 function assertSameDimensions(a: Matrix, b: Matrix): void {
@@ -123,7 +123,7 @@ export function multiply(matrix: unknown, matrix2: unknown): MatrixResult {
 export function scalar(matrix: unknown, scalarVal: unknown): MatrixResult {
     const a = validateMatrix(matrix);
     if (typeof scalarVal !== 'number' || !isFinite(scalarVal)) {
-        throw new Error("'scalar' must be a finite number");
+        throw new Error("Field 'scalar' must be a finite number");
     }
     const result = a.map((row) => row.map((v) => v * scalarVal));
     return { operation: 'scalar', result, dimensions: dims(result) };
@@ -252,7 +252,7 @@ export function inverse(matrix: unknown): MatrixResult {
  */
 export function identity(n: unknown): MatrixResult {
     if (typeof n !== 'number' || !Number.isInteger(n) || n <= 0) {
-        throw new Error("'scalar' must be a positive integer for the identity operation");
+        throw new Error("Field 'scalar' must be a positive integer for the identity operation");
     }
     if (n > MAX_MATRIX_SIZE) {
         throw new Error(`Identity size cannot exceed ${MAX_MATRIX_SIZE}`);
