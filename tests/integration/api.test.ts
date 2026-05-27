@@ -896,6 +896,70 @@ describe('GET /v5/evaluate', () => {
 
 // --- POST endpoints ---
 
+describe('POST /v5/asymmetric', () => {
+    test('keygen returns publicKey and privateKey', async () => {
+        const { status, body } = await sendJson('POST', '/v5/asymmetric', { action: 'keygen' });
+        assert.equal(status, 200);
+        assert.equal(body.action, 'keygen');
+        assert.equal(body.algorithm, 'rsa-oaep-sha256');
+        assert.equal(body.modulusLength, 2048);
+        assert.ok((body.publicKey as string).startsWith('-----BEGIN PUBLIC KEY-----'));
+        assert.ok((body.privateKey as string).startsWith('-----BEGIN PRIVATE KEY-----'));
+    });
+    test('encrypt then decrypt returns original text', async () => {
+        const kg = await sendJson('POST', '/v5/asymmetric', { action: 'keygen' });
+        const enc = await sendJson('POST', '/v5/asymmetric', {
+            action: 'encrypt',
+            text: 'hello RSA',
+            publicKey: kg.body.publicKey,
+        });
+        assert.equal(enc.status, 200);
+        assert.equal(enc.body.action, 'encrypt');
+        assert.ok(typeof enc.body.result === 'string');
+        const dec = await sendJson('POST', '/v5/asymmetric', {
+            action: 'decrypt',
+            text: enc.body.result,
+            privateKey: kg.body.privateKey,
+        });
+        assert.equal(dec.status, 200);
+        assert.equal(dec.body.result, 'hello RSA');
+    });
+    test('decrypt with wrong key returns 400', async () => {
+        const kg1 = await sendJson('POST', '/v5/asymmetric', { action: 'keygen' });
+        const kg2 = await sendJson('POST', '/v5/asymmetric', { action: 'keygen' });
+        const enc = await sendJson('POST', '/v5/asymmetric', {
+            action: 'encrypt',
+            text: 'secret',
+            publicKey: kg1.body.publicKey,
+        });
+        const { status } = await sendJson('POST', '/v5/asymmetric', {
+            action: 'decrypt',
+            text: enc.body.result,
+            privateKey: kg2.body.privateKey,
+        });
+        assert.equal(status, 400);
+    });
+    test('missing action returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/asymmetric', {});
+        assert.equal(status, 400);
+    });
+    test('unsupported algorithm returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/asymmetric', {
+            action: 'keygen',
+            algorithm: 'rsa-pkcs1v15',
+        });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/asymmetric returns 405', async () => {
+        const { status } = await getJson('/v5/asymmetric');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/asymmetric', { action: 'keygen' });
+        assert.equal(status, 404);
+    });
+});
+
 describe('POST /v5/chart', () => {
     test('bar chart returns SVG content type', async () => {
         const res = await fetch(`${baseUrl}/v5/chart`, {
