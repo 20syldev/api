@@ -114,6 +114,11 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
     }
 });
 
+// GET asymmetric error
+router.get('/:version/asymmetric', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
+});
+
 // Generate an identicon or pixel-art avatar from a seed
 router.get('/:version/avatar', (req: Request, res: Response) => {
     const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;

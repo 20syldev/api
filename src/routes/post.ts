@@ -8,6 +8,49 @@ import { error } from '../utils/response.js';
 
 const router = Router();
 
+// Asymmetric RSA key generation, encryption and decryption
+router.post('/:version/asymmetric', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { action, text, publicKey, privateKey, modulusLength, algorithm } = body;
+    const { version } = req.params;
+
+    const asymmetricFn = (
+        req.module as {
+            asymmetric?: (
+                a: string,
+                o: {
+                    text?: string;
+                    publicKey?: string;
+                    privateKey?: string;
+                    modulusLength?: number;
+                    algorithm?: string;
+                },
+            ) => unknown;
+        }
+    ).asymmetric;
+    if (!asymmetricFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/asymmetric`);
+        return;
+    }
+    if (!action) {
+        error(res, 400, 'Please provide an action (?action=keygen|encrypt|decrypt)', `${version}/asymmetric`);
+        return;
+    }
+
+    try {
+        const result = asymmetricFn(action as string, {
+            text: text as string | undefined,
+            publicKey: publicKey as string | undefined,
+            privateKey: privateKey as string | undefined,
+            modulusLength: modulusLength !== undefined ? Number(modulusLength) : undefined,
+            algorithm: algorithm as string | undefined,
+        });
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/asymmetric`);
+    }
+});
+
 // Generate a chart as SVG
 router.post('/:version/chart', (req: Request, res: Response) => {
     const body = (req.body as Record<string, unknown>) || {};
