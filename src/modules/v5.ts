@@ -32,6 +32,7 @@ export {
     username,
     validate,
 } from './v4.js';
+export { default as asymmetric } from './v5/asymmetric.js';
 export * as chart from './v5/chart.js';
 export { default as evaluate } from './v5/evaluate.js';
 export * as matrix from './v5/matrix.js';
