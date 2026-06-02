@@ -3,7 +3,7 @@
 
 # API Personnelle
 
-[![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v5.2.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
+[![Version](https://custom-icon-badges.demolab.com/badge/Version%20:-v5.3.0-6479ee?logo=api.sylvain.sh&labelColor=23272A)](https://github.com/20syldev/api/releases/latest)
 
 </div>
 
@@ -41,10 +41,10 @@ $ npm run build && npm start
 ```
 
 ```console
-> @20syldev/api@5.2.0 build
+> @20syldev/api@5.3.0 build
 > tsc
 
-> @20syldev/api@5.2.0 start
+> @20syldev/api@5.3.0 start
 > node dist/app.js
 
 API is running on
