@@ -851,8 +851,10 @@ describe('GET / (version listing)', () => {
         const { body } = await getJson('/v5');
         assert.equal(body.version, 'v5');
         const endpoints = body.endpoints as Record<string, Record<string, string>>;
+        assert.ok('case' in endpoints.get!);
         assert.ok('evaluate' in endpoints.get!);
         assert.ok('chart' in endpoints.post!);
+        assert.ok('jwt' in endpoints.post!);
         assert.ok('matrix' in endpoints.post!);
         assert.ok('otp' in endpoints.post!);
         assert.ok('symmetric' in endpoints.post!);
@@ -1277,6 +1279,70 @@ describe('POST /v5/symmetric', () => {
             text: 'hi',
             key: 'password1',
         });
+        assert.equal(status, 404);
+    });
+});
+
+describe('GET /v5/case', () => {
+    test('snake_case → camel returns correct result', async () => {
+        const { status, body } = await getJson('/v5/case?text=hello_world&to=camel');
+        assert.equal(status, 200);
+        assert.equal(body.result, 'helloWorld');
+        assert.equal(body.to, 'camel');
+    });
+    test('default to is camel', async () => {
+        const { status, body } = await getJson('/v5/case?text=hello_world');
+        assert.equal(status, 200);
+        assert.equal(body.result, 'helloWorld');
+    });
+    test('snake target', async () => {
+        const { body } = await getJson('/v5/case?text=helloWorld&to=snake');
+        assert.equal(body.result, 'hello_world');
+    });
+    test('missing text returns 400', async () => {
+        const { status } = await getJson('/v5/case');
+        assert.equal(status, 400);
+    });
+    test('invalid to returns 400', async () => {
+        const { status } = await getJson('/v5/case?text=hello&to=invalid');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson('/v4/case?text=hello');
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/jwt', () => {
+    // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiQWxpY2UiLCJleHAiOjk5OTk5OTk5OTl9.sig
+    const validToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiQWxpY2UiLCJleHAiOjk5OTk5OTk5OTl9.fakesig';
+
+    test('valid token returns header, payload, signature', async () => {
+        const { status, body } = await sendJson('POST', '/v5/jwt', { token: validToken });
+        assert.equal(status, 200);
+        assert.deepEqual(body.header, { alg: 'HS256', typ: 'JWT' });
+        assert.equal((body.payload as Record<string, unknown>).sub, '123');
+        assert.equal(typeof body.signature, 'string');
+    });
+    test('non-expired token returns expired: false', async () => {
+        const { body } = await sendJson('POST', '/v5/jwt', { token: validToken });
+        assert.equal(body.expired, false);
+    });
+    test('invalid format returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/jwt', { token: 'notajwt' });
+        assert.equal(status, 400);
+    });
+    test('missing token returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/jwt', {});
+        assert.equal(status, 400);
+    });
+    test('GET /v5/jwt returns 405', async () => {
+        const { status } = await getJson('/v5/jwt');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/jwt', { token: validToken });
         assert.equal(status, 404);
     });
 });
