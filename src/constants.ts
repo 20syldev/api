@@ -37,6 +37,7 @@ export const MAX_EXPR_DEPTH = 100;
 export const MAX_EXPR_LENGTH = 500;
 export const MAX_FACTORIAL = 170;
 export const MAX_GCD_VALUE = 100_000;
+export const MAX_JWT_LENGTH = 8192;
 export const MAX_LEVENSHTEIN_LENGTH = 1000;
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
