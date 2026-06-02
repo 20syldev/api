@@ -129,10 +129,14 @@ const v4 = {
 };
 
 const v5 = {
-    get: merge(v4.get, [{ name: 'evaluate', path: '/evaluate?expr={expression}(&precision={0-15})' }]),
+    get: merge(v4.get, [
+        { name: 'case', path: '/case?text={text}(&to={target})' },
+        { name: 'evaluate', path: '/evaluate?expr={expression}(&precision={0-15})' },
+    ]),
     post: merge(v4.post, [
         { name: 'asymmetric', path: '/asymmetric' },
         { name: 'chart', path: '/chart' },
+        { name: 'jwt', path: '/jwt' },
         { name: 'matrix', path: '/matrix' },
         { name: 'otp', path: '/otp' },
         { name: 'symmetric', path: '/symmetric' },
