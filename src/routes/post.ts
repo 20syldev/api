@@ -2,6 +2,7 @@ import { type Request, type Response, Router } from 'express';
 
 import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../constants.js';
 import type { HashResult } from '../modules/v4/hash.js';
+import type { JwtResult } from '../modules/v5/jwt.js';
 import { chatStorage, ticTacToeStorage } from '../storage/index.js';
 import { since } from '../utils/helpers.js';
 import { error } from '../utils/response.js';
@@ -77,6 +78,30 @@ router.post('/:version/chart', (req: Request, res: Response) => {
         }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/chart`);
+    }
+});
+
+// Decode a JSON Web Token without verifying the signature
+router.post('/:version/jwt', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { token } = body;
+    const { version } = req.params;
+
+    const jwtFn = (req.module as { jwt?: (t: string) => JwtResult }).jwt;
+    if (!jwtFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/jwt`);
+        return;
+    }
+    if (!token) {
+        error(res, 400, 'Please provide a token (?token={token})', `${version}/jwt`);
+        return;
+    }
+
+    try {
+        const result = jwtFn(token as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/jwt`);
     }
 });
 

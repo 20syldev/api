@@ -119,6 +119,29 @@ router.get('/:version/asymmetric', (_req: Request, res: Response) => {
     error(res, 405, 'This endpoint only supports POST requests.');
 });
 
+// Convert text to a different case format
+router.get('/:version/case', (req: Request, res: Response) => {
+    const { text, to } = req.query;
+    const { version } = req.params;
+
+    const caseConvertFn = (req.module as { caseConvert?: (t: string, to?: string) => unknown }).caseConvert;
+    if (!caseConvertFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/case`);
+        return;
+    }
+    if (!text || typeof text !== 'string') {
+        error(res, 400, 'Please provide a text (?text={text})', `${version}/case`);
+        return;
+    }
+
+    try {
+        const result = caseConvertFn(text, to as string | undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/case`);
+    }
+});
+
 // Generate an identicon or pixel-art avatar from a seed
 router.get('/:version/avatar', (req: Request, res: Response) => {
     const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
@@ -484,6 +507,11 @@ router.get('/:version/ip', (req: Request, res: Response) => {
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/ip`);
     }
+});
+
+// GET jwt error
+router.get('/:version/jwt', (_req: Request, res: Response) => {
+    error(res, 405, 'This endpoint only supports POST requests.');
 });
 
 // Calculate Levenshtein distance
