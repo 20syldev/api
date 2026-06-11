@@ -31,6 +31,7 @@ export default function caseConvert(text: string, to: string = 'camel'): CaseRes
         throw new Error(`Invalid target case. Valid values: ${VALID_TARGETS.join(', ')}`);
 
     const words = tokenize(text);
+    if (words.length === 0) throw new Error('Text must contain at least one alphanumeric character');
     let result: string;
 
     switch (to as CaseTarget) {
