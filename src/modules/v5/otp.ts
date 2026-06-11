@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 
 export interface OtpSecretResult {
     secret: string;
@@ -16,7 +16,6 @@ export interface OtpVerifyResult {
     drift: number;
 }
 
-// ─── Base32 ───
 const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 function encodeBase32(buffer: Buffer): string {
@@ -55,7 +54,6 @@ function decodeBase32(encoded: string): Buffer {
     return Buffer.from(bytes);
 }
 
-// ─── HOTP ───
 function generateHotp(secret: Buffer, counter: bigint, algorithm: string, digits: number): string {
     const counterBuf = Buffer.alloc(8);
     counterBuf.writeBigUInt64BE(counter);
@@ -72,7 +70,13 @@ function generateHotp(secret: Buffer, counter: bigint, algorithm: string, digits
     return otp.toString().padStart(digits, '0');
 }
 
-// ─── Main ───
+function codesEqual(a: string, b: string): boolean {
+    const ab = Buffer.from(a);
+    const bb = Buffer.from(b);
+    if (ab.length !== bb.length) return false;
+    return timingSafeEqual(ab, bb);
+}
+
 const VALID_ALGORITHMS = new Set(['sha1', 'sha256', 'sha512']);
 const VALID_DIGITS = new Set([6, 8]);
 const VALID_PERIODS = new Set([15, 30, 60]);
@@ -119,6 +123,8 @@ export default function otp(
     }
 
     if (!options.secret) throw new Error('Secret is required for generate/verify');
+    if (options.counter !== undefined && (!Number.isInteger(options.counter) || options.counter < 0))
+        throw new Error('Counter must be a non-negative integer');
     const secretBuf = decodeBase32(options.secret);
 
     if (action === 'generate') {
@@ -135,12 +141,14 @@ export default function otp(
         options.counter !== undefined ? BigInt(options.counter) : BigInt(Math.floor(Date.now() / 1000 / period));
 
     for (let drift = 0; drift <= 1; drift++) {
-        const code = generateHotp(secretBuf, currentCounter - BigInt(drift), algorithm, digits);
-        if (code === options.code) return { valid: true, drift: drift === 0 ? 0 : -drift };
+        const counter = currentCounter - BigInt(drift);
+        if (counter < 0n) continue;
+        const code = generateHotp(secretBuf, counter, algorithm, digits);
+        if (codesEqual(code, options.code)) return { valid: true, drift: drift === 0 ? 0 : -drift };
     }
     for (let drift = 1; drift <= 1; drift++) {
         const code = generateHotp(secretBuf, currentCounter + BigInt(drift), algorithm, digits);
-        if (code === options.code) return { valid: true, drift };
+        if (codesEqual(code, options.code)) return { valid: true, drift };
     }
 
     return { valid: false, drift: 0 };
