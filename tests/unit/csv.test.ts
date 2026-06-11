@@ -116,3 +116,21 @@ describe('csv validation', () => {
         assert.throws(() => csv('parse', { csv: 'a\n1' }, { delimiter: '::' }), /single character/);
     });
 });
+
+describe('csv (5.5.0 fixes)', () => {
+    test('quoted field at end of line adds no phantom column', () => {
+        const result = csv('parse', { csv: 'a,"b"\n1,"2"' });
+        assert.deepEqual('rows' in result && result.rows, [{ a: '1', b: '2' }]);
+    });
+
+    test('newline inside a quoted field is preserved', () => {
+        const result = csv('parse', { csv: 'name,note\na,"l1\nl2"' });
+        assert.deepEqual('rows' in result && result.rows, [{ name: 'a', note: 'l1\nl2' }]);
+    });
+
+    test('format then parse round-trips multiline values', () => {
+        const formatted = csv('format', { json: [{ name: 'a', note: 'l1\nl2' }] });
+        const parsed = csv('parse', { csv: 'csv' in formatted ? formatted.csv : '' });
+        assert.deepEqual('rows' in parsed && parsed.rows, [{ name: 'a', note: 'l1\nl2' }]);
+    });
+});
