@@ -22,6 +22,15 @@ const router = Router();
 let activity: Record<string, unknown>[] = [];
 let lastFetch = 0;
 
+const postOnly = (name: string) => (req: Request, res: Response) => {
+    const available = versions[req.version]?.endpoints.post.some((e) => e.name === name);
+    if (!available) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/${name}`);
+        return;
+    }
+    error(res, 405, 'This endpoint only supports POST requests.');
+};
+
 // Display version information
 router.get('/:version', (req: Request, res: Response) => {
     const version = req.params.version as string;
@@ -74,6 +83,10 @@ router.get('/:version/address', (req: Request, res: Response) => {
     }
 
     const parsedCount = count !== undefined ? parseInt(count as string, 10) : 1;
+    if (isNaN(parsedCount)) {
+        error(res, 400, 'Please provide a valid count (&count={n})', `${version}/address`);
+        return;
+    }
 
     try {
         const result = addressFn(country as string | undefined, parsedCount);
@@ -86,8 +99,12 @@ router.get('/:version/address', (req: Request, res: Response) => {
 // Parse a User-Agent string
 router.get('/:version/agent', (req: Request, res: Response) => {
     const ua = (req.query.ua as string | undefined) ?? (req.headers['user-agent'] as string) ?? '';
+    const agentFn = (req.module as { agent?: (ua: string) => UserAgentResult }).agent;
+    if (!agentFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/agent`);
+        return;
+    }
     try {
-        const agentFn = (req.module as Record<string, unknown>).agent as (ua: string) => UserAgentResult;
         const result = agentFn(ua);
         res.jsonResponse(result);
     } catch (err) {
@@ -115,9 +132,7 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
 });
 
 // GET asymmetric error
-router.get('/:version/asymmetric', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/asymmetric', postOnly('asymmetric'));
 
 // Convert text to a different case format
 router.get('/:version/case', (req: Request, res: Response) => {
@@ -150,10 +165,15 @@ router.get('/:version/avatar', (req: Request, res: Response) => {
         return;
     }
     const { seed, size, type, bg, format } = req.query;
+    const parsedSize = size !== undefined ? parseInt(size as string, 10) : undefined;
+    if (parsedSize !== undefined && isNaN(parsedSize)) {
+        error(res, 400, 'Please provide a valid size (&size={50-2000})', `${req.version}/avatar`);
+        return;
+    }
     try {
         const { contentType, body } = avatarFn({
             seed: seed as string | undefined,
-            size: size !== undefined ? parseInt(size as string, 10) : undefined,
+            size: parsedSize,
             type: type as string | undefined,
             bg: bg as string | undefined,
             format: format as string | undefined,
@@ -176,12 +196,18 @@ router.get('/:version/barcode', (req: Request, res: Response) => {
         error(res, 400, 'Please provide data to encode (?data={string})', `${req.version}/barcode`);
         return;
     }
+    const parsedWidth = width !== undefined ? parseInt(width as string, 10) : undefined;
+    const parsedHeight = height !== undefined ? parseInt(height as string, 10) : undefined;
+    if ((parsedWidth !== undefined && isNaN(parsedWidth)) || (parsedHeight !== undefined && isNaN(parsedHeight))) {
+        error(res, 400, 'Please provide valid dimensions (&width={px}&height={px})', `${req.version}/barcode`);
+        return;
+    }
     try {
         const { contentType, body } = barcodeFn({
             data: data as string,
             type: type as string | undefined,
-            width: width !== undefined ? parseInt(width as string, 10) : undefined,
-            height: height !== undefined ? parseInt(height as string, 10) : undefined,
+            width: parsedWidth,
+            height: parsedHeight,
             format: format as string | undefined,
             color: color as string | undefined,
             bg: bg as string | undefined,
@@ -223,15 +249,13 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
 });
 
 // GET chart error
-router.get('/:version/chart', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/chart', postOnly('chart'));
 
 // Display stored data
 router.get('/:version/chat', (req: Request, res: Response) => {
     try {
         const messages = req.module.chat('fetch', {
-            username: 'system',
+            username: `reader:${req.ip ?? 'unknown'}`,
             storage: chatStorage,
         });
         res.jsonResponse(messages);
@@ -241,9 +265,7 @@ router.get('/:version/chat', (req: Request, res: Response) => {
 });
 
 // GET private chat error
-router.get('/:version/chat/private', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/chat/private', postOnly('chat'));
 
 // Generate color
 router.get('/:version/color', (req: Request, res: Response) => {
@@ -332,11 +354,16 @@ router.get('/:version/cron', (req: Request, res: Response) => {
         error(res, 400, 'Please provide a cron expression (?expr=* * * * *)', `${version}/cron`);
         return;
     }
+    const parsedCount = count !== undefined ? parseInt(count as string, 10) : 5;
+    if (isNaN(parsedCount)) {
+        error(res, 400, 'Please provide a valid count (&count={n})', `${version}/cron`);
+        return;
+    }
 
     try {
         const result = cronFn(
             expr as string,
-            count !== undefined ? parseInt(count as string, 10) : 5,
+            parsedCount,
             from as string | undefined,
             (timezone as string) ?? 'UTC',
         );
@@ -449,9 +476,7 @@ router.get('/:version/geo', (req: Request, res: Response) => {
 });
 
 // GET hash error
-router.get('/:version/hash', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/hash', postOnly('hash'));
 
 // Echo request headers
 router.get('/:version/headers', (req: Request, res: Response) => {
@@ -462,7 +487,8 @@ router.get('/:version/headers', (req: Request, res: Response) => {
         headers[k] = redacted.has(k) ? '[redacted]' : v;
     }
 
-    const filter = req.query.filter as string | undefined;
+    const filterParam = req.query.filter;
+    const filter = Array.isArray(filterParam) ? filterParam.join(',') : (filterParam as string | undefined);
     if (filter) {
         const keys = new Set(filter.split(',').map((k) => k.trim().toLowerCase()));
         headers = Object.fromEntries(Object.entries(headers).filter(([k]) => keys.has(k)));
@@ -478,9 +504,7 @@ router.get('/:version/headers', (req: Request, res: Response) => {
 });
 
 // GET planning error
-router.get('/:version/hyperplanning', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/hyperplanning', postOnly('hyperplanning'));
 
 // Display API informations
 router.get('/:version/infos', (req: Request, res: Response) => {
@@ -500,8 +524,12 @@ router.get('/:version/infos', (req: Request, res: Response) => {
 // Analyze an IP address
 router.get('/:version/ip', (req: Request, res: Response) => {
     const address = (req.query.address as string | undefined) ?? req.ip ?? '';
+    const ipFn = (req.module as { ip?: (a: string) => IpResult }).ip;
+    if (!ipFn) {
+        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/ip`);
+        return;
+    }
     try {
-        const ipFn = (req.module as Record<string, unknown>).ip as (a: string) => IpResult;
         const result = ipFn(address);
         res.jsonResponse(result);
     } catch (err) {
@@ -510,9 +538,7 @@ router.get('/:version/ip', (req: Request, res: Response) => {
 });
 
 // GET jwt error
-router.get('/:version/jwt', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/jwt', postOnly('jwt'));
 
 // Calculate Levenshtein distance
 router.get('/:version/levenshtein', (req: Request, res: Response) => {
@@ -536,14 +562,10 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
 });
 
 // GET matrix error
-router.get('/:version/matrix', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/matrix', postOnly('matrix'));
 
 // GET otp error
-router.get('/:version/otp', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/otp', postOnly('otp'));
 
 // Generate a color palette from a base color
 router.get('/:version/palette', (req: Request, res: Response) => {
@@ -733,9 +755,7 @@ router.get('/:version/statistics', (req: Request, res: Response) => {
 });
 
 // GET symmetric error
-router.get('/:version/symmetric', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/symmetric', postOnly('symmetric'));
 
 // Text utilities (slug, stats, lorem, number)
 router.get('/:version/text', (req: Request, res: Response) => {
@@ -775,17 +795,11 @@ router.get('/:version/text', (req: Request, res: Response) => {
 });
 
 // GET tic-tac-toe errors
-router.get('/:version/tic-tac-toe', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/tic-tac-toe', postOnly('tic_tac_toe'));
 
-router.get('/:version/tic-tac-toe/fetch', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/tic-tac-toe/fetch', postOnly('tic_tac_toe'));
 
-router.get('/:version/tic-tac-toe/list', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/tic-tac-toe/list', postOnly('tic_tac_toe'));
 
 // Display or generate time informations, or compute a countdown
 router.get('/:version/time', (req: Request, res: Response) => {
@@ -815,9 +829,7 @@ router.get('/:version/time', (req: Request, res: Response) => {
 });
 
 // GET token error
-router.get('/:version/token', (_req: Request, res: Response) => {
-    error(res, 405, 'This endpoint only supports POST requests.');
-});
+router.get('/:version/token', postOnly('token'));
 
 // Generate username
 router.get('/:version/username', (req: Request, res: Response) => {
@@ -978,7 +990,12 @@ router.get('/:version/website', async (req: Request, res: Response) => {
         active: env.ACTIVE,
     };
 
-    const key = req.query.key as string | undefined;
+    const keyParam = req.query.key;
+    if (Array.isArray(keyParam)) {
+        error(res, 400, 'Invalid key.');
+        return;
+    }
+    const key = keyParam as string | undefined;
     if (key) {
         if (['__proto__', 'constructor', 'prototype'].some((p) => key.includes(p))) {
             error(res, 400, 'Invalid key.');
