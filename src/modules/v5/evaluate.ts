@@ -6,7 +6,6 @@ export interface EvaluateResult {
     precision: number;
 }
 
-// ─── Tokenizer ───
 type TokenType = 'NUMBER' | 'IDENT' | 'OP' | 'LPAREN' | 'RPAREN' | 'COMMA';
 
 interface Token {
@@ -28,9 +27,12 @@ function tokenize(expr: string): Token[] {
 
         if ((ch >= '0' && ch <= '9') || ch === '.') {
             let num = '';
+            let dots = 0;
             while (i < expr.length && ((expr[i]! >= '0' && expr[i]! <= '9') || expr[i] === '.')) {
+                if (expr[i] === '.') dots++;
                 num += expr[i++];
             }
+            if (dots > 1) throw new Error(`Invalid number: ${num}`);
             tokens.push({ type: 'NUMBER', value: num });
             continue;
         }
@@ -78,7 +80,6 @@ function tokenize(expr: string): Token[] {
     return tokens;
 }
 
-// ─── AST ───
 type ASTNode =
     | { kind: 'number'; value: number }
     | { kind: 'unary'; op: string; operand: ASTNode }
@@ -86,9 +87,10 @@ type ASTNode =
     | { kind: 'call'; name: string; args: ASTNode[] }
     | { kind: 'const'; name: string };
 
-// ─── Binding powers ───
 const LEFT_BP: Record<string, number> = { '+': 10, '-': 10, '*': 20, '/': 20, '%': 20, '^': 31 };
 const RIGHT_BP: Record<string, number> = { '+': 10, '-': 10, '*': 20, '/': 20, '%': 20, '^': 30 };
+
+const UNARY_BP = 30;
 
 const CONSTANTS: Record<string, number> = { pi: Math.PI, e: Math.E };
 const FUNCTIONS = new Set([
@@ -108,7 +110,6 @@ const FUNCTIONS = new Set([
     'max',
 ]);
 
-// ─── Parser ───
 class Parser {
     private pos = 0;
     private depth = 0;
@@ -159,7 +160,7 @@ class Parser {
         // Unary +/-
         if (t.type === 'OP' && (t.value === '+' || t.value === '-')) {
             this.consume();
-            const operand = this.parse(40);
+            const operand = this.parse(UNARY_BP);
             if (t.value === '+') return operand;
             return { kind: 'unary', op: '-', operand };
         }
@@ -218,7 +219,6 @@ class Parser {
     }
 }
 
-// ─── Evaluator ───
 function evalNode(node: ASTNode): number {
     switch (node.kind) {
         case 'number':
@@ -309,7 +309,10 @@ export default function evaluate(expr: string, precision?: number): EvaluateResu
         throw new Error(`Expression cannot exceed ${MAX_EXPR_LENGTH} characters`);
     }
 
-    const prec = Math.min(15, Math.max(0, precision !== undefined ? Math.floor(precision) : 10));
+    const prec = Math.min(
+        15,
+        Math.max(0, precision !== undefined && Number.isFinite(precision) ? Math.floor(precision) : 10),
+    );
 
     const tokens = tokenize(expr.trim());
     if (tokens.length === 0) throw new Error('Please provide a math expression');
