@@ -818,8 +818,34 @@ router.get('/:version/time', (req: Request, res: Response) => {
     }
 });
 
+// GET csv error
+router.get('/:version/csv', postOnly('csv'));
+
 // GET token error
 router.get('/:version/token', postOnly('token'));
+
+// Parse a URL into its components
+router.get('/:version/url', (req: Request, res: Response) => {
+    const { url } = req.query;
+    const { version } = req.params;
+
+    const parseUrlFn = (req.module as { parseUrl?: (u: string) => unknown }).parseUrl;
+    if (!parseUrlFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/url`);
+        return;
+    }
+    if (!url || typeof url !== 'string') {
+        error(res, 400, 'Please provide a URL (?url={URL})', `${version}/url`);
+        return;
+    }
+
+    try {
+        const result = parseUrlFn(url);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/url`);
+    }
+});
 
 // Generate username
 router.get('/:version/username', (req: Request, res: Response) => {

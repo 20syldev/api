@@ -2,6 +2,7 @@ import { type Request, type Response, Router } from 'express';
 
 import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../constants.js';
 import type { HashResult } from '../modules/v4/hash.js';
+import type { CsvResult } from '../modules/v5/csv.js';
 import type { JwtResult } from '../modules/v5/jwt.js';
 import { chatStorage, ticTacToeStorage } from '../storage/index.js';
 import { since } from '../utils/helpers.js';
@@ -78,6 +79,45 @@ router.post('/:version/chart', (req: Request, res: Response) => {
         }
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/chart`);
+    }
+});
+
+// Convert between CSV and JSON
+router.post('/:version/csv', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { action, csv: csvData, json: jsonData, delimiter, headers } = body;
+    const { version } = req.params;
+
+    const csvFn = (
+        req.module as {
+            csv?: (
+                a: string,
+                d: { csv?: string; json?: Record<string, unknown>[] },
+                o?: { delimiter?: string; headers?: boolean },
+            ) => CsvResult;
+        }
+    ).csv;
+    if (!csvFn) {
+        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/csv`);
+        return;
+    }
+    if (!action) {
+        error(res, 400, 'Please provide an action (?action=parse|format)', `${version}/csv`);
+        return;
+    }
+
+    try {
+        const result = csvFn(
+            action as string,
+            { csv: csvData as string | undefined, json: jsonData as Record<string, unknown>[] | undefined },
+            {
+                delimiter: delimiter as string | undefined,
+                headers: headers !== undefined ? Boolean(headers) : undefined,
+            },
+        );
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message, `${req.version}/csv`);
     }
 });
 
