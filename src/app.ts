@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 
 import { env } from './config/env.js';
 import { setupCors } from './middleware/cors.js';
@@ -12,6 +12,7 @@ import getRoutes from './routes/get.js';
 import indexRoutes from './routes/index.js';
 import patchRoutes from './routes/patch.js';
 import postRoutes from './routes/post.js';
+import { error } from './utils/response.js';
 
 const app = express();
 
@@ -27,9 +28,6 @@ app.use(rateLimitMiddleware);
 // Request logging
 app.use(loggerMiddleware);
 
-// Error handling
-app.use(errorHandler);
-
 // Root routes (before version check)
 app.use(indexRoutes);
 
@@ -42,6 +40,14 @@ app.use(getRoutes);
 app.use(postRoutes);
 app.use(patchRoutes);
 app.use(deleteRoutes);
+
+// JSON 404 fallback
+app.use((req: Request, res: Response) => {
+    error(res, 404, `Endpoint '${req.path}' does not exist.`);
+});
+
+// Error handling (after routes)
+app.use(errorHandler);
 
 // Start server
 if (process.env.NODE_ENV !== 'test') {
