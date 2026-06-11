@@ -15,71 +15,102 @@ export interface CsvFormatResult {
 export type CsvResult = CsvParseResult | CsvFormatResult;
 
 /**
- * Parses a single CSV line respecting quoted fields.
+ * Parses a full CSV text into rows of fields, respecting quoted fields
+ * (including escaped quotes and newlines inside quotes).
+ *
+ * @param text - Raw CSV text; CRLF and CR line endings are normalized to LF
+ * @param delimiter - Field separator, a single character
+ * @returns Array of rows, each row being an array of field values
  */
-const parseLine = (line: string, delimiter: string): string[] => {
-    const fields: string[] = [];
+function parseRows(text: string, delimiter: string): string[][] {
+    const src = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const rows: string[][] = [];
+    let fields: string[] = [];
+    let value = '';
+    let inQuotes = false;
+    let fieldStarted = false;
+
+    const endField = (): void => {
+        fields.push(value);
+        value = '';
+        fieldStarted = false;
+    };
+
+    const endRow = (): void => {
+        if (fields.length > 0 || value !== '' || fieldStarted) {
+            endField();
+            rows.push(fields);
+        }
+        fields = [];
+    };
+
     let i = 0;
-
-    while (i <= line.length) {
-        if (i === line.length) {
-            fields.push('');
-            break;
-        }
-
-        if (line[i] === '"') {
-            let value = '';
-            i++; // skip opening quote
-            while (i < line.length) {
-                if (line[i] === '"') {
-                    if (i + 1 < line.length && line[i + 1] === '"') {
-                        value += '"';
-                        i += 2;
-                    } else {
-                        i++; // skip closing quote
-                        break;
-                    }
-                } else {
-                    value += line[i]!;
-                    i++;
+    while (i < src.length) {
+        const ch = src[i]!;
+        if (inQuotes) {
+            if (ch === '"') {
+                if (src[i + 1] === '"') {
+                    value += '"';
+                    i += 2;
+                    continue;
                 }
+                inQuotes = false;
+                i++;
+                continue;
             }
-            fields.push(value);
-            // skip delimiter after quoted field
-            if (i < line.length && line[i] === delimiter) i++;
-        } else {
-            const next = line.indexOf(delimiter, i);
-            if (next === -1) {
-                fields.push(line.slice(i));
-                break;
-            }
-            fields.push(line.slice(i, next));
-            i = next + 1;
-            // trailing delimiter means one more empty field
-            if (i === line.length) {
-                fields.push('');
-                break;
-            }
+            value += ch;
+            i++;
+            continue;
         }
+        if (ch === '"' && value === '') {
+            inQuotes = true;
+            fieldStarted = true;
+            i++;
+            continue;
+        }
+        if (ch === delimiter) {
+            endField();
+            fieldStarted = true;
+            i++;
+            continue;
+        }
+        if (ch === '\n') {
+            endRow();
+            i++;
+            continue;
+        }
+        value += ch;
+        i++;
     }
+    endRow();
 
-    return fields;
-};
+    return rows;
+}
 
 /**
  * Escapes a value for CSV output. Wraps in quotes if it contains the delimiter, quotes, or newlines.
+ *
+ * @param value - Field value to escape
+ * @param delimiter - Field separator used in the output
+ * @returns The value, quoted with inner quotes doubled when escaping is needed
  */
-const escapeField = (value: string, delimiter: string): string => {
+function escapeField(value: string, delimiter: string): string {
     if (value.includes(delimiter) || value.includes('"') || value.includes('\n')) {
         return '"' + value.replace(/"/g, '""') + '"';
     }
     return value;
-};
+}
 
 /**
  * Converts between CSV and JSON.
  * - `parse`: CSV string → array of objects
  * - `format`: array of objects → CSV string
+ *
+ * @param action - "parse" or "format"
+ * @param data - Input payload: `csv` string for parse, `json` array of objects for format
+ * @param options - `delimiter` (single character, default ",") and `headers` (parse only: use the first row as keys, default true)
+ * @returns Parse result with the rows and their count, or format result with the CSV string and the row count
+ * @throws Error if the action is invalid, the delimiter is not a single character, the input data is missing, or a size limit is exceeded
  */
 export default function csv(
     action: string,
@@ -98,30 +129,24 @@ export default function csv(
         if (text.length > MAX_CSV_LENGTH) throw new Error(`CSV cannot exceed ${MAX_CSV_LENGTH} characters`);
 
         const useHeaders = options.headers !== false;
-        const lines = text
-            .replace(/\r\n/g, '\n')
-            .replace(/\r/g, '\n')
-            .split('\n')
-            .filter((l) => l.length > 0);
+        const allRows = parseRows(text, delimiter);
 
-        if (lines.length === 0) return { action: 'parse', rows: [], count: 0 };
+        if (allRows.length === 0) return { action: 'parse', rows: [], count: 0 };
 
         let headers: string[];
-        let dataLines: string[];
+        let dataRows: string[][];
 
         if (useHeaders) {
-            headers = parseLine(lines[0]!, delimiter);
-            dataLines = lines.slice(1);
+            headers = allRows[0]!;
+            dataRows = allRows.slice(1);
         } else {
-            const firstFields = parseLine(lines[0]!, delimiter);
-            headers = firstFields.map((_, i) => String(i));
-            dataLines = lines;
+            headers = allRows[0]!.map((_, i) => String(i));
+            dataRows = allRows;
         }
 
-        if (dataLines.length > MAX_CSV_ROWS) throw new Error(`CSV cannot exceed ${MAX_CSV_ROWS} rows`);
+        if (dataRows.length > MAX_CSV_ROWS) throw new Error(`CSV cannot exceed ${MAX_CSV_ROWS} rows`);
 
-        const rows = dataLines.map((line) => {
-            const fields = parseLine(line, delimiter);
+        const rows = dataRows.map((fields) => {
             const row: Record<string, string> = {};
             for (let i = 0; i < headers.length; i++) {
                 row[headers[i]!] = fields[i] ?? '';
