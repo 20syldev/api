@@ -1,0 +1,134 @@
+import { SESSION_TTL } from '../../constants.js';
+import type { ChatMessage, ChatStorage } from '../../types/storage.js';
+import { checkRateLimit } from '../../utils/helpers.js';
+
+interface ChatParams {
+    username: string;
+    message?: string;
+    timestamp?: string;
+    session?: string;
+    token?: string;
+    storage: ChatStorage;
+}
+
+/**
+ * Handles real-time chat actions including sending, fetching, and clearing messages.
+ *
+ * @param action - The action to perform: "message", "private", "fetch", or "clear"
+ * @param params - Chat parameters including username, message, session, and shared storage
+ * @returns The result of the action — a message list, a sent confirmation, or a status message
+ * @throws Error if a required parameter is missing or the action is invalid
+ */
+export default function chat(action: string, params: ChatParams): ChatMessage[] | ChatMessage | { message: string } {
+    const storage = params.storage;
+
+    storage.messages ??= [];
+    storage.privateChats ??= {};
+    storage.sessions ??= {};
+    storage.rateLimits ??= {};
+
+    const { messages, privateChats, sessions, rateLimits } = storage;
+
+    if (!params.username) throw new Error('Please provide a username');
+
+    const u = params.username.toLowerCase();
+    const now = Date.now();
+
+    checkRateLimit(rateLimits, u, now);
+
+    if (action === 'message') {
+        return sendMessage(params, messages, privateChats, sessions, u, now);
+    } else if (action === 'private') {
+        return getPrivateChat(params, privateChats);
+    } else if (action === 'fetch') {
+        return fetchMessages(messages);
+    } else if (action === 'clear') {
+        return clearPrivateChat(params, privateChats, sessions, u);
+    } else {
+        throw new Error('Invalid action. Use "message", "private", "fetch", or "clear"');
+    }
+}
+
+function sendMessage(
+    params: ChatParams,
+    messages: ChatMessage[],
+    privateChats: Record<string, ChatMessage[]>,
+    sessions: Record<string, { user: string; last: number }>,
+    u: string,
+    now: number,
+): { message: string } {
+    const { message, session, token } = params;
+
+    if (!message) throw new Error('Please provide a message');
+    if (!session) throw new Error('Please provide a valid session ID');
+
+    if (sessions[u] && sessions[u].user !== session) {
+        throw new Error('Session ID mismatch');
+    }
+
+    const msg: ChatMessage = {
+        username: params.username,
+        message,
+        timestamp: params.timestamp || new Date().toISOString(),
+    };
+
+    if (token) {
+        privateChats[token] = privateChats[token] || [];
+        privateChats[token]!.push(msg);
+        setTimeout(() => {
+            const thread = privateChats[token];
+            if (!thread) return;
+            const idx = thread.indexOf(msg);
+            if (idx !== -1) thread.splice(idx, 1);
+            if (thread.length === 0) delete privateChats[token];
+        }, SESSION_TTL);
+    } else {
+        messages.push(msg);
+        setTimeout(() => messages.splice(messages.indexOf(msg), 1), SESSION_TTL);
+    }
+
+    sessions[u] = sessions[u] || { user: session, last: now };
+    sessions[u]!.last = now;
+
+    setTimeout(() => {
+        if (sessions[u] && Date.now() - sessions[u].last >= SESSION_TTL) delete sessions[u];
+    }, SESSION_TTL);
+
+    return { message: 'Message sent successfully' };
+}
+
+function getPrivateChat(params: ChatParams, privateChats: Record<string, ChatMessage[]>): ChatMessage[] {
+    const { token } = params;
+
+    if (!token) throw new Error('Please provide a valid token');
+
+    if (privateChats[token]) return privateChats[token];
+
+    throw new Error('Invalid or expired token.');
+}
+
+function fetchMessages(messages: ChatMessage[]): ChatMessage[] {
+    if (messages.length > 0) return messages;
+    throw new Error('No messages stored.');
+}
+
+function clearPrivateChat(
+    params: ChatParams,
+    privateChats: Record<string, ChatMessage[]>,
+    sessions: Record<string, { user: string; last: number }>,
+    u: string,
+): { message: string } {
+    const { token, session } = params;
+
+    if (!token) throw new Error('Please provide a valid token');
+    if (!session) throw new Error('Please provide a valid session ID');
+    if (sessions[u] && sessions[u].user !== session) {
+        throw new Error('Session ID mismatch');
+    }
+    if (!privateChats[token]) throw new Error('Invalid or expired token.');
+
+    delete privateChats[token];
+    delete sessions[u];
+
+    return { message: 'Private chat cleared successfully' };
+}
