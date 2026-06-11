@@ -1,4 +1,10 @@
-import { constants as cryptoConstants, generateKeyPairSync, privateDecrypt, publicEncrypt } from 'crypto';
+import {
+    constants as cryptoConstants,
+    createPublicKey,
+    generateKeyPairSync,
+    privateDecrypt,
+    publicEncrypt,
+} from 'crypto';
 
 import { MAX_RSA_MODULUS } from '../../constants.js';
 
@@ -66,14 +72,21 @@ export default function asymmetric(
         if (!options.publicKey) throw new Error('Public key is required');
         if (!options.publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) throw new Error('Invalid public key format');
 
-        const modulusLength = options.modulusLength ?? 2048;
+        let keyObject;
+        try {
+            keyObject = createPublicKey(options.publicKey);
+        } catch {
+            throw new Error('Invalid public key format');
+        }
+
+        const modulusLength = keyObject.asymmetricKeyDetails?.modulusLength ?? 2048;
         const maxBytes = modulusLength / 8 - 2 * algo.hashLength - 2;
         if (Buffer.byteLength(options.text, 'utf8') > maxBytes)
             throw new Error(`Text exceeds maximum length for this key size and algorithm (${maxBytes} bytes)`);
 
         try {
             const encrypted = publicEncrypt(
-                { key: options.publicKey, oaepHash: algo.oaepHash, padding: cryptoConstants.RSA_PKCS1_OAEP_PADDING },
+                { key: keyObject, oaepHash: algo.oaepHash, padding: cryptoConstants.RSA_PKCS1_OAEP_PADDING },
                 Buffer.from(options.text, 'utf8'),
             );
             return { action, algorithm, result: encrypted.toString('base64') };
