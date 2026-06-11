@@ -31,6 +31,7 @@ export interface TicTacToeGame {
     players: string[];
     private: boolean;
     creation: number;
+    last?: number;
 }
 
 export interface TicTacToeStorage {
