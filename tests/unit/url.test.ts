@@ -63,3 +63,10 @@ describe('parseUrl', () => {
         assert.throws(() => parseUrl(longUrl), /cannot exceed/);
     });
 });
+
+describe('parseUrl (5.5.0 fixes)', () => {
+    test('duplicate query params are preserved as an array', () => {
+        const result = parseUrl('https://example.com/?a=1&a=2&b=3');
+        assert.deepEqual(result.params, { a: ['1', '2'], b: '3' });
+    });
+});
