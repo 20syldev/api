@@ -1,6 +1,17 @@
-import { type CipherGCM, createCipheriv, createDecipheriv, type DecipherGCM, randomBytes, scryptSync } from 'crypto';
+import {
+    type CipherGCM,
+    createCipheriv,
+    createDecipheriv,
+    createHmac,
+    type DecipherGCM,
+    randomBytes,
+    scryptSync,
+    timingSafeEqual,
+} from 'crypto';
 
 import { MAX_STRING_LENGTH } from '../../constants.js';
+
+const MAC_KEY_LENGTH = 32;
 
 export interface EncryptResult {
     action: string;
@@ -43,37 +54,54 @@ export default function encrypt(
     if (action === 'encrypt') {
         const salt = randomBytes(16);
         const iv = randomBytes(algo.ivLength);
-        const derivedKey = scryptSync(key, salt, algo.keyLength);
-        const cipher = createCipheriv(algorithm, derivedKey, iv);
 
-        const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
-
-        let blob: Buffer;
         if (algo.authTag) {
+            const derivedKey = scryptSync(key, salt, algo.keyLength);
+            const cipher = createCipheriv(algorithm, derivedKey, iv);
+            const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
             const tag = (cipher as CipherGCM).getAuthTag();
-            blob = Buffer.concat([salt, iv, tag, encrypted]);
-        } else {
-            blob = Buffer.concat([salt, iv, encrypted]);
+            const blob = Buffer.concat([salt, iv, tag, encrypted]);
+            return { action, algorithm, result: blob.toString('base64') };
         }
 
+        const derived = scryptSync(key, salt, algo.keyLength + MAC_KEY_LENGTH);
+        const encKey = derived.subarray(0, algo.keyLength);
+        const macKey = derived.subarray(algo.keyLength);
+        const cipher = createCipheriv(algorithm, encKey, iv);
+        const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+        const mac = createHmac('sha256', macKey)
+            .update(Buffer.concat([iv, encrypted]))
+            .digest();
+        const blob = Buffer.concat([salt, iv, mac, encrypted]);
         return { action, algorithm, result: blob.toString('base64') };
     } else {
         const data = Buffer.from(text, 'base64');
         const salt = data.subarray(0, 16);
         const iv = data.subarray(16, 16 + algo.ivLength);
-
-        let tagEnd = 16 + algo.ivLength;
-        let tag: Buffer | null = null;
-        if (algo.authTag) {
-            tag = data.subarray(tagEnd, tagEnd + 16);
-            tagEnd += 16;
-        }
-        const ciphertext = data.subarray(tagEnd);
+        const offset = 16 + algo.ivLength;
 
         try {
-            const derivedKey = scryptSync(key, salt, algo.keyLength);
-            const decipher = createDecipheriv(algorithm, derivedKey, iv);
-            if (tag) (decipher as DecipherGCM).setAuthTag(tag);
+            if (algo.authTag) {
+                const tag = data.subarray(offset, offset + 16);
+                const ciphertext = data.subarray(offset + 16);
+                const derivedKey = scryptSync(key, salt, algo.keyLength);
+                const decipher = createDecipheriv(algorithm, derivedKey, iv);
+                (decipher as DecipherGCM).setAuthTag(tag);
+                const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+                return { action, algorithm, result: decrypted.toString('utf8') };
+            }
+
+            const mac = data.subarray(offset, offset + MAC_KEY_LENGTH);
+            const ciphertext = data.subarray(offset + MAC_KEY_LENGTH);
+            const derived = scryptSync(key, salt, algo.keyLength + MAC_KEY_LENGTH);
+            const encKey = derived.subarray(0, algo.keyLength);
+            const macKey = derived.subarray(algo.keyLength);
+            const expected = createHmac('sha256', macKey)
+                .update(Buffer.concat([iv, ciphertext]))
+                .digest();
+            if (mac.length !== expected.length || !timingSafeEqual(mac, expected))
+                throw new Error('integrity check failed');
+            const decipher = createDecipheriv(algorithm, encKey, iv);
             const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
             return { action, algorithm, result: decrypted.toString('utf8') };
         } catch {
