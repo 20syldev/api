@@ -21,6 +21,10 @@ export interface VersionConfig {
 /**
  * Merges a base list of endpoints with additions, deduplicating by `name`.
  * If an addition has the same name as a base entry, it overrides it.
+ *
+ * @param base - Endpoints inherited from the previous API version
+ * @param additions - New or overriding endpoints for this version
+ * @returns Merged endpoint list, sorted as base entries first then new additions
  */
 const merge = (base: Endpoint[], additions: Endpoint[]): Endpoint[] => {
     const map = new Map(base.map((e) => [e.name, e]));
@@ -131,10 +135,12 @@ const v5 = {
     get: merge(v4.get, [
         { name: 'case', path: '/case?text={text}(&to={target})' },
         { name: 'evaluate', path: '/evaluate?expr={expression}(&precision={0-15})' },
+        { name: 'url', path: '/url?url={URL}' },
     ]),
     post: merge(v4.post, [
         { name: 'asymmetric', path: '/asymmetric' },
         { name: 'chart', path: '/chart' },
+        { name: 'csv', path: '/csv' },
         { name: 'jwt', path: '/jwt' },
         { name: 'matrix', path: '/matrix' },
         { name: 'otp', path: '/otp' },
