@@ -20,19 +20,26 @@ export default function jwt(token: string): JwtResult {
 
     const [headerB64, payloadB64, signature] = parts as [string, string, string];
 
+    const isObject = (v: unknown): v is Record<string, unknown> =>
+        typeof v === 'object' && v !== null && !Array.isArray(v);
+
     let header: Record<string, unknown>;
     let payload: Record<string, unknown>;
 
     try {
-        header = JSON.parse(Buffer.from(headerB64, 'base64url').toString('utf-8')) as Record<string, unknown>;
+        const parsed: unknown = JSON.parse(Buffer.from(headerB64, 'base64url').toString('utf-8'));
+        if (!isObject(parsed)) throw new Error();
+        header = parsed;
     } catch {
-        throw new Error('Invalid JWT header: not valid base64url JSON');
+        throw new Error('Invalid JWT header: not a valid base64url-encoded JSON object');
     }
 
     try {
-        payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8')) as Record<string, unknown>;
+        const parsed: unknown = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8'));
+        if (!isObject(parsed)) throw new Error();
+        payload = parsed;
     } catch {
-        throw new Error('Invalid JWT payload: not valid base64url JSON');
+        throw new Error('Invalid JWT payload: not a valid base64url-encoded JSON object');
     }
 
     const result: JwtResult = { header, payload, signature };
