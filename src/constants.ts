@@ -28,6 +28,8 @@ export const EARTH_RADIUS_KM = 6371;
 export const MAX_ADDRESS_COUNT = 10;
 export const MAX_CHART_DATASETS = 5;
 export const MAX_CHART_LABELS = 20;
+export const MAX_CSV_LENGTH = 50_000;
+export const MAX_CSV_ROWS = 1000;
 export const MAX_CREDIT_COUNT = 10;
 export const MAX_COUNTDOWN_YEARS = 100;
 export const MAX_CRON_ITERATIONS = 365 * 24 * 60;
@@ -50,6 +52,7 @@ export const MAX_RSA_MODULUS = 4096;
 export const MAX_STRING_LENGTH = 1000;
 export const MIN_TOKEN_LENGTH = 12;
 export const MAX_TOKEN_LENGTH = 4096;
+export const MAX_URL_LENGTH = 2048;
 
 export const ROMAN_VALUES: [number, string][] = [
     [1000, 'M'],
