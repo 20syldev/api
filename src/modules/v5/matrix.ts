@@ -8,7 +8,6 @@ export interface MatrixResult {
     dimensions: { rows: number; cols: number };
 }
 
-// ─── Validation ───
 function validateMatrix(m: unknown, name = 'matrix'): Matrix {
     if (!Array.isArray(m) || m.length === 0) {
         throw new Error(`Field '${name}' must be a non-empty 2D array`);
@@ -50,7 +49,10 @@ function copy(m: Matrix): Matrix {
     return m.map((row) => [...row]);
 }
 
-// ─── Operations ───
+function clean(x: number): number {
+    return x === 0 ? 0 : Number(x.toPrecision(12));
+}
+
 /**
  * Adds two matrices element-wise.
  *
@@ -195,7 +197,7 @@ export function determinant(matrix: unknown): MatrixResult {
     let det = sign;
     for (let i = 0; i < n; i++) det *= lu[i]![i]!;
 
-    const result = Number(det.toFixed(10));
+    const result = clean(det);
     return { operation: 'determinant', result, dimensions: dims(a) };
 }
 
@@ -238,7 +240,7 @@ export function inverse(matrix: unknown): MatrixResult {
     }
 
     // Extract right half
-    const result: Matrix = aug.map((row) => row.slice(n).map((v) => Number(v.toFixed(10))));
+    const result: Matrix = aug.map((row) => row.slice(n).map((v) => clean(v)));
 
     return { operation: 'inverse', result, dimensions: dims(result) };
 }
