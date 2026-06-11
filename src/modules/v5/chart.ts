@@ -49,7 +49,6 @@ const MARGIN = { top: 30, right: 40, bottom: 40, left: 50 };
 const TITLE_HEIGHT = 30;
 const LEGEND_ROW_H = 18;
 
-// ─── Helpers ───
 function escapeXml(str: string): string {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -147,15 +146,16 @@ function validatePieDonut(data: unknown): PieDonutData {
 }
 
 function yScale(values: number[]): { min: number; max: number; gridCount: number } {
-    const dataMax = Math.max(...values, 0);
+    let dataMax = Math.max(...values, 0);
     const dataMin = Math.min(...values, 0);
-    const range = dataMax - dataMin || 1;
+    if (dataMax === dataMin) dataMax = dataMin + 1;
+    const range = dataMax - dataMin;
     const rawStep = range / 5;
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
     const step = Math.ceil(rawStep / magnitude) * magnitude;
     const min = Math.floor(dataMin / step) * step;
     const max = Math.ceil(dataMax / step) * step;
-    const gridCount = Math.round((max - min) / step);
+    const gridCount = Math.max(1, Math.round((max - min) / step));
     return { min, max, gridCount };
 }
 
@@ -178,7 +178,6 @@ function parseOptions(options: ChartOptions) {
     };
 }
 
-// ─── Bar chart ───
 /**
  * Renders a bar chart as SVG or returns its raw data.
  *
@@ -263,7 +262,6 @@ export function bar(data: unknown, options: ChartOptions): ChartOutput {
     return { contentType: 'image/svg+xml', body: svg };
 }
 
-// ─── Line chart ───
 /**
  * Renders a line chart as SVG or returns its raw data.
  *
@@ -297,6 +295,7 @@ export function line(data: unknown, options: ChartOptions): ChartOutput {
     const chartW = renderW - MARGIN.left - MARGIN.right;
     const chartH = renderH - marginTop - MARGIN.bottom - legendH;
     const xStep = chartW / Math.max(d.labels.length - 1, 1);
+    const xPos = (i: number): number => MARGIN.left + (d.labels.length > 1 ? i * xStep : chartW / 2);
 
     let svg = svgOpen(bg, renderW, renderH, displayW, displayH);
     if (title)
@@ -318,14 +317,14 @@ export function line(data: unknown, options: ChartOptions): ChartOutput {
     d.datasets.forEach((ds, di) => {
         const points = ds.values
             .map((val, i) => {
-                const x = MARGIN.left + i * (d.labels.length > 1 ? xStep : chartW / 2);
+                const x = xPos(i);
                 const y = marginTop + toY(val, min, max, chartH);
                 return `${x.toFixed(1)},${y.toFixed(1)}`;
             })
             .join(' ');
         svg += `  <polyline points="${points}" fill="none" stroke="${colors[di]}" stroke-width="2" stroke-linejoin="round"/>\n`;
         ds.values.forEach((val, i) => {
-            const x = MARGIN.left + i * (d.labels.length > 1 ? xStep : chartW / 2);
+            const x = xPos(i);
             const y = marginTop + toY(val, min, max, chartH);
             svg += `  <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${colors[di]}"/>\n`;
         });
@@ -333,7 +332,7 @@ export function line(data: unknown, options: ChartOptions): ChartOutput {
 
     // X axis labels
     d.labels.forEach((label, i) => {
-        const x = MARGIN.left + i * (d.labels.length > 1 ? xStep : chartW / 2);
+        const x = xPos(i);
         svg += `  <text x="${x.toFixed(1)}" y="${(marginTop + chartH + 20).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#666">${escapeXml(label)}</text>\n`;
     });
 
@@ -352,7 +351,6 @@ export function line(data: unknown, options: ChartOptions): ChartOutput {
     return { contentType: 'image/svg+xml', body: svg };
 }
 
-// ─── Pie / Donut ───
 function pieArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number, innerR = 0): string {
     const start = { x: cx + r * Math.cos(startAngle), y: cy + r * Math.sin(startAngle) };
     const end = { x: cx + r * Math.cos(endAngle), y: cy + r * Math.sin(endAngle) };
@@ -417,6 +415,13 @@ function renderPieDonut(type: string, data: unknown, options: ChartOptions, isDo
     d.values.forEach((val, i) => {
         if (val === 0) return;
         const sweep = (val / total) * 2 * Math.PI;
+        if (sweep >= 2 * Math.PI - 1e-9) {
+            svg += `  <circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r}" fill="${colors[i]}" stroke="${bg}" stroke-width="1.5"/>\n`;
+            if (innerR > 0)
+                svg += `  <circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${innerR}" fill="${bg}"/>\n`;
+            startAngle += sweep;
+            return;
+        }
         const endAngle = startAngle + sweep;
         const path = pieArc(cx, cy, r, startAngle, endAngle, innerR);
         svg += `  <path d="${path}" fill="${colors[i]}" stroke="${bg}" stroke-width="1.5"/>\n`;
