@@ -927,7 +927,10 @@ describe('GET / (version listing)', () => {
         const endpoints = body.endpoints as Record<string, Record<string, string>>;
         assert.ok('case' in endpoints.get!);
         assert.ok('evaluate' in endpoints.get!);
+        assert.ok('url' in endpoints.get!);
+
         assert.ok('chart' in endpoints.post!);
+        assert.ok('csv' in endpoints.post!);
         assert.ok('jwt' in endpoints.post!);
         assert.ok('matrix' in endpoints.post!);
         assert.ok('otp' in endpoints.post!);
@@ -1388,6 +1391,111 @@ describe('GET /v5/case', () => {
     });
     test('not available in v4 returns 404', async () => {
         const { status } = await getJson('/v4/case?text=hello');
+        assert.equal(status, 404);
+    });
+});
+
+describe('GET /v5/url', () => {
+    test('full URL returns all components', async () => {
+        const url = encodeURIComponent('https://example.com:8080/path?foo=bar&baz=1#section');
+        const { status, body } = await getJson(`/v5/url?url=${url}`);
+        assert.equal(status, 200);
+        assert.equal(body.scheme, 'https');
+        assert.equal(body.host, 'example.com');
+        assert.equal(body.port, 8080);
+        assert.equal(body.path, '/path');
+        assert.deepEqual(body.params, { foo: 'bar', baz: '1' });
+        assert.equal(body.fragment, 'section');
+        assert.equal(body.valid, true);
+    });
+    test('URL without port returns port: null', async () => {
+        const { body } = await getJson(`/v5/url?url=${encodeURIComponent('https://example.com/path')}`);
+        assert.equal(body.port, null);
+    });
+    test('URL without fragment returns empty fragment', async () => {
+        const { body } = await getJson(`/v5/url?url=${encodeURIComponent('https://example.com')}`);
+        assert.equal(body.fragment, '');
+        assert.equal(body.path, '/');
+    });
+    test('invalid URL returns 400', async () => {
+        const { status } = await getJson('/v5/url?url=not-a-url');
+        assert.equal(status, 400);
+    });
+    test('missing url returns 400', async () => {
+        const { status } = await getJson('/v5/url');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson(`/v4/url?url=${encodeURIComponent('https://example.com')}`);
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/csv', () => {
+    test('parse returns rows and count', async () => {
+        const { status, body } = await sendJson('POST', '/v5/csv', {
+            action: 'parse',
+            csv: 'name,age\nAlice,30\nBob,25',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.action, 'parse');
+        assert.deepEqual(body.rows, [
+            { name: 'Alice', age: '30' },
+            { name: 'Bob', age: '25' },
+        ]);
+        assert.equal(body.count, 2);
+    });
+    test('parse with custom delimiter', async () => {
+        const { body } = await sendJson('POST', '/v5/csv', {
+            action: 'parse',
+            csv: 'name;age\nAlice;30',
+            delimiter: ';',
+        });
+        assert.deepEqual(body.rows, [{ name: 'Alice', age: '30' }]);
+    });
+    test('parse with headers: false returns numeric keys', async () => {
+        const { body } = await sendJson('POST', '/v5/csv', {
+            action: 'parse',
+            csv: 'Alice,30',
+            headers: false,
+        });
+        assert.deepEqual(body.rows, [{ '0': 'Alice', '1': '30' }]);
+    });
+    test('format returns CSV string', async () => {
+        const { status, body } = await sendJson('POST', '/v5/csv', {
+            action: 'format',
+            json: [
+                { name: 'Alice', age: '30' },
+                { name: 'Bob', age: '25' },
+            ],
+        });
+        assert.equal(status, 200);
+        assert.equal(body.action, 'format');
+        assert.equal(body.csv, 'name,age\nAlice,30\nBob,25');
+        assert.equal(body.count, 2);
+    });
+    test('invalid action returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/csv', { action: 'invalid' });
+        assert.equal(status, 400);
+    });
+    test('missing action returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/csv', { csv: 'a,b' });
+        assert.equal(status, 400);
+    });
+    test('missing csv for parse returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/csv', { action: 'parse' });
+        assert.equal(status, 400);
+    });
+    test('missing json for format returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/csv', { action: 'format' });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/csv returns 405', async () => {
+        const { status } = await getJson('/v5/csv');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/csv', { action: 'parse', csv: 'a,b' });
         assert.equal(status, 404);
     });
 });
