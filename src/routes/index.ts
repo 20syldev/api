@@ -52,8 +52,11 @@ router.get('/latest', (_req: Request, res: Response) => {
 
 router.get('/latest/{*rest}', (req: Request, res: Response) => {
     const latest = Object.keys(versions).pop()!;
-    const rest = (req.params as Record<string, string>).rest;
-    res.redirect(`/${latest}/${rest}`);
+    const rest = (req.params as Record<string, string | string[]>).rest;
+    const path = Array.isArray(rest) ? rest.join('/') : rest;
+    const queryIndex = req.originalUrl.indexOf('?');
+    const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+    res.redirect(`/${latest}/${path}${query}`);
 });
 
 export default router;
