@@ -25,7 +25,7 @@ setInterval(() => {
         burstTracker[ip] = burstTracker[ip]!.filter((t) => now - t < RATE_LIMIT_WINDOW);
         if (burstTracker[ip]!.length === 0) delete burstTracker[ip];
     }
-}, SESSION_TTL);
+}, SESSION_TTL).unref();
 
 export function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
     const ip = req.ip || req.socket.remoteAddress || '';
