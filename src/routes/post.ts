@@ -394,7 +394,7 @@ router.post('/:version/tic-tac-toe/list', (req: Request, res: Response) => {
 // Generate Token
 router.post('/:version/token', (req: Request, res: Response) => {
     const body = (req.body as Record<string, unknown>) || {};
-    const len = parseInt(String(body.len || 24), 10);
+    const len = parseInt(String(body.len ?? 24), 10);
     const type = body.type ? String(body.type).toLowerCase() : 'alpha';
 
     if (isNaN(len) || len < 0) {
