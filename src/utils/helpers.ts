@@ -16,9 +16,15 @@ export function checkRateLimit(
     window = 10000,
     limit = 50,
 ): boolean {
+    for (const key of Object.keys(rateLimits)) {
+        if (key !== userId && !rateLimits[key]!.some((ts) => timestamp - ts < window)) {
+            delete rateLimits[key];
+        }
+    }
+
     rateLimits[userId] = (rateLimits[userId] ?? []).filter((ts) => timestamp - ts < window);
 
-    if (rateLimits[userId]!.length > limit) {
+    if (rateLimits[userId]!.length >= limit) {
         const remainingTime = Math.ceil((rateLimits[userId]![0]! + window - timestamp) / 1000);
         throw new Error(`Rate limit exceeded. Try again in ${remainingTime} seconds.`);
     }
