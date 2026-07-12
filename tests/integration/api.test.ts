@@ -1363,3 +1363,68 @@ describe('Prototype access on dynamic endpoints', () => {
         assert.equal(status, 400);
     });
 });
+
+// --- 5.4.0 fixes ---
+
+describe('Route hardening (5.4.0 fixes)', () => {
+    test('repeated filter params on /headers are merged instead of crashing', async () => {
+        const res = await fetch(`${baseUrl}/v4/headers?filter=host&filter=accept`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /json/);
+    });
+
+    test('repeated key params on /website return 400', async () => {
+        const { status } = await getJson('/v4/website?key=tag&key=stats');
+        assert.equal(status, 400);
+    });
+
+    test('unknown endpoint returns JSON 404', async () => {
+        const res = await fetch(`${baseUrl}/v5/doesnotexist`);
+        assert.equal(res.status, 404);
+        assert.match(res.headers.get('content-type') ?? '', /json/);
+    });
+
+    test('latest redirect keeps the query string', async () => {
+        const res = await fetch(`${baseUrl}/latest/case?text=hi`, { redirect: 'manual' });
+        assert.equal(res.headers.get('location'), '/v5/case?text=hi');
+    });
+
+    test('latest redirect joins nested paths with slashes', async () => {
+        const res = await fetch(`${baseUrl}/latest/tic-tac-toe/list`, { redirect: 'manual' });
+        assert.equal(res.headers.get('location'), '/v5/tic-tac-toe/list');
+    });
+
+    test('token len 0 returns 400', async () => {
+        const { status } = await sendJson('POST', '/v4/token', { len: 0 });
+        assert.equal(status, 400);
+    });
+
+    test('agent and ip return 404 in v3', async () => {
+        assert.equal((await getJson('/v3/agent')).status, 404);
+        assert.equal((await getJson('/v3/ip?address=8.8.8.8')).status, 404);
+    });
+
+    test('non-numeric count/size/width params return 400', async () => {
+        assert.equal((await getJson('/v4/address?count=abc')).status, 400);
+        assert.equal((await getJson('/v4/cron?expr=*%20*%20*%20*%20*&count=abc')).status, 400);
+        assert.equal((await getJson('/v4/avatar?size=abc')).status, 400);
+        assert.equal((await getJson('/v4/barcode?data=test&width=abc')).status, 400);
+    });
+
+    test('GET stub returns 404 when the endpoint does not exist in the version', async () => {
+        assert.equal((await getJson('/v1/jwt')).status, 404);
+        assert.equal((await getJson('/v5/jwt')).status, 405);
+        assert.equal((await getJson('/v1/token')).status, 405);
+    });
+
+    test('evaluate -2^2 returns -4 over HTTP', async () => {
+        const { body } = await getJson('/v5/evaluate?expr=-2%5E2');
+        assert.equal(body.result, -4);
+    });
+
+    test('evaluate with non-numeric precision falls back to default', async () => {
+        const { status, body } = await getJson('/v5/evaluate?expr=1%2F3&precision=abc');
+        assert.equal(status, 200);
+        assert.equal(body.result, 0.3333333333);
+    });
+});
