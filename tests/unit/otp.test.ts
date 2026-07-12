@@ -107,3 +107,26 @@ describe('otp - validation', () => {
         assert.throws(() => otp('verify', { secret: 'JBSWY3DPEHPK3PXP' }), /Code is required/);
     });
 });
+
+describe('otp (5.4.0 fixes)', () => {
+    test('wrong code at counter 0 returns valid false', () => {
+        const sec = otp('secret', {}) as { secret: string };
+        const gen = otp('generate', { secret: sec.secret, counter: 0 }) as { code: string };
+        const wrong = gen.code === '000000' ? '000001' : '000000';
+        const res = otp('verify', { secret: sec.secret, code: wrong, counter: 0 }) as { valid: boolean };
+        assert.equal(res.valid, false);
+    });
+
+    test('correct code at counter 0 returns valid true', () => {
+        const sec = otp('secret', {}) as { secret: string };
+        const gen = otp('generate', { secret: sec.secret, counter: 0 }) as { code: string };
+        const res = otp('verify', { secret: sec.secret, code: gen.code, counter: 0 }) as { valid: boolean };
+        assert.equal(res.valid, true);
+    });
+
+    test('non-integer counter throws', () => {
+        const sec = otp('secret', {}) as { secret: string };
+        assert.throws(() => otp('verify', { secret: sec.secret, code: '000000', counter: 1.5 }), /non-negative integer/);
+        assert.throws(() => otp('generate', { secret: sec.secret, counter: NaN }), /non-negative integer/);
+    });
+});

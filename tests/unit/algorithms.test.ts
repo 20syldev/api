@@ -12,6 +12,7 @@ import {
     reverse,
     roman,
 } from '../../src/modules/v4/algorithms.js';
+import * as algorithmsV5 from '../../src/modules/v5/algorithms.js';
 
 describe('algorithms', () => {
     describe('anagram', () => {
@@ -117,5 +118,24 @@ describe('algorithms', () => {
         test('throws on invalid roman', () => {
             assert.throws(() => roman('XYZ'), /Invalid Roman/);
         });
+    });
+});
+
+describe('algorithms v5 (5.4.0 fixes)', () => {
+    test('isprime(1) is false', () => {
+        assert.equal(algorithmsV5.isprime('1'), false);
+    });
+
+    test('isprime rejects non-integers', () => {
+        assert.throws(() => algorithmsV5.isprime('7.5'), /integer/);
+    });
+
+    test('factorial rejects non-integers', () => {
+        assert.throws(() => algorithmsV5.factorial('5.5'), /integer/);
+    });
+
+    test('isprime and factorial still work on valid input', () => {
+        assert.equal(algorithmsV5.isprime('17'), true);
+        assert.equal(algorithmsV5.factorial('5'), 120);
     });
 });

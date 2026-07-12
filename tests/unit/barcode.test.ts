@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { describe, test } from 'node:test';
 
 import barcode from '../../src/modules/v4/barcode.js';
+import barcodeV5 from '../../src/modules/v5/barcode.js';
 
 describe('barcode', () => {
     describe('Code 128', () => {
@@ -115,5 +116,23 @@ describe('barcode', () => {
         test('height out of range throws', () => {
             assert.throws(() => barcode({ data: 'TEST', height: 49 }), /Height must be/);
         });
+    });
+});
+
+describe('barcode v5 (5.4.0 fixes)', () => {
+    test('valid EAN-8 check digit is accepted', () => {
+        assert.doesNotThrow(() => barcodeV5({ data: '73513537', type: 'ean8' }));
+    });
+
+    test('7-digit EAN-8 computes the correct check digit', () => {
+        const a = barcodeV5({ data: '7351353', type: 'ean8' });
+        const b = barcodeV5({ data: '73513537', type: 'ean8' });
+        assert.equal(String(a.body), String(b.body));
+    });
+
+    test('quiet zone is not painted and bars are not inverted', () => {
+        const svg = String(barcodeV5({ data: 'AB', type: 'code128', format: 'svg' }).body);
+        assert.ok(!/<rect x="0" /.test(svg));
+        assert.ok(/<rect x="20" /.test(svg));
     });
 });

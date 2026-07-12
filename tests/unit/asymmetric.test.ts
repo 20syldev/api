@@ -147,3 +147,12 @@ describe('asymmetric - validation', () => {
         assert.throws(() => asymmetric('encrypt', { text: longText, publicKey: testPublicKey }), /exceeds maximum/);
     });
 });
+
+describe('asymmetric (5.4.0 fixes)', () => {
+    test('4096-bit key accepts payloads beyond the 2048-bit limit', () => {
+        const kg = asymmetric('keygen', { modulusLength: 4096 }) as { publicKey: string; privateKey: string };
+        const enc = asymmetric('encrypt', { text: 'x'.repeat(200), publicKey: kg.publicKey }) as { result: string };
+        const dec = asymmetric('decrypt', { text: enc.result, privateKey: kg.privateKey }) as { result: string };
+        assert.equal(dec.result, 'x'.repeat(200));
+    });
+});

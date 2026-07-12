@@ -59,3 +59,18 @@ describe('encrypt', () => {
         assert.throws(() => encrypt('encrypt', 'hello', ''), /Key is required/);
     });
 });
+
+describe('symmetric (5.4.0 fixes)', () => {
+    test('cbc roundtrip works with integrity MAC', () => {
+        const enc = encrypt('encrypt', 'hello cbc', 'mypassword1', 'aes-256-cbc');
+        const dec = encrypt('decrypt', enc.result, 'mypassword1', 'aes-256-cbc');
+        assert.equal(dec.result, 'hello cbc');
+    });
+
+    test('tampered cbc ciphertext is rejected', () => {
+        const enc = encrypt('encrypt', 'secret', 'mypassword1', 'aes-256-cbc');
+        const blob = Buffer.from(enc.result, 'base64');
+        blob[blob.length - 1] = blob[blob.length - 1]! ^ 0xff;
+        assert.throws(() => encrypt('decrypt', blob.toString('base64'), 'mypassword1', 'aes-256-cbc'), /Invalid key or corrupted data/);
+    });
+});

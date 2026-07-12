@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { describe, test } from 'node:test';
 
 import address from '../../src/modules/v4/address.js';
+import addressV5 from '../../src/modules/v5/address.js';
 
 describe('address', () => {
     describe('default behavior', () => {
@@ -80,5 +81,24 @@ describe('address', () => {
         test('count=11 throws', () => {
             assert.throws(() => address('fr', 11), /Count must be between/);
         });
+    });
+});
+
+describe('address v5 (5.4.0 fixes)', () => {
+    const US_TYPES = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Road', 'Lane', 'Court', 'Way', 'Place', 'Circle'];
+    const FR_TYPES = ['Rue', 'Avenue', 'Boulevard', 'All\u00e9e', 'Impasse', 'Place', 'Chemin', 'Route', 'Voie', 'Passage'];
+
+    test('US streets end with the street type', () => {
+        const { addresses } = addressV5('us', 5);
+        for (const a of addresses) {
+            assert.ok(US_TYPES.includes(a.street.split(' ').pop()!), a.street);
+        }
+    });
+
+    test('FR streets keep the type right after the number', () => {
+        const { addresses } = addressV5('fr', 5);
+        for (const a of addresses) {
+            assert.ok(FR_TYPES.includes(a.street.split(' ')[1]!), a.street);
+        }
     });
 });

@@ -269,3 +269,16 @@ describe('matrix', () => {
         });
     });
 });
+
+describe('matrix (5.4.0 fixes)', () => {
+    test('small-magnitude determinant is not rounded to zero', () => {
+        const m = [
+            [1e-5, 0, 0],
+            [0, 1e-5, 0],
+            [0, 0, 1e-5],
+        ];
+        const det = matrix.determinant(m).result as number;
+        assert.notEqual(det, 0);
+        assert.doesNotThrow(() => matrix.inverse(m));
+    });
+});

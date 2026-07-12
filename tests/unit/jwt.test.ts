@@ -56,3 +56,19 @@ describe('jwt', () => {
         assert.throws(() => jwt('a'.repeat(8193)), /cannot exceed/);
     });
 });
+
+describe('jwt (5.4.0 fixes)', () => {
+    const seg = (v: unknown): string => Buffer.from(JSON.stringify(v)).toString('base64url');
+
+    test('null payload throws', () => {
+        assert.throws(() => jwt(`${seg({ alg: 'HS256' })}.${seg(null)}.sig`), /Invalid JWT payload/);
+    });
+
+    test('numeric payload throws', () => {
+        assert.throws(() => jwt(`${seg({ alg: 'HS256' })}.${seg(123)}.sig`), /Invalid JWT payload/);
+    });
+
+    test('array header throws', () => {
+        assert.throws(() => jwt(`${seg([1, 2])}.${seg({ sub: 'a' })}.sig`), /Invalid JWT header/);
+    });
+});

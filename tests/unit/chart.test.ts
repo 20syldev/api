@@ -238,3 +238,26 @@ describe('chart', () => {
         });
     });
 });
+
+describe('chart (5.4.0 fixes)', () => {
+    test('all-zero dataset renders without NaN', () => {
+        const out = chart.bar({ labels: ['a'], datasets: [{ label: 'x', values: [0] }] }, {});
+        assert.ok(!String(out.body).includes('NaN'));
+    });
+
+    test('single-slice pie renders a full circle', () => {
+        const out = chart.pie({ labels: ['only'], values: [5] }, {});
+        assert.ok(String(out.body).includes('<circle'));
+    });
+
+    test('single-slice donut renders a ring', () => {
+        const out = chart.donut({ labels: ['only'], values: [5] }, {});
+        const circles = String(out.body).match(/<circle/g) ?? [];
+        assert.ok(circles.length >= 2);
+    });
+
+    test('single-label line chart is centered', () => {
+        const out = chart.line({ labels: ['a'], datasets: [{ label: '', values: [5] }] }, {});
+        assert.ok(!/cx="50.0"/.test(String(out.body)));
+    });
+});

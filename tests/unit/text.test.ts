@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { describe, test } from 'node:test';
 
 import { lorem, number, slug, stats } from '../../src/modules/v4/text.js';
+import * as textV5 from '../../src/modules/v5/text.js';
 
 describe('text', () => {
     describe('slug', () => {
@@ -104,5 +105,19 @@ describe('text', () => {
         test('throws on non-integer', () => {
             assert.throws(() => number('3.14', 'en'), /must be an integer/);
         });
+    });
+});
+
+describe('text v5 (5.4.0 fixes)', () => {
+    test('71 in French includes "et"', () => {
+        assert.equal(textV5.number('71', 'fr'), 'soixante et onze');
+    });
+
+    test('171 in French includes "et"', () => {
+        assert.equal(textV5.number('171', 'fr'), 'cent soixante et onze');
+    });
+
+    test('91 in French takes no "et"', () => {
+        assert.equal(textV5.number('91', 'fr'), 'quatre-vingt-onze');
     });
 });

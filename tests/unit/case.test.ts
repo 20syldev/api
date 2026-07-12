@@ -96,3 +96,10 @@ describe('caseConvert', () => {
         assert.throws(() => caseConvert('a'.repeat(1001)), /cannot exceed/);
     });
 });
+
+describe('case (5.4.0 fixes)', () => {
+    test('separator-only input throws', () => {
+        assert.throws(() => caseConvert('---'), /alphanumeric/);
+        assert.throws(() => caseConvert('...', 'sentence'), /alphanumeric/);
+    });
+});

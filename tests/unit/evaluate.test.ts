@@ -173,3 +173,20 @@ describe('evaluate', () => {
         });
     });
 });
+
+describe('evaluate (5.4.0 fixes)', () => {
+    test('unary minus binds looser than power', () => {
+        assert.equal(evaluate('-2^2').result, -4);
+        assert.equal(evaluate('-2^2+1').result, -3);
+        assert.equal(evaluate('(-2)^2').result, 4);
+    });
+
+    test('number with two dots throws', () => {
+        assert.throws(() => evaluate('1.2.3'), /Invalid number/);
+    });
+
+    test('non-finite precision falls back to default', () => {
+        assert.equal(evaluate('1.55', NaN).precision, 10);
+        assert.equal(evaluate('1.55', NaN).result, 1.55);
+    });
+});
