@@ -553,6 +553,138 @@ describe('POST /v4/token', () => {
     });
 });
 
+// --- PATCH endpoints ---
+
+describe('PATCH /v4/tic-tac-toe/:game', () => {
+    const game = 'PAT' + Date.now().toString(36).slice(-3).toUpperCase();
+    const session = `patch-${Date.now()}`;
+
+    test('plays a move on an existing game', async () => {
+        await sendJson('POST', '/v4/tic-tac-toe', {
+            username: 'patch-p1',
+            move: '1-1',
+            session,
+            game,
+        });
+        const { status, body } = await sendJson('PATCH', `/v4/tic-tac-toe/${game}`, {
+            username: 'patch-p2',
+            move: '2-2',
+            session: `${session}-p2`,
+        });
+        assert.equal(status, 200);
+        assert.match(body.message as string, /Move sent/);
+    });
+
+    test('missing move returns 400', async () => {
+        const { status } = await sendJson('PATCH', `/v4/tic-tac-toe/${game}`, {
+            username: 'patch-p2',
+            session: `${session}-p2`,
+        });
+        assert.equal(status, 400);
+    });
+
+    test('not supported in v3 returns 405', async () => {
+        const { status } = await sendJson('PATCH', `/v3/tic-tac-toe/${game}`, {
+            username: 'patch-p1',
+            move: '3-3',
+            session,
+        });
+        assert.equal(status, 405);
+    });
+});
+
+// --- DELETE endpoints ---
+
+describe('DELETE /v4/tic-tac-toe/:game', () => {
+    test('forfeits a game', async () => {
+        const game = 'DEL' + Date.now().toString(36).slice(-3).toUpperCase();
+        const session = `del-ttt-${Date.now()}`;
+        await sendJson('POST', '/v4/tic-tac-toe', {
+            username: 'del-quitter',
+            move: '1-1',
+            session,
+            game,
+        });
+        // fetch registers the player in game.players (required before forfeit)
+        await sendJson('POST', '/v4/tic-tac-toe/fetch', {
+            username: 'del-quitter',
+            game,
+        });
+        const { status, body } = await sendJson('DELETE', `/v4/tic-tac-toe/${game}`, {
+            username: 'del-quitter',
+            session,
+        });
+        assert.equal(status, 200);
+        assert.match(body.message as string, /forfeited/);
+        assert.equal(body.loser, 'del-quitter');
+    });
+
+    test('unknown game returns 400', async () => {
+        const { status } = await sendJson('DELETE', '/v4/tic-tac-toe/NOPE42', {
+            username: 'del-quitter',
+            session: `del-ttt-${Date.now()}`,
+        });
+        assert.equal(status, 400);
+    });
+
+    test('missing username returns 400', async () => {
+        const { status } = await sendJson('DELETE', '/v4/tic-tac-toe/NOPE42', {
+            session: `del-ttt-${Date.now()}`,
+        });
+        assert.equal(status, 400);
+    });
+
+    test('not supported in v3 returns 405', async () => {
+        const { status } = await sendJson('DELETE', '/v3/tic-tac-toe/NOPE42', {
+            username: 'del-quitter',
+            session: `del-ttt-${Date.now()}`,
+        });
+        assert.equal(status, 405);
+    });
+});
+
+describe('DELETE /v4/chat/:token', () => {
+    test('clears a private chat', async () => {
+        const token = `del-tok-${Date.now()}`;
+        const session = `del-chat-${Date.now()}`;
+        await sendJson('POST', '/v4/chat', {
+            username: 'del-clearer',
+            message: 'secret to clear',
+            session,
+            token,
+        });
+        const { status, body } = await sendJson('DELETE', `/v4/chat/${token}`, {
+            username: 'del-clearer',
+            session,
+        });
+        assert.equal(status, 200);
+        assert.match(body.message as string, /cleared/);
+    });
+
+    test('invalid token returns 400', async () => {
+        const { status } = await sendJson('DELETE', '/v4/chat/unknown-token', {
+            username: 'del-clearer2',
+            session: `del-chat-${Date.now()}`,
+        });
+        assert.equal(status, 400);
+    });
+
+    test('missing username returns 400', async () => {
+        const { status } = await sendJson('DELETE', '/v4/chat/some-token', {
+            session: `del-chat-${Date.now()}`,
+        });
+        assert.equal(status, 400);
+    });
+
+    test('not supported in v3 returns 405', async () => {
+        const { status } = await sendJson('DELETE', '/v3/chat/some-token', {
+            username: 'del-clearer',
+            session: `del-chat-${Date.now()}`,
+        });
+        assert.equal(status, 405);
+    });
+});
+
 // --- Security ---
 
 describe('Security headers', () => {
