@@ -605,7 +605,6 @@ describe('DELETE /v4/tic-tac-toe/:game', () => {
             session,
             game,
         });
-        // fetch registers the player in game.players (required before forfeit)
         await sendJson('POST', '/v4/tic-tac-toe/fetch', {
             username: 'del-quitter',
             game,
@@ -1311,13 +1310,18 @@ describe('POST /v5/otp', () => {
     });
     test('verify wrong code returns valid=false', async () => {
         const { body: secBody } = await sendJson('POST', '/v5/otp', { action: 'secret' });
+        const { body: genBody } = await sendJson('POST', '/v5/otp', {
+            action: 'generate',
+            secret: secBody.secret,
+        });
+        const code = genBody.code as string;
+        const wrongCode = code.slice(0, -1) + ((parseInt(code.slice(-1), 10) + 5) % 10);
         const { body } = await sendJson('POST', '/v5/otp', {
             action: 'verify',
             secret: secBody.secret,
-            code: '000000',
+            code: wrongCode,
         });
-        // May pass by coincidence but statistically always false
-        assert.ok(typeof body.valid === 'boolean');
+        assert.equal(body.valid, false);
     });
     test('missing action returns 400', async () => {
         const { status } = await sendJson('POST', '/v5/otp', { secret: 'JBSWY3DPEHPK3PXP' });
@@ -1446,7 +1450,6 @@ describe('GET /v5/case', () => {
 });
 
 describe('POST /v5/jwt', () => {
-    // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiQWxpY2UiLCJleHAiOjk5OTk5OTk5OTl9.sig
     const validToken =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiQWxpY2UiLCJleHAiOjk5OTk5OTk5OTl9.fakesig';
 
