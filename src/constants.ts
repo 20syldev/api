@@ -8,7 +8,6 @@ export const START_TIME = Date.now();
 
 // Server
 export const GAME_CLEANUP_TTL = 600_000;
-export const GITHUB_CACHE_TTL = 600_000;
 export const MAX_LOG_ENTRIES = 1000;
 export const RATE_LIMIT_WINDOW = 10_000;
 export const RATE_LIMIT_MAX = 50;
