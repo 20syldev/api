@@ -39,7 +39,6 @@ const v1 = {
         { name: 'personal', path: '/personal' },
         { name: 'qrcode', path: '/qrcode?url={URL}' },
         { name: 'username', path: '/username' },
-        { name: 'website', path: '/website' },
     ],
     post: [{ name: 'token', path: '/token' }],
 };
