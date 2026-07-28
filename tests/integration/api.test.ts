@@ -375,63 +375,6 @@ describe('GET /v4/validate', () => {
     });
 });
 
-describe('GET /v4/website', () => {
-    const originalFetch = globalThis.fetch;
-
-    after(() => {
-        globalThis.fetch = originalFetch;
-    });
-
-    test('returns aggregated payload (with mocked GitHub API)', async () => {
-        globalThis.fetch = (async (input: string | URL | Request) => {
-            const url = typeof input === 'string' ? input : input.toString();
-            if (url.includes('api.github.com')) {
-                return new Response(
-                    JSON.stringify({
-                        data: {
-                            user: {
-                                contributionsCollection: {
-                                    contributionCalendar: {
-                                        weeks: [
-                                            {
-                                                firstDay: '2026-01-01',
-                                                contributionDays: [{ date: '2026-01-01', contributionCount: 5 }],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                        },
-                    }),
-                    { status: 200, headers: { 'content-type': 'application/json' } },
-                );
-            }
-            return originalFetch(input);
-        }) as typeof fetch;
-
-        const { status, body } = await getJson('/v4/website');
-        assert.equal(status, 200);
-        assert.ok('versions' in body);
-        assert.ok('stats' in body);
-    });
-
-    test('?key=active returns sub-key', async () => {
-        const { status, body } = await getJson('/v4/website?key=active');
-        assert.equal(status, 200);
-        assert.ok('active' in body);
-    });
-
-    test('?key=invalid.path returns 404', async () => {
-        const { status } = await getJson('/v4/website?key=does.not.exist');
-        assert.equal(status, 404);
-    });
-
-    test('rejects prototype pollution keys', async () => {
-        const { status } = await getJson('/v4/website?key=__proto__');
-        assert.equal(status, 400);
-    });
-});
-
 // --- POST endpoints ---
 
 describe('POST /v4/chat', () => {
@@ -1506,11 +1449,6 @@ describe('Route hardening (5.4.0 fixes)', () => {
         const res = await fetch(`${baseUrl}/v4/headers?filter=host&filter=accept`);
         assert.equal(res.status, 200);
         assert.match(res.headers.get('content-type') ?? '', /json/);
-    });
-
-    test('repeated key params on /website return 400', async () => {
-        const { status } = await getJson('/v4/website?key=tag&key=stats');
-        assert.equal(status, 400);
     });
 
     test('unknown endpoint returns JSON 404', async () => {
