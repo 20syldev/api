@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type Router } from 'express';
 
 import { env } from './config/env.js';
 import { setupCors } from './middleware/cors.js';
@@ -34,6 +34,15 @@ app.use(indexRoutes);
 // Version & endpoint validation
 app.use('/:version', versionCheckMiddleware);
 app.use('/:version/:endpoint', endpointCheckMiddleware);
+
+// Load plugins if available
+const entry = './plugins/index.js';
+try {
+    const { default: plugins } = (await import(entry)) as { default: Router[] };
+    for (const plugin of plugins) app.use(plugin);
+} catch {
+    // No plugins bundled in this build
+}
 
 // Versioned routes
 app.use(getRoutes);
