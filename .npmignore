@@ -1,4 +1,5 @@
 .github/
+dist/plugins/
 src/
 tests/
 tsconfig*.json
