@@ -1,8 +1,7 @@
 import { type Request, type Response, Router } from 'express';
 
-import { env } from '../config/env.js';
 import { versions } from '../config/versions.js';
-import { DOCS_URL, GITHUB_CACHE_TTL } from '../constants.js';
+import { DOCS_URL } from '../constants.js';
 import type { AddressResult } from '../modules/v4/address.js';
 import type { UserAgentResult } from '../modules/v4/agent.js';
 import type { AvatarOptions, AvatarResult } from '../modules/v4/avatar.js';
@@ -13,14 +12,11 @@ import type { CreditResult } from '../modules/v4/credit.js';
 import type { IpResult } from '../modules/v4/ip.js';
 import type { PasswordResult } from '../modules/v4/password.js';
 import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
-import { chatStorage, ipLimits } from '../storage/index.js';
+import { chatStorage } from '../storage/index.js';
 import { since } from '../utils/helpers.js';
 import { error } from '../utils/response.js';
 
 const router = Router();
-
-let activity: Record<string, unknown>[] = [];
-let lastFetch = 0;
 
 const postOnly = (name: string) => (req: Request, res: Response) => {
     const available = versions[req.version]?.endpoints.post.some((e) => e.name === name);
@@ -40,7 +36,6 @@ router.get('/:version', (req: Request, res: Response) => {
         const endpointList = versionConfig.endpoints[method as keyof typeof versionConfig.endpoints];
         if (!endpointList) return acc;
         acc[method] = endpointList
-            .filter(({ name }: { name: string }) => name !== 'website')
             .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name))
             .reduce<Record<string, unknown>>(
                 (
@@ -866,158 +861,6 @@ router.get('/:version/validate', (req: Request, res: Response) => {
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/validate`);
     }
-});
-
-// Display informations for owner's website
-router.get('/:version/website', async (req: Request, res: Response) => {
-    const currentTime = Date.now();
-
-    if (currentTime - lastFetch >= GITHUB_CACHE_TTL) {
-        try {
-            const username = '20syldev';
-            const token = env.GITHUB_TOKEN;
-            const lastYear = new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0];
-
-            const query = `
-            {
-              user(login: "${username}") {
-                contributionsCollection(from: "${lastYear}T00:00:00Z") {
-                  contributionCalendar {
-                    totalContributions
-                    weeks {
-                      firstDay
-                      contributionDays {
-                        date
-                        contributionCount
-                      }
-                    }
-                  }
-                }
-              }
-            }`;
-
-            const apiResponse = await fetch('https://api.github.com/graphql', {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query }),
-            });
-
-            if (!apiResponse.ok) throw new Error('Error fetching data.');
-
-            const data = (await apiResponse.json()) as {
-                data?: {
-                    user?: {
-                        contributionsCollection?: {
-                            contributionCalendar?: {
-                                weeks?: {
-                                    firstDay: string;
-                                    contributionDays: { date: string; contributionCount: number }[];
-                                }[];
-                            };
-                        };
-                    };
-                };
-            };
-            const user = data?.data?.user;
-
-            const weeks = user?.contributionsCollection?.contributionCalendar?.weeks || [];
-            activity = weeks.map((w) => ({
-                week: w.firstDay,
-                total: w.contributionDays.reduce((sum, d) => sum + d.contributionCount, 0),
-                days: w.contributionDays.map((d) => ({ date: d.date, count: d.contributionCount })),
-            }));
-
-            lastFetch = currentTime;
-        } catch {
-            activity = [];
-        }
-    }
-
-    const response: Record<string, unknown> = {
-        versions: {
-            2048: env.G_2048,
-            api: env.API,
-            cdn: env.CDN,
-            coop_api: env.COOP_API,
-            coop_status: env.COOP_STATUS,
-            chat: env.CHAT,
-            digit: env.DIGIT,
-            doc_coopbot: env.DOC_COOPBOT,
-            docs: env.DOCS,
-            donut: env.DONUT,
-            drawio_plugin: env.DRAWIO_PLUGIN,
-            flowers: env.FLOWERS,
-            gemsync: env.GEMSYNC,
-            gft: env.GFT,
-            gitsite: env.GITSITE,
-            lebonchar: env.LEBONCHAR,
-            logger: env.LOGGER,
-            logs: env.LOGS,
-            logvault: env.LOGVAULT,
-            lyah: env.LYAH,
-            minify: env.MINIFY,
-            mn: env.MN,
-            monitoring: env.MONITORING,
-            morpion: env.MORPION,
-            nitrogen: env.NITROGEN,
-            old_database: env.OLD_DATABASE,
-            password: env.PASSWORD,
-            php: env.PHP,
-            planning: env.PLANNING,
-            ping: env.PING,
-            portfolio: env.PORTFOLIO,
-            python_api: env.PYTHON_API,
-            readme: env.README,
-            timestamp: env.TIMESTAMP,
-            terminal: env.TERMINAL,
-            valentine: env.VALENTINE,
-            wrkit: env.WRKIT,
-            zpki: env.ZPKI,
-        },
-        patched_projects: env.PATCH,
-        updated_projects: env.RECENT,
-        new_projects: env.NEW,
-        sub_domains: env.DOMAINS,
-        stats: {
-            1: env.STATS1,
-            2: env.STATS2,
-            3: env.STATS3,
-            4: env.STATS4,
-            5: Object.keys(ipLimits).length,
-            activity,
-        },
-        tag: env.TAG,
-        active: env.ACTIVE,
-    };
-
-    const keyParam = req.query.key;
-    if (Array.isArray(keyParam)) {
-        error(res, 400, 'Invalid key.');
-        return;
-    }
-    const key = keyParam as string | undefined;
-    if (key) {
-        if (['__proto__', 'constructor', 'prototype'].some((p) => key.includes(p))) {
-            error(res, 400, 'Invalid key.');
-            return;
-        }
-
-        const keys = key.split('.');
-        let result: unknown = response;
-
-        for (const k of keys) {
-            if (result == null || typeof result !== 'object' || !(k in result)) {
-                error(res, 404, `Key '${key}' not found.`);
-                return;
-            }
-            result = (result as Record<string, unknown>)[k];
-        }
-
-        res.jsonResponse({ [key]: result });
-        return;
-    }
-
-    res.jsonResponse(response);
 });
 
 export default router;
