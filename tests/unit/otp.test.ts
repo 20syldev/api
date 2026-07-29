@@ -126,7 +126,10 @@ describe('otp (5.4.0 fixes)', () => {
 
     test('non-integer counter throws', () => {
         const sec = otp('secret', {}) as { secret: string };
-        assert.throws(() => otp('verify', { secret: sec.secret, code: '000000', counter: 1.5 }), /non-negative integer/);
+        assert.throws(
+            () => otp('verify', { secret: sec.secret, code: '000000', counter: 1.5 }),
+            /non-negative integer/,
+        );
         assert.throws(() => otp('generate', { secret: sec.secret, counter: NaN }), /non-negative integer/);
     });
 });

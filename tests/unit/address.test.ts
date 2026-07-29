@@ -86,7 +86,18 @@ describe('address', () => {
 
 describe('address v5 (5.4.0 fixes)', () => {
     const US_TYPES = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Road', 'Lane', 'Court', 'Way', 'Place', 'Circle'];
-    const FR_TYPES = ['Rue', 'Avenue', 'Boulevard', 'All\u00e9e', 'Impasse', 'Place', 'Chemin', 'Route', 'Voie', 'Passage'];
+    const FR_TYPES = [
+        'Rue',
+        'Avenue',
+        'Boulevard',
+        'All\u00e9e',
+        'Impasse',
+        'Place',
+        'Chemin',
+        'Route',
+        'Voie',
+        'Passage',
+    ];
 
     test('US streets end with the street type', () => {
         const { addresses } = addressV5('us', 5);
