@@ -1467,6 +1467,15 @@ describe('Route hardening (5.4.0 fixes)', () => {
         assert.equal(res.headers.get('location'), '/v5/tic-tac-toe/list');
     });
 
+    test('latest redirect preserves non-GET methods with 307', async () => {
+        const res = await fetch(`${baseUrl}/latest/chat/private?session=abc`, {
+            method: 'POST',
+            redirect: 'manual',
+        });
+        assert.equal(res.status, 307);
+        assert.equal(res.headers.get('location'), '/v5/chat/private?session=abc');
+    });
+
     test('token len 0 returns 400', async () => {
         const { status } = await sendJson('POST', '/v4/token', { len: 0 });
         assert.equal(status, 400);
