@@ -1442,6 +1442,26 @@ describe('Prototype access on dynamic endpoints', () => {
     });
 });
 
+describe('GET /auth', () => {
+    test('without a token reports the default tier', async () => {
+        const { status, body } = await getJson('/auth');
+        assert.equal(status, 200);
+        assert.equal(body.authenticated, false);
+        assert.equal(body.tier, 'default');
+        assert.equal((body.limits as { hourly: number }).hourly, 2000);
+    });
+
+    test('an invalid token returns 401', async () => {
+        const res = await fetch(`${baseUrl}/auth`, { headers: { Authorization: 'Bearer nope' } });
+        assert.equal(res.status, 401);
+    });
+
+    test('never echoes the token back', async () => {
+        const res = await fetch(`${baseUrl}/auth`, { headers: { Authorization: 'Bearer secret-xyz' } });
+        assert.ok(!(await res.text()).includes('secret-xyz'));
+    });
+});
+
 // --- 5.4.0 fixes ---
 
 describe('Route hardening (5.4.0 fixes)', () => {
