@@ -356,12 +356,7 @@ router.get('/:version/cron', (req: Request, res: Response) => {
     }
 
     try {
-        const result = cronFn(
-            expr as string,
-            parsedCount,
-            from as string | undefined,
-            (timezone as string) ?? 'UTC',
-        );
+        const result = cronFn(expr as string, parsedCount, from as string | undefined, (timezone as string) ?? 'UTC');
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message, `${req.version}/cron`);
