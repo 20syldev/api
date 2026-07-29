@@ -88,7 +88,9 @@ describe('time', () => {
         });
 
         test('human skips zero units', () => {
-            const target = new Date(Date.now() + 3 * 86400 * 1000).toISOString();
+            // 3 whole days + a few seconds: hours and minutes stay zero regardless of the
+            // sub-millisecond drift between this Date.now() and the module's internal clock.
+            const target = new Date(Date.now() + 3 * 86400 * 1000 + 10 * 1000).toISOString();
             const r = time('countdown', undefined, undefined, undefined, undefined, target);
             assert.ok(!(r.human as string).includes('hour'));
             assert.ok(!(r.human as string).includes('minute'));
