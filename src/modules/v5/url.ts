@@ -1,5 +1,14 @@
 import { MAX_URL_LENGTH } from '../../constants.js';
 
+// Default ports for common URL schemes
+const DEFAULT_PORTS = new Map([
+    ['ftp', 21],
+    ['http', 80],
+    ['https', 443],
+    ['ws', 80],
+    ['wss', 443],
+]);
+
 export interface UrlResult {
     url: string;
     scheme: string;
@@ -15,7 +24,7 @@ export interface UrlResult {
  * Parses a URL into its structural components.
  *
  * @param url - Absolute URL to parse, including its scheme (e.g. https://example.com/path?a=1)
- * @returns Object with the original URL, scheme, host, port, path, query params (duplicates grouped into arrays) and fragment
+ * @returns Object with the original URL, scheme, host, port, path, query parameters, fragment, and validity status
  * @throws Error if the URL is empty, exceeds the maximum length, or cannot be parsed
  */
 export default function parseUrl(url: string): UrlResult {
@@ -37,11 +46,13 @@ export default function parseUrl(url: string): UrlResult {
         else params[key] = [current, value];
     }
 
+    const scheme = parsed.protocol.replace(':', '');
+
     return {
         url,
-        scheme: parsed.protocol.replace(':', ''),
+        scheme,
         host: parsed.hostname,
-        port: parsed.port ? parseInt(parsed.port, 10) : null,
+        port: parsed.port ? parseInt(parsed.port, 10) : (DEFAULT_PORTS.get(scheme) ?? null),
         path: parsed.pathname,
         params,
         fragment: parsed.hash.replace('#', ''),
