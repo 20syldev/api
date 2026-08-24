@@ -80,7 +80,7 @@ describe('time', () => {
         });
 
         test('remaining breakdown is correct', () => {
-            const target = new Date(Date.now() + 2 * 86400 * 1000 + 3 * 3600 * 1000).toISOString();
+            const target = new Date(Date.now() + 2 * 86400 * 1000 + 3 * 3600 * 1000 + 30 * 1000).toISOString();
             const r = time('countdown', undefined, undefined, undefined, undefined, target);
             const rem = r.remaining as { days: number; hours: number };
             assert.equal(rem.days, 2);
@@ -88,8 +88,6 @@ describe('time', () => {
         });
 
         test('human skips zero units', () => {
-            // 3 whole days + a few seconds: hours and minutes stay zero regardless of the
-            // sub-millisecond drift between this Date.now() and the module's internal clock.
             const target = new Date(Date.now() + 3 * 86400 * 1000 + 10 * 1000).toISOString();
             const r = time('countdown', undefined, undefined, undefined, undefined, target);
             assert.ok(!(r.human as string).includes('hour'));
