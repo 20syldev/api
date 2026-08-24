@@ -15,9 +15,9 @@ describe('parseUrl', () => {
         assert.equal(result.valid, true);
     });
 
-    test('URL without port → port is null', () => {
+    test('URL without port → default scheme port', () => {
         const result = parseUrl('https://example.com/path');
-        assert.equal(result.port, null);
+        assert.equal(result.port, 443);
     });
 
     test('URL with multiple query params → params object correct', () => {
@@ -68,5 +68,54 @@ describe('parseUrl (5.5.0 fixes)', () => {
     test('duplicate query params are preserved as an array', () => {
         const result = parseUrl('https://example.com/?a=1&a=2&b=3');
         assert.deepEqual(result.params, { a: ['1', '2'], b: '3' });
+    });
+});
+
+describe('parseUrl (5.7.0 default ports)', () => {
+    test('http URL without port → 80', () => {
+        const result = parseUrl('http://example.com');
+        assert.equal(result.port, 80);
+    });
+
+    test('explicit default port stripped by parser → still 443', () => {
+        const result = parseUrl('https://example.com:443/');
+        assert.equal(result.port, 443);
+    });
+
+    test('ws URL without port → 80', () => {
+        const result = parseUrl('ws://example.com');
+        assert.equal(result.port, 80);
+    });
+
+    test('wss URL without port → 443', () => {
+        const result = parseUrl('wss://example.com');
+        assert.equal(result.port, 443);
+    });
+
+    test('ftp URL without port → 21', () => {
+        const result = parseUrl('ftp://example.com');
+        assert.equal(result.port, 21);
+    });
+
+    test('unknown scheme without port → port is null', () => {
+        const result = parseUrl('foo://example.com');
+        assert.equal(result.port, null);
+    });
+});
+
+describe('parseUrl (prototype-safe scheme lookup)', () => {
+    test('constructor scheme without port → port is null', () => {
+        const result = parseUrl('constructor://example.com');
+        assert.equal(result.port, null);
+    });
+
+    test('constructor scheme survives serialization with a port key', () => {
+        const result = parseUrl('constructor://example.com');
+        assert.ok('port' in JSON.parse(JSON.stringify(result)));
+    });
+
+    test('explicit port on an unknown scheme is still reported', () => {
+        const result = parseUrl('constructor://example.com:8080');
+        assert.equal(result.port, 8080);
     });
 });

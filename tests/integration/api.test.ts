@@ -1408,8 +1408,12 @@ describe('GET /v5/url', () => {
         assert.equal(body.fragment, 'section');
         assert.equal(body.valid, true);
     });
-    test('URL without port returns port: null', async () => {
+    test('URL without port returns default scheme port', async () => {
         const { body } = await getJson(`/v5/url?url=${encodeURIComponent('https://example.com/path')}`);
+        assert.equal(body.port, 443);
+    });
+    test('URL with unknown scheme returns port: null', async () => {
+        const { body } = await getJson(`/v5/url?url=${encodeURIComponent('foo://example.com')}`);
         assert.equal(body.port, null);
     });
     test('URL without fragment returns empty fragment', async () => {
