@@ -11,9 +11,7 @@
         "build": "tsc",
         "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/",
         "format": "prettier --write src/ tests/ && eslint --fix src/ tests/",
-        "test": "NODE_ENV=test node --import tsx --test --test-force-exit tests/unit/*.test.ts tests/integration/*.test.ts",
-        "upgrade:minor": "npm upgrade",
-        "upgrade:major": "npx npm-check-updates -u && npm install"
+        "test": "NODE_ENV=test node --import tsx --test --test-force-exit tests/unit/*.test.ts tests/integration/*.test.ts"
     },
     "engines": {
         "node": ">=22.0.0"
@@ -46,7 +44,6 @@
         "eslint": "^9.24.0",
         "eslint-config-prettier": "^10.1.1",
         "eslint-plugin-simple-import-sort": "^13.0.0",
-        "npm-check-updates": "^18.0.1",
         "prettier": "^3.5.3",
         "tsx": "^4.19.0",
         "typescript": "^5.7.0",
