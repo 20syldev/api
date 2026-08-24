@@ -135,20 +135,20 @@ function playMove(
 
     const result = checkGame(moves);
     if (result.winner || result.tie) {
-        setTimeout(() => delete games[game!], GAME_CLEANUP_TTL);
+        setTimeout(() => delete games[game!], GAME_CLEANUP_TTL).unref();
         return {
             message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : "It's a tie."}`,
             ...result,
         };
     }
 
-    setTimeout(() => delete games[game!], SESSION_TTL);
+    setTimeout(() => delete games[game!], SESSION_TTL).unref();
 
     sessions[u] = sessions[u] ?? { user: session, last: now };
     sessions[u]!.last = now;
     setTimeout(() => {
         if (sessions[u] && now - sessions[u].last >= SESSION_TTL) delete sessions[u];
-    }, SESSION_TTL);
+    }, SESSION_TTL).unref();
 
     return { message: 'Move sent successfully' };
 }

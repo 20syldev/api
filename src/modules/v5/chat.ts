@@ -81,10 +81,10 @@ function sendMessage(
             const idx = thread.indexOf(msg);
             if (idx !== -1) thread.splice(idx, 1);
             if (thread.length === 0) delete privateChats[token];
-        }, SESSION_TTL);
+        }, SESSION_TTL).unref();
     } else {
         messages.push(msg);
-        setTimeout(() => messages.splice(messages.indexOf(msg), 1), SESSION_TTL);
+        setTimeout(() => messages.splice(messages.indexOf(msg), 1), SESSION_TTL).unref();
     }
 
     sessions[u] = sessions[u] || { user: session, last: now };
@@ -92,7 +92,7 @@ function sendMessage(
 
     setTimeout(() => {
         if (sessions[u] && Date.now() - sessions[u].last >= SESSION_TTL) delete sessions[u];
-    }, SESSION_TTL);
+    }, SESSION_TTL).unref();
 
     return { message: 'Message sent successfully' };
 }

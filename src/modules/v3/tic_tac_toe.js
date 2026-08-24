@@ -97,7 +97,7 @@ function playMove(params, games, sessions, u, now) {
     // Check game result
     const result = checkGame(moves);
     if (result.winner || result.tie) {
-        setTimeout(() => delete games[game], 600000);
+        setTimeout(() => delete games[game], 600000).unref();
         return {
             message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : "It's a tie."}`,
             ...result,
@@ -105,14 +105,14 @@ function playMove(params, games, sessions, u, now) {
     }
 
     // Set cleanup timeout
-    setTimeout(() => delete games[game], 3600000);
+    setTimeout(() => delete games[game], 3600000).unref();
 
     // Update session
     sessions[u] = sessions[u] || { user: session, last: now };
     sessions[u].last = now;
     setTimeout(() => {
         if (now - sessions[u].last >= 3600000) delete sessions[u];
-    }, 3600000);
+    }, 3600000).unref();
 
     return { message: 'Move sent successfully' };
 }

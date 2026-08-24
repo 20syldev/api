@@ -70,10 +70,10 @@ function sendMessage(params, messages, privateChats, sessions, u, now) {
         privateChats[token].push(msg);
         setTimeout(() => {
             delete privateChats[token];
-        }, 3600000);
+        }, 3600000).unref();
     } else {
         messages.push(msg);
-        setTimeout(() => messages.splice(messages.indexOf(msg), 1), 3600000);
+        setTimeout(() => messages.splice(messages.indexOf(msg), 1), 3600000).unref();
     }
 
     // Update session
@@ -82,7 +82,7 @@ function sendMessage(params, messages, privateChats, sessions, u, now) {
 
     setTimeout(() => {
         if (now - sessions[u].last >= 3600000) delete sessions[u];
-    }, 3600000);
+    }, 3600000).unref();
 
     return { message: 'Message sent successfully' };
 }

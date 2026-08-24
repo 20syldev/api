@@ -140,7 +140,7 @@ function playMove(
     if (result.winner || result.tie) {
         setTimeout(() => {
             if (games[game!] && games[game!]!.creation === creation) delete games[game!];
-        }, GAME_CLEANUP_TTL);
+        }, GAME_CLEANUP_TTL).unref();
         return {
             message: `Move sent successfully. ${result.winner ? result.winner + ' wins. ' + result.loser + ' loses.' : "It's a tie."}`,
             ...result,
@@ -152,13 +152,13 @@ function playMove(
         if (cur && cur.creation === creation && Date.now() - (cur.last ?? cur.creation) >= SESSION_TTL) {
             delete games[game!];
         }
-    }, SESSION_TTL);
+    }, SESSION_TTL).unref();
 
     sessions[u] = sessions[u] ?? { user: session, last: now };
     sessions[u]!.last = now;
     setTimeout(() => {
         if (sessions[u] && Date.now() - sessions[u].last >= SESSION_TTL) delete sessions[u];
-    }, SESSION_TTL);
+    }, SESSION_TTL).unref();
 
     return { message: 'Move sent successfully' };
 }

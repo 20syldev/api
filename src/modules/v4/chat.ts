@@ -77,10 +77,10 @@ function sendMessage(
         privateChats[token]!.push(msg);
         setTimeout(() => {
             delete privateChats[token];
-        }, SESSION_TTL);
+        }, SESSION_TTL).unref();
     } else {
         messages.push(msg);
-        setTimeout(() => messages.splice(messages.indexOf(msg), 1), SESSION_TTL);
+        setTimeout(() => messages.splice(messages.indexOf(msg), 1), SESSION_TTL).unref();
     }
 
     sessions[u] = sessions[u] || { user: session, last: now };
@@ -88,7 +88,7 @@ function sendMessage(
 
     setTimeout(() => {
         if (sessions[u] && now - sessions[u].last >= SESSION_TTL) delete sessions[u];
-    }, SESSION_TTL);
+    }, SESSION_TTL).unref();
 
     return { message: 'Message sent successfully' };
 }
