@@ -21,6 +21,11 @@ export const env = {
     PORT: envNumber('PORT', DEFAULT_PORT),
     TRUSTED_PROXIES: envList('TRUSTED_PROXIES'),
 
+    DOCS_URL: (process.env.DOCS_URL ?? '').replace(/\/+$/, ''),
+    REPO_URL: process.env.REPO_URL ?? '',
+    INSTANCE_CREATED: process.env.INSTANCE_CREATED ?? '',
+    LOGS_TOKEN: process.env.LOGS_TOKEN ?? '',
+
     DEFAULT_LIMIT: envNumber('DEFAULT_LIMIT', 2000),
     ADVANCED_LIMIT: envNumber('ADVANCED_LIMIT', 3500),
     PRO_LIMIT: envNumber('PRO_LIMIT', 6000),
