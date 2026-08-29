@@ -1,6 +1,5 @@
 import type { Response } from 'express';
 
-import { env } from '../config/env.js';
 import { STATUS_MESSAGES } from '../constants.js';
 
 /**
@@ -9,13 +8,11 @@ import { STATUS_MESSAGES } from '../constants.js';
  * @param res - Express response object
  * @param status - HTTP status code
  * @param message - Error description
- * @param docPath - Optional documentation path appended to the base URL
  */
-export function error(res: Response, status: number, message: string, docPath?: string): void {
+export function error(res: Response, status: number, message: string): void {
     const body = {
         message: STATUS_MESSAGES[status] ?? 'Error',
         error: message,
-        ...(env.DOCS_URL ? { documentation: docPath ? `${env.DOCS_URL}/${docPath}` : env.DOCS_URL } : {}),
         status: String(status),
     };
 

@@ -31,11 +31,11 @@ router.post('/:version/asymmetric', (req: Request, res: Response) => {
         }
     ).asymmetric;
     if (!asymmetricFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/asymmetric`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!action) {
-        error(res, 400, 'Please provide an action (?action=keygen|encrypt|decrypt)', `${version}/asymmetric`);
+        error(res, 400, 'Please provide an action (?action=keygen|encrypt|decrypt)');
         return;
     }
 
@@ -49,7 +49,7 @@ router.post('/:version/asymmetric', (req: Request, res: Response) => {
         });
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/asymmetric`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -62,11 +62,11 @@ router.post('/:version/chart', (req: Request, res: Response) => {
     type ChartOutput = { contentType: string; body: string | Record<string, unknown> };
     const chartMod = (req.module as { chart?: Record<string, (d: unknown, o: unknown) => ChartOutput> }).chart;
     if (!chartMod) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/chart`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!type || typeof type !== 'string' || !Object.hasOwn(chartMod, type)) {
-        error(res, 400, 'Please provide a valid chart type (?type=bar|line|pie|donut)', `${version}/chart`);
+        error(res, 400, 'Please provide a valid chart type (?type=bar|line|pie|donut)');
         return;
     }
 
@@ -78,7 +78,7 @@ router.post('/:version/chart', (req: Request, res: Response) => {
             res.type(output.contentType).send(output.body as string);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/chart`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -98,11 +98,11 @@ router.post('/:version/csv', (req: Request, res: Response) => {
         }
     ).csv;
     if (!csvFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/csv`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!action) {
-        error(res, 400, 'Please provide an action (?action=parse|format)', `${version}/csv`);
+        error(res, 400, 'Please provide an action (?action=parse|format)');
         return;
     }
 
@@ -117,7 +117,7 @@ router.post('/:version/csv', (req: Request, res: Response) => {
         );
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/csv`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -129,11 +129,11 @@ router.post('/:version/jwt', (req: Request, res: Response) => {
 
     const jwtFn = (req.module as { jwt?: (t: string) => JwtResult }).jwt;
     if (!jwtFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/jwt`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!token) {
-        error(res, 400, 'Please provide a token (?token={token})', `${version}/jwt`);
+        error(res, 400, 'Please provide a token (?token={token})');
         return;
     }
 
@@ -141,7 +141,7 @@ router.post('/:version/jwt', (req: Request, res: Response) => {
         const result = jwtFn(token as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/jwt`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -207,11 +207,11 @@ router.post('/:version/hash', (req: Request, res: Response) => {
     const { text, method, encoding } = (req.body as Record<string, string>) || {};
 
     if (!text) {
-        error(res, 400, 'Please provide a text (?text={text})', `${req.version}/hash`);
+        error(res, 400, 'Please provide a text (?text={text})');
         return;
     }
     if (!method) {
-        error(res, 400, 'Please provide a valid hash algorithm (&method={algorithm})', `${req.version}/hash`);
+        error(res, 400, 'Please provide a valid hash algorithm (&method={algorithm})');
         return;
     }
 
@@ -225,7 +225,7 @@ router.post('/:version/hash', (req: Request, res: Response) => {
             res.jsonResponse(result);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/hash`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -234,7 +234,7 @@ router.post('/:version/hyperplanning', async (req: Request, res: Response) => {
     const { url, detail } = (req.body as Record<string, string>) || {};
 
     if (!url) {
-        error(res, 400, 'Please provide a valid ICS file URL (?url={URL})', `${req.version}/hyperplanning`);
+        error(res, 400, 'Please provide a valid ICS file URL (?url={URL})');
         return;
     }
 
@@ -242,7 +242,7 @@ router.post('/:version/hyperplanning', async (req: Request, res: Response) => {
         const hyperplanning = await req.module.hyperplanning(url, detail);
         res.jsonResponse(hyperplanning);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/hyperplanning`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -254,7 +254,7 @@ router.post('/:version/matrix', (req: Request, res: Response) => {
 
     const matrixMod = (req.module as { matrix?: Record<string, (...args: unknown[]) => unknown> }).matrix;
     if (!matrixMod) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/matrix`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!operation || typeof operation !== 'string' || !Object.hasOwn(matrixMod, operation)) {
@@ -262,7 +262,6 @@ router.post('/:version/matrix', (req: Request, res: Response) => {
             res,
             400,
             'Please provide a valid operation (?operation=add|subtract|multiply|scalar|transpose|determinant|inverse|identity)',
-            `${version}/matrix`,
         );
         return;
     }
@@ -291,7 +290,7 @@ router.post('/:version/matrix', (req: Request, res: Response) => {
         }
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/matrix`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -303,11 +302,11 @@ router.post('/:version/otp', (req: Request, res: Response) => {
 
     const otpFn = (req.module as { otp?: (a: string, o: Record<string, unknown>) => unknown }).otp;
     if (!otpFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/otp`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!action) {
-        error(res, 400, 'Please provide an action (?action=secret|generate|verify)', `${version}/otp`);
+        error(res, 400, 'Please provide an action (?action=secret|generate|verify)');
         return;
     }
 
@@ -324,7 +323,7 @@ router.post('/:version/otp', (req: Request, res: Response) => {
         });
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/otp`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -337,19 +336,19 @@ router.post('/:version/symmetric', (req: Request, res: Response) => {
     const symmetricFn = (req.module as { symmetric?: (a: string, t: string, k: string, alg?: string) => unknown })
         .symmetric;
     if (!symmetricFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/symmetric`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!action) {
-        error(res, 400, 'Please provide an action (?action=encrypt|decrypt)', `${version}/symmetric`);
+        error(res, 400, 'Please provide an action (?action=encrypt|decrypt)');
         return;
     }
     if (!text) {
-        error(res, 400, 'Please provide a text (&text={text})', `${version}/symmetric`);
+        error(res, 400, 'Please provide a text (&text={text})');
         return;
     }
     if (!key) {
-        error(res, 400, 'Please provide a key (&key={key})', `${version}/symmetric`);
+        error(res, 400, 'Please provide a key (&key={key})');
         return;
     }
 
@@ -357,7 +356,7 @@ router.post('/:version/symmetric', (req: Request, res: Response) => {
         const result = symmetricFn(action as string, text as string, key as string, algorithm as string | undefined);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/symmetric`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -438,15 +437,15 @@ router.post('/:version/token', (req: Request, res: Response) => {
     const type = body.type ? String(body.type).toLowerCase() : 'alpha';
 
     if (isNaN(len) || len < 0) {
-        error(res, 400, 'Invalid number.', `${req.version}/token`);
+        error(res, 400, 'Invalid number.');
         return;
     }
     if (len > MAX_TOKEN_LENGTH) {
-        error(res, 400, 'Length cannot exceed 4096.', `${req.version}/token`);
+        error(res, 400, 'Length cannot exceed 4096.');
         return;
     }
     if (len < MIN_TOKEN_LENGTH) {
-        error(res, 400, 'Length cannot be less than 12.', `${req.version}/token`);
+        error(res, 400, 'Length cannot be less than 12.');
         return;
     }
 
@@ -454,7 +453,7 @@ router.post('/:version/token', (req: Request, res: Response) => {
         const token = req.module.token(len, type);
         res.jsonResponse({ token });
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/token`);
+        error(res, 400, (err as Error).message);
     }
 });
 

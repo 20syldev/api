@@ -21,7 +21,7 @@ const router = Router();
 const postOnly = (name: string) => (req: Request, res: Response) => {
     const available = versions[req.version]?.endpoints.post.some((e) => e.name === name);
     if (!available) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/${name}`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     error(res, 405, 'This endpoint only supports POST requests.');
@@ -73,13 +73,13 @@ router.get('/:version/address', (req: Request, res: Response) => {
 
     const addressFn = (req.module as { address?: (c?: string, n?: number) => AddressResult }).address;
     if (!addressFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/address`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
 
     const parsedCount = count !== undefined ? parseInt(count as string, 10) : 1;
     if (isNaN(parsedCount)) {
-        error(res, 400, 'Please provide a valid count (&count={n})', `${version}/address`);
+        error(res, 400, 'Please provide a valid count (&count={n})');
         return;
     }
 
@@ -87,7 +87,7 @@ router.get('/:version/address', (req: Request, res: Response) => {
         const result = addressFn(country as string | undefined, parsedCount);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/address`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -96,25 +96,24 @@ router.get('/:version/agent', (req: Request, res: Response) => {
     const ua = (req.query.ua as string | undefined) ?? (req.headers['user-agent'] as string) ?? '';
     const agentFn = (req.module as { agent?: (ua: string) => UserAgentResult }).agent;
     if (!agentFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/agent`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     try {
         const result = agentFn(ua);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/agent`);
+        error(res, 400, (err as Error).message);
     }
 });
 
 // Algorithms
 router.get('/:version/algorithms', (req: Request, res: Response) => {
     const { method, value, value2 } = req.query;
-    const { version } = req.params;
 
     const algorithms = req.module.algorithms as Record<string, (v: string, v2?: string) => unknown>;
     if (!algorithms || !method || !Object.hasOwn(algorithms, method as string)) {
-        error(res, 400, 'Please provide a valid algorithm (?method={algorithm})', `${version}/algorithms`);
+        error(res, 400, 'Please provide a valid algorithm (?method={algorithm})');
         return;
     }
 
@@ -122,7 +121,7 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
         const answer = algorithms[method as string]!(value as string, value2 as string);
         res.jsonResponse({ answer });
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/algorithms`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -136,11 +135,11 @@ router.get('/:version/case', (req: Request, res: Response) => {
 
     const caseConvertFn = (req.module as { caseConvert?: (t: string, to?: string) => unknown }).caseConvert;
     if (!caseConvertFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/case`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!text || typeof text !== 'string') {
-        error(res, 400, 'Please provide a text (?text={text})', `${version}/case`);
+        error(res, 400, 'Please provide a text (?text={text})');
         return;
     }
 
@@ -148,7 +147,7 @@ router.get('/:version/case', (req: Request, res: Response) => {
         const result = caseConvertFn(text, to as string | undefined);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/case`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -156,13 +155,13 @@ router.get('/:version/case', (req: Request, res: Response) => {
 router.get('/:version/avatar', (req: Request, res: Response) => {
     const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
     if (!avatarFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/avatar`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     const { seed, size, type, bg, format } = req.query;
     const parsedSize = size !== undefined ? parseInt(size as string, 10) : undefined;
     if (parsedSize !== undefined && isNaN(parsedSize)) {
-        error(res, 400, 'Please provide a valid size (&size={50-2000})', `${req.version}/avatar`);
+        error(res, 400, 'Please provide a valid size (&size={50-2000})');
         return;
     }
     try {
@@ -175,7 +174,7 @@ router.get('/:version/avatar', (req: Request, res: Response) => {
         });
         res.type(contentType).send(body);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/avatar`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -183,18 +182,18 @@ router.get('/:version/avatar', (req: Request, res: Response) => {
 router.get('/:version/barcode', (req: Request, res: Response) => {
     const barcodeFn = (req.module as { barcode?: (opts: BarcodeOptions) => BarcodeResult }).barcode;
     if (!barcodeFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/barcode`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     const { data, type, width, height, format, color, bg } = req.query;
     if (!data) {
-        error(res, 400, 'Please provide data to encode (?data={string})', `${req.version}/barcode`);
+        error(res, 400, 'Please provide data to encode (?data={string})');
         return;
     }
     const parsedWidth = width !== undefined ? parseInt(width as string, 10) : undefined;
     const parsedHeight = height !== undefined ? parseInt(height as string, 10) : undefined;
     if ((parsedWidth !== undefined && isNaN(parsedWidth)) || (parsedHeight !== undefined && isNaN(parsedHeight))) {
-        error(res, 400, 'Please provide valid dimensions (&width={px}&height={px})', `${req.version}/barcode`);
+        error(res, 400, 'Please provide valid dimensions (&width={px}&height={px})');
         return;
     }
     try {
@@ -209,7 +208,7 @@ router.get('/:version/barcode', (req: Request, res: Response) => {
         });
         res.type(contentType).send(body);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/barcode`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -232,14 +231,14 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
         } else {
             const text = req.query.text as string;
             if (!text) {
-                error(res, 400, 'Please provide a valid argument (?text={text})', `${req.version}/captcha`);
+                error(res, 400, 'Please provide a valid argument (?text={text})');
                 return;
             }
             const result = (req.module.captcha as (t: string) => Buffer)(text);
             res.type('png').send(result);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/captcha`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -275,7 +274,7 @@ router.get('/:version/color', (req: Request, res: Response) => {
             res.jsonResponse(result);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/color`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -284,15 +283,15 @@ router.get('/:version/convert', (req: Request, res: Response) => {
     const { value, from, to } = req.query;
 
     if (!value || isNaN(Number(value))) {
-        error(res, 400, 'Please provide a valid value (?value={value})', `${req.version}/convert`);
+        error(res, 400, 'Please provide a valid value (?value={value})');
         return;
     }
     if (!from) {
-        error(res, 400, 'Please provide a valid source unit (&from={unit})', `${req.version}/convert`);
+        error(res, 400, 'Please provide a valid source unit (&from={unit})');
         return;
     }
     if (!to) {
-        error(res, 400, 'Please provide a valid target unit (&to={unit})', `${req.version}/convert`);
+        error(res, 400, 'Please provide a valid target unit (&to={unit})');
         return;
     }
 
@@ -310,7 +309,7 @@ router.get('/:version/convert', (req: Request, res: Response) => {
             res.jsonResponse(result);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/convert`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -319,7 +318,7 @@ router.get('/:version/credit', (req: Request, res: Response) => {
     const creditFn = (req.module as { credit?: (brand?: string, count?: number, format?: string) => CreditResult })
         .credit;
     if (!creditFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/credit`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     const { brand, count, format } = req.query;
@@ -331,7 +330,7 @@ router.get('/:version/credit', (req: Request, res: Response) => {
         );
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/credit`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -342,16 +341,16 @@ router.get('/:version/cron', (req: Request, res: Response) => {
 
     const cronFn = (req.module as { cron?: (e: string, n?: number, f?: string, tz?: string) => unknown }).cron;
     if (!cronFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/cron`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!expr) {
-        error(res, 400, 'Please provide a cron expression (?expr=* * * * *)', `${version}/cron`);
+        error(res, 400, 'Please provide a cron expression (?expr=* * * * *)');
         return;
     }
     const parsedCount = count !== undefined ? parseInt(count as string, 10) : 5;
     if (isNaN(parsedCount)) {
-        error(res, 400, 'Please provide a valid count (&count={n})', `${version}/cron`);
+        error(res, 400, 'Please provide a valid count (&count={n})');
         return;
     }
 
@@ -359,7 +358,7 @@ router.get('/:version/cron', (req: Request, res: Response) => {
         const result = cronFn(expr as string, parsedCount, from as string | undefined, (timezone as string) ?? 'UTC');
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/cron`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -370,11 +369,11 @@ router.get('/:version/dice', (req: Request, res: Response) => {
 
     const dice = (req.module as { dice?: (r: string) => unknown }).dice;
     if (!dice) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/dice`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!roll) {
-        error(res, 400, 'Please provide a roll notation (?roll=2d6+3)', `${version}/dice`);
+        error(res, 400, 'Please provide a roll notation (?roll=2d6+3)');
         return;
     }
 
@@ -382,7 +381,7 @@ router.get('/:version/dice', (req: Request, res: Response) => {
         const result = dice(roll as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/dice`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -392,7 +391,7 @@ router.get('/:version/domain', (req: Request, res: Response) => {
         const result = req.module.domain();
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/domain`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -403,11 +402,11 @@ router.get('/:version/encode', (req: Request, res: Response) => {
 
     const encode = (req.module as { encode?: Record<string, (v: string, v2?: string) => string> }).encode;
     if (!encode) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/encode`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!method || !Object.hasOwn(encode, method as string)) {
-        error(res, 400, 'Please provide a valid method (?method={method})', `${version}/encode`);
+        error(res, 400, 'Please provide a valid method (?method={method})');
         return;
     }
 
@@ -415,7 +414,7 @@ router.get('/:version/encode', (req: Request, res: Response) => {
         const result = encode[method as string]!(text as string, shift as string);
         res.jsonResponse({ method, result });
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/encode`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -426,11 +425,11 @@ router.get('/:version/evaluate', (req: Request, res: Response) => {
 
     const evaluateFn = (req.module as { evaluate?: (e: string, p?: number) => unknown }).evaluate;
     if (!evaluateFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/evaluate`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!expr || typeof expr !== 'string') {
-        error(res, 400, 'Please provide a math expression (?expr={expression})', `${version}/evaluate`);
+        error(res, 400, 'Please provide a math expression (?expr={expression})');
         return;
     }
 
@@ -438,7 +437,7 @@ router.get('/:version/evaluate', (req: Request, res: Response) => {
         const result = evaluateFn(expr, precision !== undefined ? parseInt(precision as string, 10) : undefined);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/evaluate`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -449,11 +448,11 @@ router.get('/:version/geo', (req: Request, res: Response) => {
 
     const geo = (req.module as { geo?: (a: string, b: string, c: string, d: string) => unknown }).geo;
     if (!geo) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/geo`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) {
-        error(res, 400, 'Please provide lat1, lon1, lat2 and lon2', `${version}/geo`);
+        error(res, 400, 'Please provide lat1, lon1, lat2 and lon2');
         return;
     }
 
@@ -461,7 +460,7 @@ router.get('/:version/geo', (req: Request, res: Response) => {
         const result = geo(lat1 as string, lon1 as string, lat2 as string, lon2 as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/geo`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -516,14 +515,14 @@ router.get('/:version/ip', (req: Request, res: Response) => {
     const address = (req.query.address as string | undefined) ?? req.ip ?? '';
     const ipFn = (req.module as { ip?: (a: string) => IpResult }).ip;
     if (!ipFn) {
-        error(res, 404, `Endpoint not available in ${req.version}.`, `${req.latest}/ip`);
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
     try {
         const result = ipFn(address);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/ip`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -535,11 +534,11 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
     const { str1, str2 } = req.query;
 
     if (!str1 || typeof str1 !== 'string') {
-        error(res, 400, 'Please provide a first string (?str1={string})', `${req.version}/levenshtein`);
+        error(res, 400, 'Please provide a first string (?str1={string})');
         return;
     }
     if (!str2 || typeof str2 !== 'string') {
-        error(res, 400, 'Please provide a second string (&str2={string})', `${req.version}/levenshtein`);
+        error(res, 400, 'Please provide a second string (&str2={string})');
         return;
     }
 
@@ -547,7 +546,7 @@ router.get('/:version/levenshtein', (req: Request, res: Response) => {
         const result = req.module.levenshtein(str1, str2);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/levenshtein`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -564,15 +563,15 @@ router.get('/:version/palette', (req: Request, res: Response) => {
 
     const palette = (req.module as { palette?: (c: string, t: string) => unknown }).palette;
     if (!palette) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/palette`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!color) {
-        error(res, 400, 'Please provide a base color (?color=#ff6600)', `${version}/palette`);
+        error(res, 400, 'Please provide a base color (?color=#ff6600)');
         return;
     }
     if (!type) {
-        error(res, 400, 'Please provide a palette type (&type=complementary)', `${version}/palette`);
+        error(res, 400, 'Please provide a palette type (&type=complementary)');
         return;
     }
 
@@ -580,7 +579,7 @@ router.get('/:version/palette', (req: Request, res: Response) => {
         const result = palette(color as string, type as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/palette`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -593,7 +592,7 @@ router.get('/:version/password', (req: Request, res: Response) => {
         req.module as { password?: (t: string, l: number, o: Record<string, unknown>) => PasswordResult }
     ).password;
     if (!passwordFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/password`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
 
@@ -615,7 +614,7 @@ router.get('/:version/password', (req: Request, res: Response) => {
         );
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/password`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -625,7 +624,7 @@ router.get('/:version/personal', (req: Request, res: Response) => {
         const result = req.module.personal();
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/personal`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -643,7 +642,7 @@ router.get('/:version/placeholder', (req: Request, res: Response) => {
         }
     ).placeholder;
     if (!placeholder) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/placeholder`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
 
@@ -651,7 +650,7 @@ router.get('/:version/placeholder', (req: Request, res: Response) => {
         const result = placeholder(type as string, req.query as Record<string, string | undefined>);
         res.type(result.contentType).send(result.body);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/placeholder`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -660,7 +659,7 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
     const { url } = req.query;
 
     if (!url) {
-        error(res, 400, 'Please provide a valid url (?url={URL})', `${req.version}/qrcode`);
+        error(res, 400, 'Please provide a valid url (?url={URL})');
         return;
     }
 
@@ -690,7 +689,7 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
             res.jsonResponse(result);
         }
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/qrcode`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -701,15 +700,15 @@ router.get('/:version/regex', (req: Request, res: Response) => {
 
     const regexFn = (req.module as { regex?: (p: string, t: string, f?: string) => unknown }).regex;
     if (!regexFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/regex`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!pattern) {
-        error(res, 400, 'Please provide a pattern (?pattern={regex})', `${version}/regex`);
+        error(res, 400, 'Please provide a pattern (?pattern={regex})');
         return;
     }
     if (!text) {
-        error(res, 400, 'Please provide a text (&text={string})', `${version}/regex`);
+        error(res, 400, 'Please provide a text (&text={string})');
         return;
     }
 
@@ -717,7 +716,7 @@ router.get('/:version/regex', (req: Request, res: Response) => {
         const result = regexFn(pattern as string, text as string, flags as string | undefined);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/regex`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -728,11 +727,11 @@ router.get('/:version/statistics', (req: Request, res: Response) => {
 
     const statistics = (req.module as { statistics?: (v: string) => unknown }).statistics;
     if (!statistics) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/statistics`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!values) {
-        error(res, 400, 'Please provide a list of values (?values=1,2,3)', `${version}/statistics`);
+        error(res, 400, 'Please provide a list of values (?values=1,2,3)');
         return;
     }
 
@@ -740,7 +739,7 @@ router.get('/:version/statistics', (req: Request, res: Response) => {
         const result = statistics(values as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/statistics`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -754,11 +753,11 @@ router.get('/:version/text', (req: Request, res: Response) => {
 
     const textMod = (req.module as { text?: Record<string, (...args: string[]) => unknown> }).text;
     if (!textMod) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/text`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!method || !Object.hasOwn(textMod, method as string)) {
-        error(res, 400, 'Please provide a valid method (?method={slug|stats|lorem|number})', `${version}/text`);
+        error(res, 400, 'Please provide a valid method (?method={slug|stats|lorem|number})');
         return;
     }
 
@@ -780,7 +779,7 @@ router.get('/:version/text', (req: Request, res: Response) => {
         }
         res.jsonResponse({ method, result });
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/text`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -814,7 +813,7 @@ router.get('/:version/time', (req: Request, res: Response) => {
         );
         res.jsonResponse(time);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/time`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -831,11 +830,11 @@ router.get('/:version/url', (req: Request, res: Response) => {
 
     const parseUrlFn = (req.module as { parseUrl?: (u: string) => unknown }).parseUrl;
     if (!parseUrlFn) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/url`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!url || typeof url !== 'string') {
-        error(res, 400, 'Please provide a URL (?url={URL})', `${version}/url`);
+        error(res, 400, 'Please provide a URL (?url={URL})');
         return;
     }
 
@@ -843,7 +842,7 @@ router.get('/:version/url', (req: Request, res: Response) => {
         const result = parseUrlFn(url);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/url`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -853,7 +852,7 @@ router.get('/:version/username', (req: Request, res: Response) => {
         const result = req.module.username();
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/username`);
+        error(res, 400, (err as Error).message);
     }
 });
 
@@ -864,15 +863,15 @@ router.get('/:version/validate', (req: Request, res: Response) => {
 
     const validate = (req.module as { validate?: Record<string, (v: string) => unknown> }).validate;
     if (!validate) {
-        error(res, 404, `Endpoint not available in ${version}.`, `${req.latest}/validate`);
+        error(res, 404, `Endpoint not available in ${version}.`);
         return;
     }
     if (!type || !Object.hasOwn(validate, type as string)) {
-        error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})', `${version}/validate`);
+        error(res, 400, 'Please provide a valid type (?type={luhn|iban|email})');
         return;
     }
     if (!value) {
-        error(res, 400, 'Please provide a value (&value={value})', `${version}/validate`);
+        error(res, 400, 'Please provide a value (&value={value})');
         return;
     }
 
@@ -880,7 +879,7 @@ router.get('/:version/validate', (req: Request, res: Response) => {
         const result = validate[type as string]!(value as string);
         res.jsonResponse(result);
     } catch (err) {
-        error(res, 400, (err as Error).message, `${req.version}/validate`);
+        error(res, 400, (err as Error).message);
     }
 });
 

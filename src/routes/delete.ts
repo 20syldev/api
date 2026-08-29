@@ -8,7 +8,7 @@ const router = Router();
 // Clear a private chat
 router.delete('/:version/chat/:token', (req: Request, res: Response) => {
     if (parseInt(req.version.slice(1)) < 4) {
-        error(res, 405, 'DELETE is only supported in v4+.', `${req.version}/chat`);
+        error(res, 405, 'DELETE is only supported in v4+.');
         return;
     }
 
@@ -40,7 +40,7 @@ router.delete('/:version/chat/:token', (req: Request, res: Response) => {
 // Forfeit a tic-tac-toe game
 router.delete('/:version/tic-tac-toe/:game', (req: Request, res: Response) => {
     if (parseInt(req.version.slice(1)) < 4) {
-        error(res, 405, 'DELETE is only supported in v4+.', `${req.version}/tic-tac-toe`);
+        error(res, 405, 'DELETE is only supported in v4+.');
         return;
     }
 

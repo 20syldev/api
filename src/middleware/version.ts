@@ -11,14 +11,14 @@ export function versionCheckMiddleware(req: Request, res: Response, next: NextFu
     req.latest = latest;
 
     if (!versions[version]) {
-        error(res, 404, `Invalid API version (${version}).`, latest);
+        error(res, 404, `Invalid API version (${version}).`);
         return;
     }
 
     req.module = versions[version]!.modules;
 
     if (!req.module) {
-        error(res, 404, `Module not found for version ${version}.`, latest);
+        error(res, 404, `Module not found for version ${version}.`);
         return;
     }
 
