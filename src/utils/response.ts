@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 
-import { DOCS_URL, STATUS_MESSAGES } from '../constants.js';
+import { env } from '../config/env.js';
+import { STATUS_MESSAGES } from '../constants.js';
 
 /**
  * Sends a standardized JSON error response.
@@ -14,7 +15,7 @@ export function error(res: Response, status: number, message: string, docPath?: 
     const body = {
         message: STATUS_MESSAGES[status] ?? 'Error',
         error: message,
-        documentation: docPath ? `${DOCS_URL}/${docPath}` : DOCS_URL,
+        ...(env.DOCS_URL ? { documentation: docPath ? `${env.DOCS_URL}/${docPath}` : env.DOCS_URL } : {}),
         status: String(status),
     };
 

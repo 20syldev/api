@@ -3,7 +3,6 @@ import pkg from '../package.json' with { type: 'json' };
 // App
 export const APP_VERSION = pkg.version;
 export const DEFAULT_PORT = 3000;
-export const DOCS_URL = 'https://docs.sylvain.sh';
 export const START_TIME = Date.now();
 
 // Server

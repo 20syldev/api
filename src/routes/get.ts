@@ -1,7 +1,7 @@
 import { type Request, type Response, Router } from 'express';
 
+import { env } from '../config/env.js';
 import { versions } from '../config/versions.js';
-import { DOCS_URL } from '../constants.js';
 import type { AddressResult } from '../modules/v4/address.js';
 import type { UserAgentResult } from '../modules/v4/agent.js';
 import type { AvatarOptions, AvatarResult } from '../modules/v4/avatar.js';
@@ -61,7 +61,7 @@ router.get('/:version', (req: Request, res: Response) => {
 
     res.jsonResponse({
         version,
-        documentation: `${DOCS_URL}/${version}`,
+        ...(env.DOCS_URL ? { documentation: `${env.DOCS_URL}/${version}` } : {}),
         endpoints,
     });
 });
@@ -505,9 +505,9 @@ router.get('/:version/infos', (req: Request, res: Response) => {
     res.jsonResponse({
         endpoints: new Set(paths).size,
         last_version: Object.keys(versions).pop(),
-        documentation: DOCS_URL,
-        github: 'https://github.com/20syldev/api',
-        creation: 'November 25th 2024',
+        ...(env.DOCS_URL ? { documentation: env.DOCS_URL } : {}),
+        ...(env.REPO_URL ? { github: env.REPO_URL } : {}),
+        ...(env.INSTANCE_CREATED ? { creation: env.INSTANCE_CREATED } : {}),
     });
 });
 

@@ -1,8 +1,9 @@
 import { type Request, type Response, Router } from 'express';
 
+import { env } from '../config/env.js';
 import { getPlan } from '../config/plans.js';
 import { versions } from '../config/versions.js';
-import { APP_VERSION, DOCS_URL, START_TIME } from '../constants.js';
+import { APP_VERSION, START_TIME } from '../constants.js';
 import { logger } from '../middleware/logger.js';
 import { ipLimits } from '../storage/index.js';
 import { error } from '../utils/response.js';
@@ -17,7 +18,7 @@ router.get('/', (req: Request, res: Response) => {
     }, {});
 
     res.jsonResponse({
-        documentation: DOCS_URL,
+        ...(env.DOCS_URL ? { documentation: env.DOCS_URL } : {}),
         latest: `${base}/latest`,
         health: `${base}/health`,
         logs: `${base}/logs`,
@@ -44,11 +45,15 @@ router.get('/health', (_req: Request, res: Response) => {
     });
 });
 
-router.get('/logs', (_req: Request, res: Response) => {
+router.get('/logs', (req: Request, res: Response) => {
+    if (env.LOGS_TOKEN && req.headers['x-logs-token'] !== env.LOGS_TOKEN) {
+        error(res, 401, 'Invalid token.');
+        return;
+    }
+
     res.jsonResponse(logger.entries());
 });
 
-// Report the caller's token tier and limits.
 router.get('/auth', (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1] || '';
     const match = getPlan(token);
