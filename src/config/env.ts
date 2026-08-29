@@ -4,9 +4,12 @@ import { DEFAULT_PORT } from '../constants.js';
 
 dotenv.config();
 
-function envList(key: string): string[] | null {
+export function envList(key: string): string[] | null {
     const v = process.env[key];
-    return v && v !== 'undefined' ? v.split(' ') : null;
+    if (!v || v === 'undefined') return null;
+
+    const items = v.split(/[\s,]+/).filter(Boolean);
+    return items.length ? items : null;
 }
 
 function envNumber(key: string, fallback: number): number {
@@ -16,6 +19,7 @@ function envNumber(key: string, fallback: number): number {
 
 export const env = {
     PORT: envNumber('PORT', DEFAULT_PORT),
+    TRUSTED_PROXIES: envList('TRUSTED_PROXIES'),
 
     DEFAULT_LIMIT: envNumber('DEFAULT_LIMIT', 2000),
     ADVANCED_LIMIT: envNumber('ADVANCED_LIMIT', 3500),

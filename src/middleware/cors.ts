@@ -3,11 +3,14 @@ import express, { type Express } from 'express';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
+import { env } from '../config/env.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export function setupCors(app: Express): void {
-    app.set('trust proxy', 1);
+    app.set('trust proxy', env.TRUSTED_PROXIES ?? 1);
+
     app.use(cors({ methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] }));
     app.use(express.urlencoded({ extended: true, limit: '10kb' }));
     app.use(express.json({ limit: '10kb' }));
