@@ -11,7 +11,7 @@
         "build": "tsc",
         "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/",
         "format": "prettier --write src/ tests/ && eslint --fix src/ tests/",
-        "test": "NODE_ENV=test node --import tsx --test --test-force-exit tests/unit/*.test.ts tests/integration/*.test.ts"
+        "test": "NODE_ENV=test DOCS_URL=https://docs.example.test node --import tsx --test tests/unit/*.test.ts tests/integration/*.test.ts"
     },
     "engines": {
         "node": ">=22.0.0"
