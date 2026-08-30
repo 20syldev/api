@@ -15,7 +15,7 @@
         "test": "NODE_ENV=test DOCS_URL=https://docs.example.test node --import tsx --test tests/unit/*.test.ts tests/integration/*.test.ts"
     },
     "engines": {
-        "node": ">=22.0.0"
+        "node": ">=22.12.0"
     },
     "exports": {
         ".": { "types": "./dist/modules/v5.d.ts", "default": "./dist/modules/v5.js" },
