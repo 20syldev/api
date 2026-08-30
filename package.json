@@ -2,7 +2,8 @@
     "version": "5.6.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
-    "main": "dist/app.js",
+    "main": "./dist/modules/v5.js",
+    "types": "./dist/modules/v5.d.ts",
     "type": "module",
     "scripts": {
         "prepare": "tsc",
@@ -17,14 +18,19 @@
         "node": ">=22.0.0"
     },
     "exports": {
-        "./v1": "./dist/modules/v1.js",
-        "./v2": "./dist/modules/v2.js",
-        "./v3": "./dist/modules/v3.js",
-        "./v4": "./dist/modules/v4.js",
-        "./v5": "./dist/modules/v5.js"
+        ".": { "types": "./dist/modules/v5.d.ts", "default": "./dist/modules/v5.js" },
+        "./server": { "types": "./dist/app.d.ts", "default": "./dist/app.js" },
+        "./v1": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
+        "./v2": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
+        "./v3": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
+        "./v4": { "types": "./dist/modules/v4.d.ts", "default": "./dist/modules/v4.js" },
+        "./v5": { "types": "./dist/modules/v5.d.ts", "default": "./dist/modules/v5.js" },
+        "./package.json": "./package.json"
     },
     "dependencies": {
         "@20syldev/logger.ts": "^1.0.1",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.19.17",
         "canvas": "^3.1.0",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
@@ -37,8 +43,6 @@
     "devDependencies": {
         "@eslint/js": "^9.24.0",
         "@types/cors": "^2.8.17",
-        "@types/express": "^5.0.0",
-        "@types/node": "^22.19.17",
         "@types/qrcode": "^1.5.6",
         "@types/uuid": "^10.0.0",
         "eslint": "^9.24.0",

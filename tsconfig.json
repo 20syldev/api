@@ -8,7 +8,7 @@
         "noUncheckedIndexedAccess": true,
         "outDir": "dist",
         "rootDir": "src",
-        "declaration": false,
+        "declaration": true,
         "sourceMap": true,
         "esModuleInterop": true,
         "skipLibCheck": true
