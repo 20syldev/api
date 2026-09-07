@@ -768,12 +768,13 @@ router.get('/:version/semver', (req: Request, res: Response) => {
         return;
     }
 
+    const restorePlus = (v: string): string => v.replace(/ /g, '+');
     try {
         const result = semverFn(
-            input,
+            restorePlus(input),
             action as string | undefined,
             part as string | undefined,
-            other as string | undefined,
+            typeof other === 'string' ? restorePlus(other) : undefined,
         );
         res.jsonResponse(result);
     } catch (err) {
