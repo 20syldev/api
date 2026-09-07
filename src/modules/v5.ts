@@ -35,6 +35,7 @@ export { default as caseConvert } from './v5/case.js';
 export * as chart from './v5/chart.js';
 export { default as chat } from './v5/chat.js';
 export { default as csv } from './v5/csv.js';
+export { default as diff } from './v5/diff.js';
 export { default as evaluate } from './v5/evaluate.js';
 export { default as jwt } from './v5/jwt.js';
 export * as matrix from './v5/matrix.js';
