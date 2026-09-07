@@ -1610,6 +1610,17 @@ describe('GET /v5/semver', () => {
         assert.equal(body.prerelease, 'beta.1');
         assert.equal(body.build, 'build.42');
     });
+    test('accepts an unencoded plus sign in build metadata', async () => {
+        const { status, body } = await getJson('/v5/semver?version=1.2.3-beta.1+build.42');
+        assert.equal(status, 200);
+        assert.equal(body.version, '1.2.3-beta.1+build.42');
+        assert.equal(body.build, 'build.42');
+    });
+    test('accepts an unencoded plus sign in the compared version', async () => {
+        const { body } = await getJson('/v5/semver?version=1.0.0&action=compare&other=1.0.0+build.1');
+        assert.equal(body.result, 0);
+        assert.equal(body.description, '1.0.0 = 1.0.0+build.1');
+    });
     test('bumps a version', async () => {
         const { body } = await getJson('/v5/semver?version=1.2.3&action=bump&part=minor');
         assert.equal(body.result, '1.3.0');
