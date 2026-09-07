@@ -108,10 +108,23 @@ describe('instance metadata configured', () => {
 });
 
 describe('GET /logs', () => {
-    test('stays open while no token is configured', async () => {
+    test('stays closed while no token is configured', async () => {
         env.LOGS_TOKEN = '';
-        const { status } = await getJson('/logs');
-        assert.equal(status, 200);
+        const { status, body } = await getJson('/logs');
+        assert.equal(status, 404);
+        assert.equal(body.error, "Endpoint '/logs' does not exist.");
+    });
+
+    test('is left out of the root index while no token is configured', async () => {
+        env.LOGS_TOKEN = '';
+        const { body } = await getJson('/');
+        assert.equal('logs' in body, false);
+    });
+
+    test('is advertised on the root index once a token is configured', async () => {
+        env.LOGS_TOKEN = 's3cr3t';
+        const { body } = await getJson('/');
+        assert.ok(String(body.logs).endsWith('/logs'));
     });
 
     test('rejects a request with no token once one is configured', async () => {
@@ -145,9 +158,9 @@ describe('GET /logs', () => {
 
 describe('request log redaction, end to end', () => {
     test('the buffer keeps parameter names without their values', async () => {
-        env.LOGS_TOKEN = '';
+        env.LOGS_TOKEN = 's3cr3t';
         await getJson('/v5/encode?text=SUPERSECRET&method=base64');
-        const { body } = await getJson('/logs');
+        const { body } = await getJson('/logs', { 'X-Logs-Token': 's3cr3t' });
         const urls = (body as unknown as { url: string }[]).map((e) => e.url);
         assert.ok(
             urls.includes('/v5/encode?text&method'),
