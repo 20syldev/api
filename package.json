@@ -10,8 +10,8 @@
         "dev": "tsx watch src/app.ts",
         "start": "node dist/app.js",
         "build": "tsc",
-        "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/",
-        "format": "prettier --write src/ tests/ && eslint --fix src/ tests/",
+        "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/ && prettier --check .",
+        "format": "prettier --write . && eslint --fix src/ tests/",
         "test": "NODE_ENV=test DOCS_URL=https://docs.example.test node --import tsx --test tests/unit/*.test.ts tests/integration/*.test.ts"
     },
     "engines": {
