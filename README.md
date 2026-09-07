@@ -202,6 +202,28 @@ $ npm run dev
 
 Endpoints follow the `/:version/:endpoint` pattern — `GET /v5/color`, `GET /v5/evaluate?expr=2%2B2`, `POST /v5/matrix`. `GET /` lists the available versions, and `GET /:version` lists that version's endpoints with their parameters.
 
+### Configuration
+
+Every setting is optional and read from the environment; a `.env` file at the project root is loaded automatically. The server runs with none of them set.
+
+| Variable           | Default | Purpose                                                                                                                                                |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PORT`             | `3000`  | Port the server listens on                                                                                                                             |
+| `DOCS_URL`         | —       | Documentation base URL reported by `/`, `/:version` and `/:version/infos`                                                                              |
+| `REPO_URL`         | —       | Source repository reported by `/:version/infos`                                                                                                        |
+| `INSTANCE_CREATED` | —       | Launch date reported by `/:version/infos`                                                                                                              |
+| `LOGS_TOKEN`       | —       | Value required in the `X-Logs-Token` header to read `/logs`; open while unset                                                                          |
+| `TRUSTED_PROXIES`  | one hop | CIDR blocks separated by spaces or commas, or the `loopback` / `linklocal` / `uniquelocal` shorthands, for deployments behind a CDN or platform router |
+| `GLOBAL_LIMIT`     | `50000` | Requests per hour accepted across the whole instance                                                                                                   |
+| `DEFAULT_LIMIT`    | `2000`  | Per-client requests per hour                                                                                                                           |
+| `DEFAULT_BURST`    | `50`    | Per-client requests per 10-second window                                                                                                               |
+
+The three metadata variables are omitted from responses when unset, so an instance never advertises somebody else's documentation or repository.
+
+Higher quotas can be granted per client: `ADVANCED_`, `PRO_` and `BUSINESS_` variants of `_LIMIT` and `_BURST` define the tiers, and the matching `*_TOKEN_LIST` variables hold the space-separated bearer tokens that map to them. A client's tier and quota are reported by `GET /auth`.
+
+> _Rate-limit counters live in process memory, so each instance of a multi-instance deployment counts separately._
+
 ## Versioning
 
 | Version | Adds                                                                                                                                                                          |
