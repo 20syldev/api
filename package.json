@@ -1,5 +1,5 @@
 {
-    "version": "5.6.0",
+    "version": "5.7.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
     "main": "./dist/modules/v5.js",
