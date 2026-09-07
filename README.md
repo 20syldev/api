@@ -212,7 +212,7 @@ Every setting is optional and read from the environment; a `.env` file at the pr
 | `DOCS_URL`         | —       | Documentation base URL reported by `/`, `/:version` and `/:version/infos`                                                                              |
 | `REPO_URL`         | —       | Source repository reported by `/:version/infos`                                                                                                        |
 | `INSTANCE_CREATED` | —       | Launch date reported by `/:version/infos`                                                                                                              |
-| `LOGS_TOKEN`       | —       | Value required in the `X-Logs-Token` header to read `/logs`; open while unset                                                                          |
+| `LOGS_TOKEN`       | —       | Value required in the `X-Logs-Token` header to read `/logs`; the route answers 404 while unset                                                         |
 | `TRUSTED_PROXIES`  | one hop | CIDR blocks separated by spaces or commas, or the `loopback` / `linklocal` / `uniquelocal` shorthands, for deployments behind a CDN or platform router |
 | `GLOBAL_LIMIT`     | `50000` | Requests per hour accepted across the whole instance                                                                                                   |
 | `DEFAULT_LIMIT`    | `2000`  | Per-client requests per hour                                                                                                                           |
