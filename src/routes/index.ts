@@ -22,7 +22,7 @@ router.get('/', (req: Request, res: Response) => {
         ...(env.DOCS_URL ? { documentation: env.DOCS_URL } : {}),
         latest: `${base}/latest`,
         health: `${base}/health`,
-        logs: `${base}/logs`,
+        ...(env.LOGS_TOKEN ? { logs: `${base}/logs` } : {}),
         auth: `${base}/auth`,
         versions: links,
     });
@@ -47,8 +47,20 @@ router.get('/health', (_req: Request, res: Response) => {
     });
 });
 
+/**
+ * Request log buffer, closed unless an operator configured a token.
+ *
+ * The buffer carries the traffic of every caller of the instance, so it fails
+ * closed: with no LOGS_TOKEN set the route answers like any unknown path,
+ * which keeps a default deployment from leaking it to whoever guesses the URL.
+ */
 router.get('/logs', (req: Request, res: Response) => {
-    if (env.LOGS_TOKEN && req.headers['x-logs-token'] !== env.LOGS_TOKEN) {
+    if (!env.LOGS_TOKEN) {
+        error(res, 404, `Endpoint '${req.path}' does not exist.`);
+        return;
+    }
+
+    if (req.headers['x-logs-token'] !== env.LOGS_TOKEN) {
         error(res, 401, 'Invalid token.');
         return;
     }
