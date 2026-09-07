@@ -133,17 +133,22 @@ const v4 = {
 
 const v5 = {
     get: merge(v4.get, [
+        { name: 'base', path: '/base?value={value}(&from={from})(&to={to})' },
         { name: 'case', path: '/case?text={text}(&to={target})' },
         { name: 'evaluate', path: '/evaluate?expr={expression}(&precision={0-15})' },
+        { name: 'semver', path: '/semver?version={version}(&action={action})(&part={part})(&other={other})' },
         { name: 'url', path: '/url?url={URL}' },
+        { name: 'uuid', path: '/uuid(?uuid={uuid})(&count={count})' },
     ]),
     post: merge(v4.post, [
         { name: 'asymmetric', path: '/asymmetric' },
         { name: 'chart', path: '/chart' },
         { name: 'csv', path: '/csv' },
+        { name: 'diff', path: '/diff' },
         { name: 'jwt', path: '/jwt' },
         { name: 'matrix', path: '/matrix' },
         { name: 'otp', path: '/otp' },
+        { name: 'read', path: '/read' },
         { name: 'symmetric', path: '/symmetric' },
     ]),
     patch: [...v4.patch!],

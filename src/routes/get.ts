@@ -212,6 +212,33 @@ router.get('/:version/barcode', (req: Request, res: Response) => {
     }
 });
 
+// Convert a number between bases
+router.get('/:version/base', (req: Request, res: Response) => {
+    const { value, from, to } = req.query;
+    const { version } = req.params;
+
+    const baseFn = (req.module as { base?: (v: string, f?: number, t?: number) => unknown }).base;
+    if (!baseFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!value || typeof value !== 'string') {
+        error(res, 400, 'Please provide a value (?value={value})');
+        return;
+    }
+
+    try {
+        const result = baseFn(
+            value,
+            from !== undefined ? Number(from) : undefined,
+            to !== undefined ? Number(to) : undefined,
+        );
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Generate captcha
 router.get('/:version/captcha', (req: Request, res: Response) => {
     try {
@@ -384,6 +411,9 @@ router.get('/:version/dice', (req: Request, res: Response) => {
         error(res, 400, (err as Error).message);
     }
 });
+
+// GET diff error
+router.get('/:version/diff', postOnly('diff'));
 
 // Generate domain informations
 router.get('/:version/domain', (req: Request, res: Response) => {
@@ -693,6 +723,9 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
     }
 });
 
+// GET read error
+router.get('/:version/read', postOnly('read'));
+
 // Test a regex pattern against a text
 router.get('/:version/regex', (req: Request, res: Response) => {
     const { pattern, text, flags } = req.query;
@@ -714,6 +747,34 @@ router.get('/:version/regex', (req: Request, res: Response) => {
 
     try {
         const result = regexFn(pattern as string, text as string, flags as string | undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Parse, bump or compare semantic versions
+router.get('/:version/semver', (req: Request, res: Response) => {
+    const { version: input, action, part, other } = req.query;
+    const { version } = req.params;
+
+    const semverFn = (req.module as { semver?: (v: string, a?: string, p?: string, o?: string) => unknown }).semver;
+    if (!semverFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!input || typeof input !== 'string') {
+        error(res, 400, 'Please provide a version (?version={version})');
+        return;
+    }
+
+    try {
+        const result = semverFn(
+            input,
+            action as string | undefined,
+            part as string | undefined,
+            other as string | undefined,
+        );
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
@@ -840,6 +901,29 @@ router.get('/:version/url', (req: Request, res: Response) => {
 
     try {
         const result = parseUrlFn(url);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Generate or parse a UUID
+router.get('/:version/uuid', (req: Request, res: Response) => {
+    const { uuid: input, count } = req.query;
+    const { version } = req.params;
+
+    const uuidFn = (req.module as { uuid?: (u?: string, c?: number) => unknown }).uuid;
+    if (!uuidFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (input !== undefined && typeof input !== 'string') {
+        error(res, 400, 'Please provide a valid UUID (?uuid={uuid})');
+        return;
+    }
+
+    try {
+        const result = uuidFn(input, count !== undefined ? Number(count) : undefined);
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
