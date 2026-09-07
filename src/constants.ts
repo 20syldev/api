@@ -49,6 +49,7 @@ export const MAX_MATRIX_SIZE = 20;
 export const MAX_PATTERN_LENGTH = 200;
 export const MAX_PRIME_LIST = 10_000;
 export const MAX_QRCODE_LOGO_BYTES = 2 * 1024 * 1024;
+export const MAX_READ_LENGTH = 50_000;
 export const MAX_REGEX_MATCHES = 100;
 export const MAX_RSA_MODULUS = 4096;
 export const MAX_STRING_LENGTH = 1000;
