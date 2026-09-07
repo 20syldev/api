@@ -10,6 +10,7 @@ import { error } from '../utils/response.js';
 
 const router = Router();
 
+// Display root endpoints and available versions
 router.get('/', (req: Request, res: Response) => {
     const base = `${req.protocol}://${req.get('host')}`;
     const links = Object.keys(versions).reduce<Record<string, string>>((link, version) => {
@@ -27,6 +28,7 @@ router.get('/', (req: Request, res: Response) => {
     });
 });
 
+// Display instance health and resource usage
 router.get('/health', (_req: Request, res: Response) => {
     const mem = process.memoryUsage();
 
@@ -54,6 +56,7 @@ router.get('/logs', (req: Request, res: Response) => {
     res.jsonResponse(logger.entries());
 });
 
+// Display the plan and limits of a token
 router.get('/auth', (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1] || '';
     const match = getPlan(token);
@@ -73,6 +76,7 @@ router.get('/auth', (req: Request, res: Response) => {
     });
 });
 
+// Redirect to the latest API version
 router.all('/latest', (req: Request, res: Response) => {
     const latest = Object.keys(versions).pop()!;
     const queryIndex = req.originalUrl.indexOf('?');
@@ -80,6 +84,7 @@ router.all('/latest', (req: Request, res: Response) => {
     res.redirect(307, `/${latest}${query}`);
 });
 
+// Redirect to the latest API version, keeping the requested path
 router.all('/latest/{*rest}', (req: Request, res: Response) => {
     const latest = Object.keys(versions).pop()!;
     const rest = (req.params as Record<string, string | string[]>).rest;
