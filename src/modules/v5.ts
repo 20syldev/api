@@ -46,3 +46,4 @@ export { default as symmetric } from './v5/symmetric.js';
 export * as text from './v5/text.js';
 export { default as tic_tac_toe } from './v5/tic_tac_toe.js';
 export { default as parseUrl } from './v5/url.js';
+export { default as uuid } from './v5/uuid.js';

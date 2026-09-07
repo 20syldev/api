@@ -57,6 +57,7 @@ export const MAX_STRING_LENGTH = 1000;
 export const MIN_TOKEN_LENGTH = 12;
 export const MAX_TOKEN_LENGTH = 4096;
 export const MAX_URL_LENGTH = 2048;
+export const MAX_UUID_COUNT = 50;
 
 export const ROMAN_VALUES: [number, string][] = [
     [1000, 'M'],
