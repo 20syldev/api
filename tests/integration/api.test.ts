@@ -1537,6 +1537,175 @@ describe('POST /v5/jwt', () => {
     });
 });
 
+describe('GET /v5/base', () => {
+    test('converts decimal to hexadecimal', async () => {
+        const { status, body } = await getJson('/v5/base?value=255&from=10&to=16');
+        assert.equal(status, 200);
+        assert.equal(body.result, 'ff');
+        assert.equal(body.from, 10);
+        assert.equal(body.to, 16);
+    });
+    test('defaults to base 10 -> 16', async () => {
+        const { body } = await getJson('/v5/base?value=255');
+        assert.equal(body.result, 'ff');
+    });
+    test('missing value returns 400', async () => {
+        const { status } = await getJson('/v5/base');
+        assert.equal(status, 400);
+    });
+    test('invalid value for the base returns 400', async () => {
+        const { status } = await getJson('/v5/base?value=zz&from=10');
+        assert.equal(status, 400);
+    });
+    test('base out of range returns 400', async () => {
+        const { status } = await getJson('/v5/base?value=10&from=1');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson('/v4/base?value=255');
+        assert.equal(status, 404);
+    });
+});
+
+describe('GET /v5/uuid', () => {
+    test('generates a UUID v4', async () => {
+        const { status, body } = await getJson('/v5/uuid');
+        assert.equal(status, 200);
+        assert.match(body.uuid as string, /^[0-9a-f-]{36}$/);
+        assert.equal(body.version, 4);
+        assert.equal(body.variant, 'RFC 4122');
+    });
+    test('generates a batch with count', async () => {
+        const { body } = await getJson('/v5/uuid?count=3');
+        assert.equal(body.count, 3);
+        assert.equal((body.uuids as string[]).length, 3);
+    });
+    test('parses a provided UUID', async () => {
+        const { body } = await getJson('/v5/uuid?uuid=550e8400-e29b-41d4-a716-446655440000');
+        assert.equal(body.valid, true);
+        assert.equal(body.version, 4);
+    });
+    test('invalid UUID returns valid: false', async () => {
+        const { status, body } = await getJson('/v5/uuid?uuid=not-a-uuid');
+        assert.equal(status, 200);
+        assert.equal(body.valid, false);
+    });
+    test('count out of range returns 400', async () => {
+        const { status } = await getJson('/v5/uuid?count=51');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson('/v4/uuid');
+        assert.equal(status, 404);
+    });
+});
+
+describe('GET /v5/semver', () => {
+    test('parses a version', async () => {
+        const { status, body } = await getJson('/v5/semver?version=1.2.3-beta.1%2Bbuild.42');
+        assert.equal(status, 200);
+        assert.equal(body.major, 1);
+        assert.equal(body.minor, 2);
+        assert.equal(body.patch, 3);
+        assert.equal(body.prerelease, 'beta.1');
+        assert.equal(body.build, 'build.42');
+    });
+    test('bumps a version', async () => {
+        const { body } = await getJson('/v5/semver?version=1.2.3&action=bump&part=minor');
+        assert.equal(body.result, '1.3.0');
+    });
+    test('compares two versions', async () => {
+        const { body } = await getJson('/v5/semver?version=1.2.3&action=compare&other=1.3.0');
+        assert.equal(body.result, -1);
+        assert.equal(body.description, '1.2.3 < 1.3.0');
+    });
+    test('invalid version returns 400', async () => {
+        const { status } = await getJson('/v5/semver?version=abc');
+        assert.equal(status, 400);
+    });
+    test('missing version returns 400', async () => {
+        const { status } = await getJson('/v5/semver');
+        assert.equal(status, 400);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await getJson('/v4/semver?version=1.2.3');
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/read', () => {
+    test('returns readability scores', async () => {
+        const { status, body } = await sendJson('POST', '/v5/read', {
+            text: 'The cat sat on the mat. It was happy.',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.words, 9);
+        assert.equal(body.sentences, 2);
+        assert.ok(typeof body.fleschReadingEase === 'number');
+        assert.ok(typeof body.fleschKincaidGrade === 'number');
+        assert.match(body.readingTime as string, /^\d+(s|min)$/);
+    });
+    test('missing text returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/read', {});
+        assert.equal(status, 400);
+    });
+    test('scores French text with lang=fr', async () => {
+        const { status, body } = await sendJson('POST', '/v5/read', { text: 'Salut ça va ?', lang: 'fr' });
+        assert.equal(status, 200);
+        assert.equal(body.lang, 'fr');
+        assert.equal(body.words, 3);
+        assert.equal(body.fleschKincaidGrade, null);
+    });
+    test('unsupported lang returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/read', { text: 'hello', lang: 'de' });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/read returns 405', async () => {
+        const { status } = await getJson('/v5/read');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/read', { text: 'hello' });
+        assert.equal(status, 404);
+    });
+});
+
+describe('POST /v5/diff', () => {
+    test('diffs two texts line by line', async () => {
+        const { status, body } = await sendJson('POST', '/v5/diff', {
+            a: 'line1\nline2',
+            b: 'line1\nline2 edited',
+        });
+        assert.equal(status, 200);
+        assert.equal(body.mode, 'line');
+        assert.equal(body.added, 1);
+        assert.equal(body.removed, 1);
+        assert.deepEqual((body.changes as unknown[])[0], { type: 'equal', value: 'line1' });
+    });
+    test('diffs word by word', async () => {
+        const { body } = await sendJson('POST', '/v5/diff', { a: 'the quick fox', b: 'the slow fox', mode: 'word' });
+        assert.equal(body.mode, 'word');
+        assert.equal(body.added, 1);
+        assert.equal(body.removed, 1);
+    });
+    test('missing text returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/diff', { a: 'line1' });
+        assert.equal(status, 400);
+    });
+    test('invalid mode returns 400', async () => {
+        const { status } = await sendJson('POST', '/v5/diff', { a: 'x', b: 'y', mode: 'chars' });
+        assert.equal(status, 400);
+    });
+    test('GET /v5/diff returns 405', async () => {
+        const { status } = await getJson('/v5/diff');
+        assert.equal(status, 405);
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/diff', { a: 'x', b: 'y' });
+        assert.equal(status, 404);
+    });
+});
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
