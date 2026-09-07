@@ -41,6 +41,7 @@ export { default as jwt } from './v5/jwt.js';
 export * as matrix from './v5/matrix.js';
 export { default as otp } from './v5/otp.js';
 export { default as read } from './v5/read.js';
+export { default as semver } from './v5/semver.js';
 export { default as symmetric } from './v5/symmetric.js';
 export * as text from './v5/text.js';
 export { default as tic_tac_toe } from './v5/tic_tac_toe.js';
