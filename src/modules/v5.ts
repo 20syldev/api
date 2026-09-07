@@ -30,6 +30,7 @@ export { default as address } from './v5/address.js';
 export * as algorithms from './v5/algorithms.js';
 export { default as asymmetric } from './v5/asymmetric.js';
 export { default as barcode } from './v5/barcode.js';
+export { default as base } from './v5/base.js';
 export { default as caseConvert } from './v5/case.js';
 export * as chart from './v5/chart.js';
 export { default as chat } from './v5/chat.js';

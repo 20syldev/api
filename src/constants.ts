@@ -25,6 +25,7 @@ export const STATUS_MESSAGES: Record<number, string> = {
 // Modules
 export const EARTH_RADIUS_KM = 6371;
 export const MAX_ADDRESS_COUNT = 10;
+export const MAX_BASE_VALUE_LENGTH = 100;
 export const MAX_CHART_DATASETS = 5;
 export const MAX_CHART_LABELS = 20;
 export const MAX_CSV_LENGTH = 50_000;
