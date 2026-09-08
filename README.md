@@ -213,6 +213,7 @@ Every setting is optional and read from the environment; a `.env` file at the pr
 | `REPO_URL`         | —       | Source repository reported by `/:version/infos`                                                                                                        |
 | `INSTANCE_CREATED` | —       | Launch date reported by `/:version/infos`                                                                                                              |
 | `LOGS_TOKEN`       | —       | Value required in the `X-Logs-Token` header to read `/logs`; the route answers 404 while unset                                                         |
+| `CHALLENGE_SECRET` | random  | Key signing the captcha and proof-of-work tokens; a random one is generated at startup while unset                                                     |
 | `TRUSTED_PROXIES`  | one hop | CIDR blocks separated by spaces or commas, or the `loopback` / `linklocal` / `uniquelocal` shorthands, for deployments behind a CDN or platform router |
 | `GLOBAL_LIMIT`     | `50000` | Requests per hour accepted across the whole instance                                                                                                   |
 | `DEFAULT_LIMIT`    | `2000`  | Per-client requests per hour                                                                                                                           |
@@ -223,6 +224,8 @@ The three metadata variables are omitted from responses when unset, so an instan
 Higher quotas can be granted per client: `ADVANCED_`, `PRO_` and `BUSINESS_` variants of `_LIMIT` and `_BURST` define the tiers, and the matching `*_TOKEN_LIST` variables hold the space-separated bearer tokens that map to them. A client's tier and quota are reported by `GET /auth`.
 
 > _Rate-limit counters live in process memory, so each instance of a multi-instance deployment counts separately._
+
+> _Captcha and proof-of-work tokens are signed with `CHALLENGE_SECRET`. While it is unset each process invents its own key, so tokens stop verifying after a restart and are rejected by sibling instances — set it explicitly for any deployment running more than one process._
 
 ## Versioning
 
