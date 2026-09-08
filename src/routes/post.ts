@@ -4,7 +4,9 @@ import { MAX_TOKEN_LENGTH, MIN_TOKEN_LENGTH } from '../constants.js';
 import type { HashResult } from '../modules/v4/hash.js';
 import type { CsvResult } from '../modules/v5/csv.js';
 import type { JwtResult } from '../modules/v5/jwt.js';
-import { chatStorage, ticTacToeStorage } from '../storage/index.js';
+import { challengeStorage, chatStorage, ticTacToeStorage } from '../storage/index.js';
+import type { ChallengeStorage } from '../types/storage.js';
+import type { ChallengeVerification } from '../utils/challenge.js';
 import { since } from '../utils/helpers.js';
 import { error } from '../utils/response.js';
 
@@ -48,6 +50,35 @@ router.post('/:version/asymmetric', (req: Request, res: Response) => {
             algorithm: algorithm as string | undefined,
         });
         res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Verify a captcha answer against its token
+router.post('/:version/captcha', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { token, answer } = body;
+    const { version } = req.params;
+
+    const verifyFn = (
+        req.module as { verifyCaptcha?: (t: string, a: string, s: ChallengeStorage) => ChallengeVerification }
+    ).verifyCaptcha;
+    if (!verifyFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!token || typeof token !== 'string') {
+        error(res, 400, 'Please provide a token (?token={token})');
+        return;
+    }
+    if (!answer || typeof answer !== 'string') {
+        error(res, 400, 'Please provide an answer (&answer={answer})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(verifyFn(token, answer, challengeStorage));
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -374,6 +405,35 @@ router.post('/:version/read', (req: Request, res: Response) => {
     try {
         const result = readFn(text, lang as string | undefined);
         res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Verify a solved proof-of-work challenge
+router.post('/:version/pow', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { token, nonce } = body;
+    const { version } = req.params;
+
+    const verifyFn = (
+        req.module as { verifyPow?: (t: string, n: string, s: ChallengeStorage) => ChallengeVerification }
+    ).verifyPow;
+    if (!verifyFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!token || typeof token !== 'string') {
+        error(res, 400, 'Please provide a token (?token={token})');
+        return;
+    }
+    if (nonce === undefined || nonce === null) {
+        error(res, 400, 'Please provide a nonce (&nonce={nonce})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(verifyFn(token, String(nonce), challengeStorage));
     } catch (err) {
         error(res, 400, (err as Error).message);
     }

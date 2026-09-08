@@ -12,6 +12,7 @@ import type { CreditResult } from '../modules/v4/credit.js';
 import type { IpResult } from '../modules/v4/ip.js';
 import type { PasswordResult } from '../modules/v4/password.js';
 import type { QRCodeOptions, QRCodeResult } from '../modules/v4/qrcode.js';
+import type { CaptchaChallenge } from '../modules/v5/captcha.js';
 import { chatStorage } from '../storage/index.js';
 import { since } from '../utils/helpers.js';
 import { error } from '../utils/response.js';
@@ -243,8 +244,23 @@ router.get('/:version/base', (req: Request, res: Response) => {
 router.get('/:version/captcha', (req: Request, res: Response) => {
     try {
         if (since(req.version, 4)) {
-            const captchaFn = req.module.captcha as (o: CaptchaOptions) => CaptchaResult;
-            const result = captchaFn({
+            const mode = (req.query.mode as string | undefined) ?? 'image';
+            if (mode !== 'image' && mode !== 'challenge') {
+                error(res, 400, 'Mode must be one of: image, challenge');
+                return;
+            }
+
+            const challenge = mode === 'challenge';
+            if (challenge && !since(req.version, 5)) {
+                error(res, 404, `Challenge mode not available in ${req.version}.`);
+                return;
+            }
+            if (challenge && req.query.text) {
+                error(res, 400, 'A custom text cannot be used in challenge mode');
+                return;
+            }
+
+            const options: CaptchaOptions = {
                 text: req.query.text as string | undefined,
                 length: req.query.length ? Number(req.query.length) : undefined,
                 width: req.query.width ? Number(req.query.width) : undefined,
@@ -252,7 +268,19 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
                 noise: req.query.noise as CaptchaOptions['noise'],
                 bg: req.query.bg as string | undefined,
                 color: req.query.color as string | undefined,
-            });
+            };
+
+            if (challenge) {
+                const challengeFn = (req.module as { captchaChallenge: (o: CaptchaOptions) => CaptchaChallenge })
+                    .captchaChallenge;
+                const result = challengeFn(options);
+                res.set('X-Captcha-Token', result.token);
+                res.type('png').send(result.body);
+                return;
+            }
+
+            const captchaFn = req.module.captcha as (o: CaptchaOptions) => CaptchaResult;
+            const result = captchaFn(options);
             res.set('X-Captcha-Text', result.text);
             res.type('png').send(result.body);
         } else {
@@ -725,6 +753,25 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
 
 // GET read error
 router.get('/:version/read', postOnly('read'));
+
+// Issue a proof-of-work challenge
+router.get('/:version/pow', (req: Request, res: Response) => {
+    const { difficulty } = req.query;
+    const { version } = req.params;
+
+    const powFn = (req.module as { pow?: (d?: number) => unknown }).pow;
+    if (!powFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+
+    try {
+        const result = powFn(difficulty !== undefined ? Number(difficulty) : undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
 
 // Test a regex pattern against a text
 router.get('/:version/regex', (req: Request, res: Response) => {
