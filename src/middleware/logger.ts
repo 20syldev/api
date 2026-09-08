@@ -62,7 +62,11 @@ export function loggerMiddleware(req: Request, res: Response, next: NextFunction
         const status = res.statusCode === 304 ? 200 : res.statusCode;
         const duration = `${Date.now() - startTime}ms`;
 
-        logger.log({ method: req.method, url: redactQuery(req.originalUrl), status, duration, platform });
+        const entry = { method: req.method, url: redactQuery(req.originalUrl), status, duration, platform };
+
+        if (status >= 500) logger.error(entry);
+        else if (status >= 400) logger.warn(entry);
+        else logger.info(entry);
     });
     next();
 }
