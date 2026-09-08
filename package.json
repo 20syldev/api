@@ -18,17 +18,38 @@
         "node": ">=22.12.0"
     },
     "exports": {
-        ".": { "types": "./dist/modules/v5.d.ts", "default": "./dist/modules/v5.js" },
-        "./server": { "types": "./dist/app.d.ts", "default": "./dist/app.js" },
-        "./v1": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
-        "./v2": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
-        "./v3": { "types": "./dist/modules/v3.d.ts", "default": "./dist/modules/v3.js" },
-        "./v4": { "types": "./dist/modules/v4.d.ts", "default": "./dist/modules/v4.js" },
-        "./v5": { "types": "./dist/modules/v5.d.ts", "default": "./dist/modules/v5.js" },
+        ".": {
+            "types": "./dist/modules/v5.d.ts",
+            "default": "./dist/modules/v5.js"
+        },
+        "./server": {
+            "types": "./dist/app.d.ts",
+            "default": "./dist/app.js"
+        },
+        "./v1": {
+            "types": "./dist/modules/v3.d.ts",
+            "default": "./dist/modules/v3.js"
+        },
+        "./v2": {
+            "types": "./dist/modules/v3.d.ts",
+            "default": "./dist/modules/v3.js"
+        },
+        "./v3": {
+            "types": "./dist/modules/v3.d.ts",
+            "default": "./dist/modules/v3.js"
+        },
+        "./v4": {
+            "types": "./dist/modules/v4.d.ts",
+            "default": "./dist/modules/v4.js"
+        },
+        "./v5": {
+            "types": "./dist/modules/v5.d.ts",
+            "default": "./dist/modules/v5.js"
+        },
         "./package.json": "./package.json"
     },
     "dependencies": {
-        "@20syldev/logger.ts": "^1.0.1",
+        "@20syldev/logger.ts": "^1.0.2",
         "@types/express": "^5.0.0",
         "@types/node": "^22.19.17",
         "canvas": "^3.1.0",
