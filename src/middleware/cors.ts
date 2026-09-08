@@ -11,7 +11,12 @@ const __dirname = dirname(__filename);
 export function setupCors(app: Express): void {
     app.set('trust proxy', env.TRUSTED_PROXIES ?? 1);
 
-    app.use(cors({ methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] }));
+    app.use(
+        cors({
+            methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+            exposedHeaders: ['X-Captcha-Text', 'X-Captcha-Token'],
+        }),
+    );
     app.use(express.urlencoded({ extended: true, limit: '10kb' }));
     app.use(express.json({ limit: '10kb' }));
 
