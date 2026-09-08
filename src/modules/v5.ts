@@ -41,6 +41,7 @@ export { default as evaluate } from './v5/evaluate.js';
 export { default as jwt } from './v5/jwt.js';
 export * as matrix from './v5/matrix.js';
 export { default as otp } from './v5/otp.js';
+export { default as pow, verifyPow } from './v5/pow.js';
 export { default as read } from './v5/read.js';
 export { default as semver } from './v5/semver.js';
 export { default as symmetric } from './v5/symmetric.js';
