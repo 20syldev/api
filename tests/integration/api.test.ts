@@ -1537,6 +1537,113 @@ describe('POST /v5/jwt', () => {
     });
 });
 
+describe('GET /v5/captcha (modes)', () => {
+    test('default mode is unchanged', async () => {
+        const res = await fetch(`${baseUrl}/v5/captcha?text=hello`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/png/);
+        assert.equal(res.headers.get('x-captcha-text'), 'hello');
+        assert.equal(res.headers.get('x-captcha-token'), null);
+    });
+    test('challenge mode returns a token and no answer', async () => {
+        const res = await fetch(`${baseUrl}/v5/captcha?mode=challenge`);
+        assert.equal(res.status, 200);
+        assert.match(res.headers.get('content-type') ?? '', /image\/png/);
+        assert.equal(res.headers.get('x-captcha-text'), null);
+        assert.ok((res.headers.get('x-captcha-token') ?? '').length > 0);
+    });
+    test('challenge mode refuses a custom text', async () => {
+        const { status } = await getJson('/v5/captcha?mode=challenge&text=abc');
+        assert.equal(status, 400);
+    });
+    test('unknown mode returns 400', async () => {
+        const { status } = await getJson('/v5/captcha?mode=nawak');
+        assert.equal(status, 400);
+    });
+    test('challenge mode is not available in v4', async () => {
+        const { status, body } = await getJson('/v4/captcha?mode=challenge');
+        assert.equal(status, 404);
+        assert.match(body.error as string, /Challenge mode not available in v4/);
+    });
+});
+
+describe('POST /v5/captcha', () => {
+    test('a wrong answer is rejected', async () => {
+        const res = await fetch(`${baseUrl}/v5/captcha?mode=challenge`);
+        const token = res.headers.get('x-captcha-token')!;
+        const { status, body } = await sendJson('POST', '/v5/captcha', { token, answer: 'definitely-wrong' });
+        assert.equal(status, 200);
+        assert.equal(body.valid, false);
+        assert.equal(body.reason, 'wrong');
+    });
+    test('a known answer verifies once, then is consumed', async () => {
+        const { default: captchaChallenge } = await import('../../src/modules/v5/captcha.js');
+        const { token } = captchaChallenge({ text: 'Zx9Kfp' });
+        const first = await sendJson('POST', '/v5/captcha', { token, answer: 'zx9kfp' });
+        assert.equal(first.body.valid, true);
+        const second = await sendJson('POST', '/v5/captcha', { token, answer: 'zx9kfp' });
+        assert.equal(second.body.reason, 'used');
+    });
+    test('missing token or answer returns 400', async () => {
+        assert.equal((await sendJson('POST', '/v5/captcha', { answer: 'x' })).status, 400);
+        assert.equal((await sendJson('POST', '/v5/captcha', { token: 'x' })).status, 400);
+    });
+    test('malformed token is reported as invalid', async () => {
+        const { body } = await sendJson('POST', '/v5/captcha', { token: 'garbage', answer: 'x' });
+        assert.equal(body.reason, 'invalid');
+    });
+    test('not available in v4 returns 404', async () => {
+        const { status } = await sendJson('POST', '/v4/captcha', { token: 'x', answer: 'y' });
+        assert.equal(status, 404);
+    });
+});
+
+describe('GET and POST /v5/pow', () => {
+    test('issues a challenge', async () => {
+        const { status, body } = await getJson('/v5/pow');
+        assert.equal(status, 200);
+        assert.equal(body.algorithm, 'sha256');
+        assert.equal(body.difficulty, 4);
+        assert.match(body.salt as string, /^[0-9a-f]{16}$/);
+        assert.ok((body.token as string).length > 0);
+    });
+    test('honours a custom difficulty', async () => {
+        const { body } = await getJson('/v5/pow?difficulty=2');
+        assert.equal(body.difficulty, 2);
+    });
+    test('difficulty out of range returns 400', async () => {
+        assert.equal((await getJson('/v5/pow?difficulty=7')).status, 400);
+        assert.equal((await getJson('/v5/pow?difficulty=0')).status, 400);
+    });
+    test('a solved challenge verifies once', async () => {
+        const { createHash } = await import('node:crypto');
+        const { body } = await getJson('/v5/pow?difficulty=2');
+        const salt = body.salt as string;
+        let nonce = 0;
+        while (!createHash('sha256').update(`${salt}${nonce}`).digest('hex').startsWith('00')) nonce++;
+
+        const first = await sendJson('POST', '/v5/pow', { token: body.token, nonce: String(nonce) });
+        assert.equal(first.body.valid, true);
+        const second = await sendJson('POST', '/v5/pow', { token: body.token, nonce: String(nonce) });
+        assert.equal(second.body.reason, 'used');
+    });
+    test('a wrong nonce is rejected', async () => {
+        // Difficulty 6: a stray nonce cannot solve this one by luck
+        const { body } = await getJson('/v5/pow?difficulty=6');
+        const { body: verified } = await sendJson('POST', '/v5/pow', { token: body.token, nonce: 'nope' });
+        assert.equal(verified.valid, false);
+        assert.equal(verified.reason, 'wrong');
+    });
+    test('missing token or nonce returns 400', async () => {
+        assert.equal((await sendJson('POST', '/v5/pow', { nonce: '1' })).status, 400);
+        assert.equal((await sendJson('POST', '/v5/pow', { token: 'x' })).status, 400);
+    });
+    test('not available in v4', async () => {
+        assert.equal((await getJson('/v4/pow')).status, 404);
+        assert.equal((await sendJson('POST', '/v4/pow', { token: 'x', nonce: '1' })).status, 404);
+    });
+});
+
 describe('GET /v5/base', () => {
     test('converts decimal to hexadecimal', async () => {
         const { status, body } = await getJson('/v5/base?value=255&from=10&to=16');
