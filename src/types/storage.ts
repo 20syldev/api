@@ -40,6 +40,10 @@ export interface TicTacToeStorage {
     rateLimits: Record<string, number[]>;
 }
 
+export interface ChallengeStorage {
+    usedNonces: Map<string, number>;
+}
+
 export interface IpLimits {
     [ip: string]: {
         [hour: string]: {

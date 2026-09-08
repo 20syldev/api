@@ -6,6 +6,7 @@ export const DEFAULT_PORT = 3000;
 export const START_TIME = Date.now();
 
 // Server
+export const CHALLENGE_TTL = 300_000;
 export const GAME_CLEANUP_TTL = 600_000;
 export const MAX_LOG_ENTRIES = 1000;
 export const RATE_LIMIT_WINDOW = 10_000;
@@ -47,7 +48,9 @@ export const MAX_PASSWORD_LENGTH = 128;
 export const MAX_PASSWORD_COUNT = 20;
 export const MAX_MATRIX_SIZE = 20;
 export const MAX_PATTERN_LENGTH = 200;
+export const MAX_POW_DIFFICULTY = 6;
 export const MAX_PRIME_LIST = 10_000;
+export const POW_DEFAULT_DIFFICULTY = 4;
 export const MAX_QRCODE_LOGO_BYTES = 2 * 1024 * 1024;
 export const MAX_READ_LENGTH = 50_000;
 export const MAX_REGEX_MATCHES = 100;

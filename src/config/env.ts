@@ -24,7 +24,9 @@ export const env = {
     DOCS_URL: (process.env.DOCS_URL ?? '').replace(/\/+$/, ''),
     REPO_URL: process.env.REPO_URL ?? '',
     INSTANCE_CREATED: process.env.INSTANCE_CREATED ?? '',
+
     LOGS_TOKEN: process.env.LOGS_TOKEN ?? '',
+    CHALLENGE_SECRET: process.env.CHALLENGE_SECRET ?? '',
 
     DEFAULT_LIMIT: envNumber('DEFAULT_LIMIT', 2000),
     ADVANCED_LIMIT: envNumber('ADVANCED_LIMIT', 3500),
