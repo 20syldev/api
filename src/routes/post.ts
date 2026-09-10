@@ -586,6 +586,11 @@ router.post('/:version/symmetric', (req: Request, res: Response) => {
 
 // Store tic tac toe games
 router.post('/:version/tic-tac-toe', (req: Request, res: Response) => {
+    if (since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${req.version}.`);
+        return;
+    }
+
     const { username, move, session, game } = (req.body as Record<string, string>) || {};
 
     if (!username) {
