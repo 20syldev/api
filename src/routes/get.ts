@@ -244,7 +244,7 @@ router.get('/:version/base', (req: Request, res: Response) => {
 router.get('/:version/captcha', (req: Request, res: Response) => {
     try {
         if (since(req.version, 4)) {
-            const mode = (req.query.mode as string | undefined) ?? 'image';
+            const mode = (req.query.mode as string | undefined) ?? (since(req.version, 6) ? 'challenge' : 'image');
             if (mode !== 'image' && mode !== 'challenge') {
                 error(res, 400, 'Mode must be one of: image, challenge');
                 return;
