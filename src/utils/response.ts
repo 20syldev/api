@@ -13,7 +13,7 @@ export function error(res: Response, status: number, message: string): void {
     const body = {
         message: STATUS_MESSAGES[status] ?? 'Error',
         error: message,
-        status: String(status),
+        status,
     };
 
     if (typeof res.jsonResponse === 'function') {
