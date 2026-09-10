@@ -9,13 +9,13 @@ export const logger = createLogger({
     theme: 'colored',
 });
 
-const SECRET_PATH = /^(\/v\d+\/(?:chat|tic-tac-toe))\/[^/]+/;
+const SECRET_PATH = /^(\/v\d+\/(?:chat|tic-tac-toe))\/(?!clear$|fetch$|forfeit$|list$|play$|private$)[^/]+/;
 
 /**
- * Replaces a secret carried in the path with a placeholder.
+ * Masks an identifier carried in the path, leaving the named sub-routes visible.
  *
  * @param path - Request path, without its query string
- * @returns The path, with a trailing credential segment masked
+ * @returns The path, with a trailing identifier segment masked
  */
 export function redactPath(path: string): string {
     return path.replace(SECRET_PATH, '$1/[redacted]');
