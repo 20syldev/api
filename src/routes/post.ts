@@ -113,6 +113,92 @@ router.post('/:version/chart', (req: Request, res: Response) => {
     }
 });
 
+// Store chat messages
+router.post('/:version/chat', (req: Request, res: Response) => {
+    const { username, message, timestamp, session, token } = (req.body as Record<string, string>) || {};
+
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!message) {
+        error(res, 400, 'Please provide a message (&message={message})');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+
+    try {
+        const result = req.module.chat('message', {
+            username,
+            message,
+            timestamp,
+            session,
+            token,
+            storage: chatStorage,
+        });
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Clear a private chat
+router.post('/:version/chat/clear', (req: Request, res: Response) => {
+    const { username, session, token } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!token) {
+        error(res, 400, 'Please provide a valid token (&token={key}).');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.chat('clear', { username, token, session, storage: chatStorage }));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Display a private chat with a token
+router.post('/:version/chat/private', (req: Request, res: Response) => {
+    const { username, token } = (req.body as Record<string, string>) || {};
+
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!token) {
+        error(res, 400, 'Please provide a valid token (&token={key}).');
+        return;
+    }
+
+    try {
+        const messages = req.module.chat('private', {
+            username,
+            token,
+            storage: chatStorage,
+        });
+        res.jsonResponse(messages);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Convert between CSV and JSON
 router.post('/:version/csv', (req: Request, res: Response) => {
     const body = (req.body as Record<string, unknown>) || {};
@@ -180,204 +266,6 @@ router.post('/:version/diff', (req: Request, res: Response) => {
     }
 });
 
-// Compute the Levenshtein distance between two strings
-router.post('/:version/levenshtein', (req: Request, res: Response) => {
-    const body = (req.body as Record<string, unknown>) || {};
-    const { str1, str2 } = body;
-    const { version } = req.params;
-
-    if (!since(req.version, 6)) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!str1 || typeof str1 !== 'string') {
-        error(res, 400, 'Please provide a first string (str1={string})');
-        return;
-    }
-    if (!str2 || typeof str2 !== 'string') {
-        error(res, 400, 'Please provide a second string (str2={string})');
-        return;
-    }
-
-    try {
-        res.jsonResponse(req.module.levenshtein(str1, str2));
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Decode a JSON Web Token without verifying the signature
-router.post('/:version/jwt', (req: Request, res: Response) => {
-    const body = (req.body as Record<string, unknown>) || {};
-    const { token } = body;
-    const { version } = req.params;
-
-    const jwtFn = (req.module as { jwt?: (t: string) => JwtResult }).jwt;
-    if (!jwtFn) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!token) {
-        error(res, 400, 'Please provide a token (?token={token})');
-        return;
-    }
-
-    try {
-        const result = jwtFn(token as string);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Clear a private chat
-router.post('/:version/chat/clear', (req: Request, res: Response) => {
-    const { username, session, token } = (req.body as Record<string, string>) || {};
-    const { version } = req.params;
-
-    if (!since(req.version, 6)) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!username) {
-        error(res, 400, 'Please provide a username (?username={username})');
-        return;
-    }
-    if (!token) {
-        error(res, 400, 'Please provide a valid token (&token={key}).');
-        return;
-    }
-    if (!session) {
-        error(res, 400, 'Please provide a valid session ID (&session={ID})');
-        return;
-    }
-
-    try {
-        res.jsonResponse(req.module.chat('clear', { username, token, session, storage: chatStorage }));
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Play a tic-tac-toe move
-router.post('/:version/tic-tac-toe/play', (req: Request, res: Response) => {
-    const { username, move, session, game } = (req.body as Record<string, string>) || {};
-    const { version } = req.params;
-
-    if (!since(req.version, 6)) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!username) {
-        error(res, 400, 'Please provide a username (?username={username})');
-        return;
-    }
-    if (!move) {
-        error(res, 400, 'Please provide a valid move (&move={move})');
-        return;
-    }
-    if (!session) {
-        error(res, 400, 'Please provide a valid session ID (&session={ID})');
-        return;
-    }
-    if (!game) {
-        error(res, 400, 'Please provide a game ID (&game={ID})');
-        return;
-    }
-
-    try {
-        res.jsonResponse(req.module.tic_tac_toe('play', { username, move, session, game, storage: ticTacToeStorage }));
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Forfeit a tic-tac-toe game
-router.post('/:version/tic-tac-toe/forfeit', (req: Request, res: Response) => {
-    const { username, session, game } = (req.body as Record<string, string>) || {};
-    const { version } = req.params;
-
-    if (!since(req.version, 6)) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!username) {
-        error(res, 400, 'Please provide a username (?username={username})');
-        return;
-    }
-    if (!session) {
-        error(res, 400, 'Please provide a valid session ID (&session={ID})');
-        return;
-    }
-    if (!game) {
-        error(res, 400, 'Please provide a game ID (&game={ID})');
-        return;
-    }
-
-    try {
-        res.jsonResponse(req.module.tic_tac_toe('forfeit', { username, session, game, storage: ticTacToeStorage }));
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Store chat messages
-router.post('/:version/chat', (req: Request, res: Response) => {
-    const { username, message, timestamp, session, token } = (req.body as Record<string, string>) || {};
-
-    if (!username) {
-        error(res, 400, 'Please provide a username (?username={username})');
-        return;
-    }
-    if (!message) {
-        error(res, 400, 'Please provide a message (&message={message})');
-        return;
-    }
-    if (!session) {
-        error(res, 400, 'Please provide a valid session ID (&session={ID})');
-        return;
-    }
-
-    try {
-        const result = req.module.chat('message', {
-            username,
-            message,
-            timestamp,
-            session,
-            token,
-            storage: chatStorage,
-        });
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Display a private chat with a token
-router.post('/:version/chat/private', (req: Request, res: Response) => {
-    const { username, token } = (req.body as Record<string, string>) || {};
-
-    if (!username) {
-        error(res, 400, 'Please provide a username (?username={username})');
-        return;
-    }
-    if (!token) {
-        error(res, 400, 'Please provide a valid token (&token={key}).');
-        return;
-    }
-
-    try {
-        const messages = req.module.chat('private', {
-            username,
-            token,
-            storage: chatStorage,
-        });
-        res.jsonResponse(messages);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
 // Generate hash
 router.post('/:version/hash', (req: Request, res: Response) => {
     const { text, method, encoding } = (req.body as Record<string, string>) || {};
@@ -412,6 +300,56 @@ router.post('/:version/hyperplanning', async (req: Request, res: Response) => {
     try {
         const hyperplanning = await req.module.hyperplanning(url, detail);
         res.jsonResponse(hyperplanning);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Decode a JSON Web Token without verifying the signature
+router.post('/:version/jwt', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { token } = body;
+    const { version } = req.params;
+
+    const jwtFn = (req.module as { jwt?: (t: string) => JwtResult }).jwt;
+    if (!jwtFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!token) {
+        error(res, 400, 'Please provide a token (?token={token})');
+        return;
+    }
+
+    try {
+        const result = jwtFn(token as string);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Compute the Levenshtein distance between two strings
+router.post('/:version/levenshtein', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { str1, str2 } = body;
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!str1 || typeof str1 !== 'string') {
+        error(res, 400, 'Please provide a first string (str1={string})');
+        return;
+    }
+    if (!str2 || typeof str2 !== 'string') {
+        error(res, 400, 'Please provide a second string (str2={string})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.levenshtein(str1, str2));
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -498,30 +436,6 @@ router.post('/:version/otp', (req: Request, res: Response) => {
     }
 });
 
-// Compute readability scores on a text
-router.post('/:version/read', (req: Request, res: Response) => {
-    const body = (req.body as Record<string, unknown>) || {};
-    const { text, lang } = body;
-    const { version } = req.params;
-
-    const readFn = (req.module as { read?: (t: string, l?: string) => unknown }).read;
-    if (!readFn) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!text || typeof text !== 'string') {
-        error(res, 400, 'Please provide a text');
-        return;
-    }
-
-    try {
-        const result = readFn(text, lang as string | undefined);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
 // Verify a solved proof-of-work challenge
 router.post('/:version/pow', (req: Request, res: Response) => {
     const body = (req.body as Record<string, unknown>) || {};
@@ -546,6 +460,30 @@ router.post('/:version/pow', (req: Request, res: Response) => {
 
     try {
         res.jsonResponse(verifyFn(token, String(nonce), challengeStorage));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Compute readability scores on a text
+router.post('/:version/read', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { text, lang } = body;
+    const { version } = req.params;
+
+    const readFn = (req.module as { read?: (t: string, l?: string) => unknown }).read;
+    if (!readFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!text || typeof text !== 'string') {
+        error(res, 400, 'Please provide a text');
+        return;
+    }
+
+    try {
+        const result = readFn(text, lang as string | undefined);
+        res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -647,6 +585,35 @@ router.post('/:version/tic-tac-toe/fetch', (req: Request, res: Response) => {
     }
 });
 
+// Forfeit a tic-tac-toe game
+router.post('/:version/tic-tac-toe/forfeit', (req: Request, res: Response) => {
+    const { username, session, game } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+    if (!game) {
+        error(res, 400, 'Please provide a game ID (&game={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.tic_tac_toe('forfeit', { username, session, game, storage: ticTacToeStorage }));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // List public tic tac toe games
 router.post('/:version/tic-tac-toe/list', (req: Request, res: Response) => {
     try {
@@ -654,6 +621,39 @@ router.post('/:version/tic-tac-toe/list', (req: Request, res: Response) => {
             storage: ticTacToeStorage,
         });
         res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Play a tic-tac-toe move
+router.post('/:version/tic-tac-toe/play', (req: Request, res: Response) => {
+    const { username, move, session, game } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!move) {
+        error(res, 400, 'Please provide a valid move (&move={move})');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+    if (!game) {
+        error(res, 400, 'Please provide a game ID (&game={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.tic_tac_toe('play', { username, move, session, game, storage: ticTacToeStorage }));
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
