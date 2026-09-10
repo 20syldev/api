@@ -1,6 +1,6 @@
-import * as apiv3 from '../modules/v3.js';
 import * as apiv4 from '../modules/v4.js';
 import * as apiv5 from '../modules/v5.js';
+import * as apiv6 from '../modules/v6.js';
 
 export interface Endpoint {
     name: string;
@@ -15,7 +15,7 @@ export interface VersionConfig {
         patch?: Endpoint[];
         delete?: Endpoint[];
     };
-    modules: typeof apiv3 | typeof apiv4 | typeof apiv5;
+    modules: typeof apiv4 | typeof apiv5 | typeof apiv6;
 }
 
 /**
@@ -32,58 +32,64 @@ const merge = (base: Endpoint[], additions: Endpoint[]): Endpoint[] => {
     return [...map.values()];
 };
 
-const v1 = {
+const v4: { get: Endpoint[]; post: Endpoint[]; patch: Endpoint[]; delete: Endpoint[] } = {
     get: [
-        { name: 'algorithms', path: '/algorithms?method={algorithm}&value={value}(&value2={value2})' },
-        { name: 'captcha', path: '/captcha?text={text}' },
-        { name: 'color', path: '/color' },
-        { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
-        { name: 'domain', path: '/domain' },
-        { name: 'infos', path: '/infos' },
-        { name: 'personal', path: '/personal' },
-        { name: 'qrcode', path: '/qrcode?url={URL}' },
-        { name: 'username', path: '/username' },
-    ],
-    post: [{ name: 'token', path: '/token' }],
-};
-
-const v2 = {
-    get: merge(v1.get, [{ name: 'chat', path: '/chat' }]),
-    post: merge(v1.post, [
+        {
+            name: 'algorithms',
+            path: '/algorithms?method={algorithm}&value={value}(&value2={value2})',
+        },
+        {
+            name: 'captcha',
+            path: '/captcha(&text={text}&length={n}&width={px}&height={px}&noise={low|medium|high}&bg={hex}&color={hex})',
+        },
+        {
+            name: 'color',
+            path: '/color(&hex={hex})',
+        },
+        {
+            name: 'convert',
+            path: '/convert?value={value}&from={unit}&to={unit}',
+        },
+        {
+            name: 'domain',
+            path: '/domain',
+        },
+        {
+            name: 'infos',
+            path: '/infos',
+        },
+        {
+            name: 'personal',
+            path: '/personal',
+        },
+        {
+            name: 'qrcode',
+            path: '/qrcode?url={URL}(&size={px}&margin={n}&correction={L|M|Q|H}&dark={hex}&light={hex}&icon={URL}&iconSize={px}&iconPadding={px}&iconRadius={px}&format={png|base64})',
+        },
+        {
+            name: 'username',
+            path: '/username',
+        },
         {
             name: 'chat',
-            children: {
-                chat: '/chat',
-                private: '/chat/private',
-            } as Record<string, string>,
+            path: '/chat',
         },
-        { name: 'hash', path: '/hash' },
         {
-            name: 'tic_tac_toe',
-            children: {
-                tic_tac_toe: '/tic-tac-toe',
-                fetch: '/tic-tac-toe/fetch',
-                list: '/tic-tac-toe/list',
-            } as Record<string, string>,
+            name: 'levenshtein',
+            path: '/levenshtein?str1={string}&str2={string}',
         },
-    ]),
-};
-
-const v3 = {
-    get: merge(v2.get, [
-        { name: 'levenshtein', path: '/levenshtein?str1={string}&str2={string}' },
         {
             name: 'time',
             path: '/time(?type={live|random|countdown}&target={date}&start={timestamp}&end={timestamp}&format={format}&timezone={timezone})',
         },
-    ]),
-    post: merge(v2.post, [{ name: 'hyperplanning', path: '/hyperplanning' }]),
-};
-
-const v4 = {
-    get: merge(v3.get, [
-        { name: 'address', path: '/address(&country={code}&count={n})' },
-        { name: 'agent', path: '/agent(&ua={string})' },
+        {
+            name: 'address',
+            path: '/address(&country={code}&count={n})',
+        },
+        {
+            name: 'agent',
+            path: '/agent(&ua={string})',
+        },
         {
             name: 'avatar',
             path: '/avatar(&seed={string}&size={50-2000}&type={identicon|pixel}&bg={hex}&format={png|svg})',
@@ -93,19 +99,37 @@ const v4 = {
             path: '/barcode?data={string}(&type={type}&width={px}&height={px}&format={svg|png}&color={hex}&bg={hex})',
         },
         {
-            name: 'captcha',
-            path: '/captcha(&text={text}&length={n}&width={px}&height={px}&noise={low|medium|high}&bg={hex}&color={hex})',
+            name: 'credit',
+            path: '/credit(&brand={visa|mastercard|amex|discover}&count={n}&format={full|masked})',
         },
-        { name: 'color', path: '/color(&hex={hex})' },
-        { name: 'convert', path: '/convert?value={value}&from={unit}&to={unit}' },
-        { name: 'credit', path: '/credit(&brand={visa|mastercard|amex|discover}&count={n}&format={full|masked})' },
-        { name: 'cron', path: '/cron?expr={expression}(&count={n}&from={date}&timezone={timezone})' },
-        { name: 'dice', path: '/dice?roll={NdX+M}' },
-        { name: 'encode', path: '/encode?method={method}&text={text}(&shift={shift})' },
-        { name: 'geo', path: '/geo?lat1={lat}&lon1={lon}&lat2={lat}&lon2={lon}' },
-        { name: 'headers', path: '/headers(&filter={header1,header2})' },
-        { name: 'ip', path: '/ip(&address={ip})' },
-        { name: 'palette', path: '/palette?color={#hex}&type={type}' },
+        {
+            name: 'cron',
+            path: '/cron?expr={expression}(&count={n}&from={date}&timezone={timezone})',
+        },
+        {
+            name: 'dice',
+            path: '/dice?roll={NdX+M}',
+        },
+        {
+            name: 'encode',
+            path: '/encode?method={method}&text={text}(&shift={shift})',
+        },
+        {
+            name: 'geo',
+            path: '/geo?lat1={lat}&lon1={lon}&lat2={lat}&lon2={lon}',
+        },
+        {
+            name: 'headers',
+            path: '/headers(&filter={header1,header2})',
+        },
+        {
+            name: 'ip',
+            path: '/ip(&address={ip})',
+        },
+        {
+            name: 'palette',
+            path: '/palette?color={#hex}&type={type}',
+        },
         {
             name: 'password',
             path: '/password(&type={random|passphrase}&length={n}&uppercase={bool}&lowercase={bool}&digits={bool}&symbols={bool}&exclude={chars}&count={n}&separator={char})',
@@ -115,19 +139,66 @@ const v4 = {
             path: '/placeholder?type={image|skeleton}&width={w}&height={h}(&bg={hex}&color={hex}&text={text}&rows={n}&avatar={bool})',
         },
         {
-            name: 'qrcode',
-            path: '/qrcode?url={URL}(&size={px}&margin={n}&correction={L|M|Q|H}&dark={hex}&light={hex}&icon={URL}&iconSize={px}&iconPadding={px}&iconRadius={px}&format={png|base64})',
+            name: 'regex',
+            path: '/regex?pattern={regex}&text={string}(&flags={flags})',
         },
-        { name: 'regex', path: '/regex?pattern={regex}&text={string}(&flags={flags})' },
-        { name: 'statistics', path: '/statistics?values={n1,n2,n3,...}' },
-        { name: 'text', path: '/text?method={method}(&value={value}&type={type}&count={count}&lang={lang})' },
-        { name: 'validate', path: '/validate?type={type}&value={value}' },
-    ]),
-    post: [...v3.post],
-    patch: [{ name: 'tic-tac-toe', path: '/tic-tac-toe/:game' }],
+        {
+            name: 'statistics',
+            path: '/statistics?values={n1,n2,n3,...}',
+        },
+        {
+            name: 'text',
+            path: '/text?method={method}(&value={value}&type={type}&count={count}&lang={lang})',
+        },
+        {
+            name: 'validate',
+            path: '/validate?type={type}&value={value}',
+        },
+    ],
+    post: [
+        {
+            name: 'token',
+            path: '/token',
+        },
+        {
+            name: 'chat',
+            children: {
+                chat: '/chat',
+                private: '/chat/private',
+            },
+        },
+        {
+            name: 'hash',
+            path: '/hash',
+        },
+        {
+            name: 'tic_tac_toe',
+            children: {
+                tic_tac_toe: '/tic-tac-toe',
+                fetch: '/tic-tac-toe/fetch',
+                list: '/tic-tac-toe/list',
+            },
+        },
+        {
+            name: 'hyperplanning',
+            path: '/hyperplanning',
+        },
+    ],
+    patch: [
+        {
+            name: 'tic-tac-toe',
+            path: '/tic-tac-toe/:game',
+        },
+    ],
     delete: [
-        { name: 'chat', path: '/chat/:token' },
-        { name: 'tic-tac-toe', path: '/tic-tac-toe/:game' },
+        {
+            name: 'chat',
+            path: '/chat/:token',
+        },
+        {
+            name: 'tic-tac-toe',
+            path: '/tic-tac-toe/:game',
+        },
     ],
 };
 
@@ -162,10 +233,43 @@ const v5 = {
     delete: [...v4.delete!],
 };
 
+const v6 = {
+    get: merge(
+        v5.get.filter((e) => e.name !== 'levenshtein'),
+        [
+            {
+                name: 'captcha',
+                path: '/captcha(&mode={challenge|image}&text={text}&length={n}&width={px}&height={px}&noise={low|medium|high}&bg={hex}&color={hex})',
+            },
+        ],
+    ),
+    post: merge(
+        v5.post.filter((e) => e.name !== 'hyperplanning'),
+        [
+            { name: 'levenshtein', path: '/levenshtein' },
+            {
+                name: 'chat',
+                path: '/chat',
+                children: { clear: '/chat/clear', message: '/chat', private: '/chat/private' },
+            },
+            {
+                name: 'tic_tac_toe',
+                path: '/tic-tac-toe',
+                children: {
+                    fetch: '/tic-tac-toe/fetch',
+                    forfeit: '/tic-tac-toe/forfeit',
+                    list: '/tic-tac-toe/list',
+                    play: '/tic-tac-toe/play',
+                },
+            },
+        ],
+    ),
+    patch: [],
+    delete: [],
+};
+
 export const versions: Record<string, VersionConfig> = {
-    v1: { endpoints: v1, modules: apiv3 },
-    v2: { endpoints: v2, modules: apiv3 },
-    v3: { endpoints: v3, modules: apiv3 },
     v4: { endpoints: v4, modules: apiv4 },
     v5: { endpoints: v5, modules: apiv5 },
+    v6: { endpoints: v6, modules: apiv6 },
 };
