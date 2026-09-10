@@ -19,24 +19,12 @@
     },
     "exports": {
         ".": {
-            "types": "./dist/modules/v5.d.ts",
-            "default": "./dist/modules/v5.js"
+            "types": "./dist/modules/v6.d.ts",
+            "default": "./dist/modules/v6.js"
         },
         "./server": {
             "types": "./dist/app.d.ts",
             "default": "./dist/app.js"
-        },
-        "./v1": {
-            "types": "./dist/modules/v3.d.ts",
-            "default": "./dist/modules/v3.js"
-        },
-        "./v2": {
-            "types": "./dist/modules/v3.d.ts",
-            "default": "./dist/modules/v3.js"
-        },
-        "./v3": {
-            "types": "./dist/modules/v3.d.ts",
-            "default": "./dist/modules/v3.js"
         },
         "./v4": {
             "types": "./dist/modules/v4.d.ts",
@@ -46,7 +34,11 @@
             "types": "./dist/modules/v5.d.ts",
             "default": "./dist/modules/v5.js"
         },
-        "./package.json": "./package.json"
+        "./package.json": "./package.json",
+        "./v6": {
+            "types": "./dist/modules/v6.d.ts",
+            "default": "./dist/modules/v6.js"
+        }
     },
     "dependencies": {
         "@20syldev/logger.ts": "^1.0.2",
