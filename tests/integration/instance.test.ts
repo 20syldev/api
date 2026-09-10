@@ -71,7 +71,7 @@ describe('instance metadata left unset', () => {
         blank();
         const { status, body } = await getJson('/v5/does-not-exist');
         assert.equal(status, 404);
-        assert.equal(body.status, '404');
+        assert.equal(body.status, 404);
         assert.ok(body.error);
         assert.equal('documentation' in body, false);
     });

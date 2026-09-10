@@ -23,7 +23,6 @@ const source = (target: string): string | null => {
     if (!rel.startsWith('dist/')) return existsSync(join(root, rel)) ? join(root, rel) : null;
 
     const base = rel.slice('dist/'.length).replace(/\.d\.ts$|\.js$/, '');
-    // v3 is still authored as plain JavaScript, the rest is TypeScript
     for (const ext of ['.ts', '.js']) {
         const candidate = join(root, 'src', base + ext);
         if (existsSync(candidate)) return candidate;
@@ -55,7 +54,7 @@ describe('package exports', () => {
     });
 
     test('every version supported at runtime is exported', () => {
-        for (const version of ['v1', 'v2', 'v3', 'v4', 'v5']) {
+        for (const version of ['v4', 'v5', 'v6']) {
             assert.ok(pkg.exports[`./${version}`], `missing "./${version}" export`);
         }
     });

@@ -526,13 +526,13 @@ describe('PATCH /v4/tic-tac-toe/:game', () => {
         assert.equal(status, 400);
     });
 
-    test('not supported in v3 returns 405', async () => {
+    test('the removed v3 returns 404', async () => {
         const { status } = await sendJson('PATCH', `/v3/tic-tac-toe/${game}`, {
             username: 'patch-p1',
             move: '3-3',
             session,
         });
-        assert.equal(status, 405);
+        assert.equal(status, 404);
     });
 });
 
@@ -576,12 +576,12 @@ describe('DELETE /v4/tic-tac-toe/:game', () => {
         assert.equal(status, 400);
     });
 
-    test('not supported in v3 returns 405', async () => {
+    test('the removed v3 returns 404', async () => {
         const { status } = await sendJson('DELETE', '/v3/tic-tac-toe/NOPE42', {
             username: 'del-quitter',
             session: `del-ttt-${Date.now()}`,
         });
-        assert.equal(status, 405);
+        assert.equal(status, 404);
     });
 });
 
@@ -618,12 +618,12 @@ describe('DELETE /v4/chat/:token', () => {
         assert.equal(status, 400);
     });
 
-    test('not supported in v3 returns 405', async () => {
+    test('the removed v3 returns 404', async () => {
         const { status } = await sendJson('DELETE', '/v3/chat/some-token', {
             username: 'del-clearer',
             session: `del-chat-${Date.now()}`,
         });
-        assert.equal(status, 405);
+        assert.equal(status, 404);
     });
 });
 
@@ -1824,6 +1824,57 @@ describe('POST /v5/diff', () => {
     });
 });
 
+describe('API v6', () => {
+    test('captcha defaults to challenge mode', async () => {
+        const res = await fetch(`${baseUrl}/v6/captcha`);
+        assert.equal(res.status, 200);
+        assert.equal(res.headers.get('x-captcha-text'), null);
+        assert.ok((res.headers.get('x-captcha-token') ?? '').length > 0);
+    });
+    test('the generator mode stays reachable', async () => {
+        const res = await fetch(`${baseUrl}/v6/captcha?mode=image&text=hello`);
+        assert.equal(res.headers.get('x-captcha-text'), 'hello');
+    });
+    test('v5 keeps the generator as its default', async () => {
+        const res = await fetch(`${baseUrl}/v5/captcha?text=hello`);
+        assert.equal(res.headers.get('x-captcha-text'), 'hello');
+        assert.equal(res.headers.get('x-captcha-token'), null);
+    });
+    test('levenshtein moved to POST', async () => {
+        assert.equal((await getJson('/v6/levenshtein?str1=a&str2=b')).status, 405);
+        const { status, body } = await sendJson('POST', '/v6/levenshtein', { str1: 'kitten', str2: 'sitting' });
+        assert.equal(status, 200);
+        assert.equal(body.distance, 3);
+        assert.equal((await getJson('/v5/levenshtein?str1=a&str2=b')).status, 200);
+        assert.equal((await sendJson('POST', '/v5/levenshtein', { str1: 'a', str2: 'b' })).status, 404);
+    });
+    test('errors report a numeric status', async () => {
+        const { body } = await getJson('/v6/base');
+        assert.equal(typeof body.status, 'number');
+        assert.equal(body.status, 400);
+    });
+    test('chat and tic-tac-toe moved their identifiers into the body', async () => {
+        assert.equal((await sendJson('DELETE', '/v6/chat/tok', { username: 'a', session: 'b' })).status, 404);
+        assert.equal(
+            (await sendJson('PATCH', '/v6/tic-tac-toe/g', { username: 'a', move: '1', session: 'b' })).status,
+            404,
+        );
+        assert.equal((await sendJson('POST', '/v6/chat/clear', { username: 'a' })).status, 400);
+        assert.equal((await sendJson('POST', '/v5/chat/clear', { username: 'a' })).status, 404);
+    });
+    test('hyperplanning is unlisted in v6', async () => {
+        const { body } = await getJson('/v6');
+        assert.equal('hyperplanning' in (body.endpoints as Record<string, Record<string, string>>).post!, false);
+        assert.equal((await getJson('/v5')).status, 200);
+    });
+    test('rate limit headers are reported', async () => {
+        const res = await fetch(`${baseUrl}/v6/color`);
+        assert.ok(Number(res.headers.get('x-ratelimit-limit')) > 0);
+        assert.ok(Number(res.headers.get('x-ratelimit-remaining')) >= 0);
+        assert.ok(Number(res.headers.get('x-ratelimit-reset')) > 0);
+    });
+});
+
 describe('Prototype access on dynamic endpoints', () => {
     test('algorithms?method=toString returns 400', async () => {
         const { status } = await getJson('/v4/algorithms?method=toString');
@@ -1878,12 +1929,12 @@ describe('Route hardening (5.4.0 fixes)', () => {
 
     test('latest redirect keeps the query string', async () => {
         const res = await fetch(`${baseUrl}/latest/case?text=hi`, { redirect: 'manual' });
-        assert.equal(res.headers.get('location'), '/v5/case?text=hi');
+        assert.equal(res.headers.get('location'), '/v6/case?text=hi');
     });
 
     test('latest redirect joins nested paths with slashes', async () => {
         const res = await fetch(`${baseUrl}/latest/tic-tac-toe/list`, { redirect: 'manual' });
-        assert.equal(res.headers.get('location'), '/v5/tic-tac-toe/list');
+        assert.equal(res.headers.get('location'), '/v6/tic-tac-toe/list');
     });
 
     test('latest redirect preserves non-GET methods with 307', async () => {
@@ -1892,7 +1943,7 @@ describe('Route hardening (5.4.0 fixes)', () => {
             redirect: 'manual',
         });
         assert.equal(res.status, 307);
-        assert.equal(res.headers.get('location'), '/v5/chat/private?session=abc');
+        assert.equal(res.headers.get('location'), '/v6/chat/private?session=abc');
     });
 
     test('token len 0 returns 400', async () => {
@@ -1900,9 +1951,12 @@ describe('Route hardening (5.4.0 fixes)', () => {
         assert.equal(status, 400);
     });
 
-    test('agent and ip return 404 in v3', async () => {
-        assert.equal((await getJson('/v3/agent')).status, 404);
-        assert.equal((await getJson('/v3/ip?address=8.8.8.8')).status, 404);
+    test('the legacy versions are gone', async () => {
+        for (const version of ['v1', 'v2', 'v3']) {
+            const { status, body } = await getJson(`/${version}/agent`);
+            assert.equal(status, 404);
+            assert.match(body.error as string, /Invalid API version/);
+        }
     });
 
     test('non-numeric count/size/width params return 400', async () => {
@@ -1913,9 +1967,8 @@ describe('Route hardening (5.4.0 fixes)', () => {
     });
 
     test('GET stub returns 404 when the endpoint does not exist in the version', async () => {
-        assert.equal((await getJson('/v1/jwt')).status, 404);
+        assert.equal((await getJson('/v4/base?value=1')).status, 404);
         assert.equal((await getJson('/v5/jwt')).status, 405);
-        assert.equal((await getJson('/v1/token')).status, 405);
     });
 
     test('evaluate -2^2 returns -4 over HTTP', async () => {
