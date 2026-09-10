@@ -2,14 +2,15 @@
     "version": "5.9.0",
     "name": "@20syldev/api",
     "description": "Node.js API with multiple features. Check the documentation at https://docs.sylvain.sh",
-    "main": "./dist/modules/v5.js",
-    "types": "./dist/modules/v5.d.ts",
+    "main": "./dist/modules/v6.js",
+    "types": "./dist/modules/v6.d.ts",
     "type": "module",
     "scripts": {
-        "prepare": "tsc",
+        "prepare": "npm run clean && tsc",
+        "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
         "dev": "tsx watch src/app.ts",
+        "build": "npm run clean && tsc",
         "start": "node dist/app.js",
-        "build": "tsc",
         "check": "tsc --noEmit -p tsconfig.test.json && eslint src/ tests/ && prettier --check .",
         "format": "prettier --write . && eslint --fix src/ tests/",
         "test": "NODE_ENV=test DOCS_URL=https://docs.example.test node --import tsx --test tests/unit/*.test.ts tests/integration/*.test.ts"
@@ -34,11 +35,11 @@
             "types": "./dist/modules/v5.d.ts",
             "default": "./dist/modules/v5.js"
         },
-        "./package.json": "./package.json",
         "./v6": {
             "types": "./dist/modules/v6.d.ts",
             "default": "./dist/modules/v6.js"
-        }
+        },
+        "./package.json": "./package.json"
     },
     "dependencies": {
         "@20syldev/logger.ts": "^1.0.2",
