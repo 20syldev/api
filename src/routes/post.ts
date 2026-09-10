@@ -392,14 +392,9 @@ router.post('/:version/hash', (req: Request, res: Response) => {
     }
 
     try {
-        if (since(req.version, 4)) {
-            const hashFn = req.module.hash as (t: string, m: string, e?: string) => HashResult;
-            const result = hashFn(text, method, encoding);
-            res.jsonResponse(result);
-        } else {
-            const result = (req.module.hash as (t: string, m: string) => Record<string, string>)(text, method);
-            res.jsonResponse(result);
-        }
+        const hashFn = req.module.hash as (t: string, m: string, e?: string) => HashResult;
+        const result = hashFn(text, method, encoding);
+        res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
     }

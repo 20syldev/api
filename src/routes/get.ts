@@ -243,55 +243,45 @@ router.get('/:version/base', (req: Request, res: Response) => {
 // Generate captcha
 router.get('/:version/captcha', (req: Request, res: Response) => {
     try {
-        if (since(req.version, 4)) {
-            const mode = (req.query.mode as string | undefined) ?? (since(req.version, 6) ? 'challenge' : 'image');
-            if (mode !== 'image' && mode !== 'challenge') {
-                error(res, 400, 'Mode must be one of: image, challenge');
-                return;
-            }
-
-            const challenge = mode === 'challenge';
-            if (challenge && !since(req.version, 5)) {
-                error(res, 404, `Challenge mode not available in ${req.version}.`);
-                return;
-            }
-            if (challenge && req.query.text) {
-                error(res, 400, 'A custom text cannot be used in challenge mode');
-                return;
-            }
-
-            const options: CaptchaOptions = {
-                text: req.query.text as string | undefined,
-                length: req.query.length ? Number(req.query.length) : undefined,
-                width: req.query.width ? Number(req.query.width) : undefined,
-                height: req.query.height ? Number(req.query.height) : undefined,
-                noise: req.query.noise as CaptchaOptions['noise'],
-                bg: req.query.bg as string | undefined,
-                color: req.query.color as string | undefined,
-            };
-
-            if (challenge) {
-                const challengeFn = (req.module as { captchaChallenge: (o: CaptchaOptions) => CaptchaChallenge })
-                    .captchaChallenge;
-                const result = challengeFn(options);
-                res.set('X-Captcha-Token', result.token);
-                res.type('png').send(result.body);
-                return;
-            }
-
-            const captchaFn = req.module.captcha as (o: CaptchaOptions) => CaptchaResult;
-            const result = captchaFn(options);
-            res.set('X-Captcha-Text', result.text);
-            res.type('png').send(result.body);
-        } else {
-            const text = req.query.text as string;
-            if (!text) {
-                error(res, 400, 'Please provide a valid argument (?text={text})');
-                return;
-            }
-            const result = (req.module.captcha as (t: string) => Buffer)(text);
-            res.type('png').send(result);
+        const mode = (req.query.mode as string | undefined) ?? (since(req.version, 6) ? 'challenge' : 'image');
+        if (mode !== 'image' && mode !== 'challenge') {
+            error(res, 400, 'Mode must be one of: image, challenge');
+            return;
         }
+
+        const challenge = mode === 'challenge';
+        if (challenge && !since(req.version, 5)) {
+            error(res, 404, `Challenge mode not available in ${req.version}.`);
+            return;
+        }
+        if (challenge && req.query.text) {
+            error(res, 400, 'A custom text cannot be used in challenge mode');
+            return;
+        }
+
+        const options: CaptchaOptions = {
+            text: req.query.text as string | undefined,
+            length: req.query.length ? Number(req.query.length) : undefined,
+            width: req.query.width ? Number(req.query.width) : undefined,
+            height: req.query.height ? Number(req.query.height) : undefined,
+            noise: req.query.noise as CaptchaOptions['noise'],
+            bg: req.query.bg as string | undefined,
+            color: req.query.color as string | undefined,
+        };
+
+        if (challenge) {
+            const challengeFn = (req.module as { captchaChallenge: (o: CaptchaOptions) => CaptchaChallenge })
+                .captchaChallenge;
+            const result = challengeFn(options);
+            res.set('X-Captcha-Token', result.token);
+            res.type('png').send(result.body);
+            return;
+        }
+
+        const captchaFn = req.module.captcha as (o: CaptchaOptions) => CaptchaResult;
+        const result = captchaFn(options);
+        res.set('X-Captcha-Text', result.text);
+        res.type('png').send(result.body);
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -319,15 +309,10 @@ router.get('/:version/chat/private', postOnly('chat'));
 // Generate color
 router.get('/:version/color', (req: Request, res: Response) => {
     try {
-        if (since(req.version, 4)) {
-            const colorFn = req.module.color as (hex?: string) => ColorResult;
-            const hex = req.query.hex as string | undefined;
-            const result = colorFn(hex || undefined);
-            res.jsonResponse(result);
-        } else {
-            const result = (req.module.color as () => Record<string, string>)();
-            res.jsonResponse(result);
-        }
+        const colorFn = req.module.color as (hex?: string) => ColorResult;
+        const hex = req.query.hex as string | undefined;
+        const result = colorFn(hex || undefined);
+        res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -351,18 +336,9 @@ router.get('/:version/convert', (req: Request, res: Response) => {
     }
 
     try {
-        if (since(req.version, 4)) {
-            const convertFn = req.module.convert as (v: number, f: string, t: string) => Record<string, unknown>;
-            const result = convertFn(Number(value), from as string, to as string);
-            res.jsonResponse(result);
-        } else {
-            const result = (req.module.convert as (v: string, f: string, t: string) => Record<string, unknown>)(
-                value as string,
-                from as string,
-                to as string,
-            );
-            res.jsonResponse(result);
-        }
+        const convertFn = req.module.convert as (v: number, f: string, t: string) => Record<string, unknown>;
+        const result = convertFn(Number(value), from as string, to as string);
+        res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
     }
@@ -727,29 +703,24 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
     }
 
     try {
-        if (since(req.version, 4)) {
-            const qrcodeFn = req.module.qrcode as (o: QRCodeOptions) => Promise<QRCodeResult>;
-            const result = await qrcodeFn({
-                url: url as string,
-                size: req.query.size ? Number(req.query.size) : undefined,
-                margin: req.query.margin ? Number(req.query.margin) : undefined,
-                correction: req.query.correction as QRCodeOptions['correction'],
-                dark: req.query.dark as string | undefined,
-                light: req.query.light as string | undefined,
-                icon: req.query.icon as string | undefined,
-                iconSize: req.query.iconSize ? Number(req.query.iconSize) : undefined,
-                iconPadding: req.query.iconPadding ? Number(req.query.iconPadding) : undefined,
-                iconRadius: req.query.iconRadius ? Number(req.query.iconRadius) : undefined,
-                format: req.query.format as QRCodeOptions['format'],
-            });
-            if (result.contentType === 'application/json') {
-                res.jsonResponse(result.body);
-            } else {
-                res.type(result.contentType).send(result.body);
-            }
+        const qrcodeFn = req.module.qrcode as (o: QRCodeOptions) => Promise<QRCodeResult>;
+        const result = await qrcodeFn({
+            url: url as string,
+            size: req.query.size ? Number(req.query.size) : undefined,
+            margin: req.query.margin ? Number(req.query.margin) : undefined,
+            correction: req.query.correction as QRCodeOptions['correction'],
+            dark: req.query.dark as string | undefined,
+            light: req.query.light as string | undefined,
+            icon: req.query.icon as string | undefined,
+            iconSize: req.query.iconSize ? Number(req.query.iconSize) : undefined,
+            iconPadding: req.query.iconPadding ? Number(req.query.iconPadding) : undefined,
+            iconRadius: req.query.iconRadius ? Number(req.query.iconRadius) : undefined,
+            format: req.query.format as QRCodeOptions['format'],
+        });
+        if (result.contentType === 'application/json') {
+            res.jsonResponse(result.body);
         } else {
-            const result = await (req.module.qrcode as (u: string) => Promise<string>)(url as string);
-            res.jsonResponse(result);
+            res.type(result.contentType).send(result.body);
         }
     } catch (err) {
         error(res, 400, (err as Error).message);
