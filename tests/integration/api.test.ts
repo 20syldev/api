@@ -1862,16 +1862,45 @@ describe('API v6', () => {
         assert.equal((await sendJson('POST', '/v6/chat/clear', { username: 'a' })).status, 400);
         assert.equal((await sendJson('POST', '/v5/chat/clear', { username: 'a' })).status, 404);
     });
-    test('hyperplanning is unlisted in v6', async () => {
+    test('v6 publishes no PATCH or DELETE surface', async () => {
+        const { body } = await getJson('/v6');
+        const endpoints = body.endpoints as Record<string, unknown>;
+        assert.equal('patch' in endpoints, false);
+        assert.equal('delete' in endpoints, false);
+        const v5 = (await getJson('/v5')).body.endpoints as Record<string, unknown>;
+        assert.equal('patch' in v5, true);
+        assert.equal('delete' in v5, true);
+    });
+
+    test('hyperplanning is gone from v6', async () => {
         const { body } = await getJson('/v6');
         assert.equal('hyperplanning' in (body.endpoints as Record<string, Record<string, string>>).post!, false);
         assert.equal((await getJson('/v5')).status, 200);
     });
     test('rate limit headers are reported', async () => {
         const res = await fetch(`${baseUrl}/v6/color`);
-        assert.ok(Number(res.headers.get('x-ratelimit-limit')) > 0);
-        assert.ok(Number(res.headers.get('x-ratelimit-remaining')) >= 0);
-        assert.ok(Number(res.headers.get('x-ratelimit-reset')) > 0);
+        for (const header of ['x-ratelimit-limit', 'x-ratelimit-remaining', 'x-ratelimit-reset']) {
+            assert.notEqual(res.headers.get(header), null, `${header} should be present`);
+            assert.ok(Number(res.headers.get(header)) > 0, `${header} should be a positive number`);
+        }
+        assert.match(res.headers.get('access-control-expose-headers') ?? '', /X-RateLimit-Remaining/);
+    });
+
+    test('hyperplanning stays functional in v6, just unlisted', async () => {
+        const v6 = await sendJson('POST', '/v6/hyperplanning', { url: 'https://example.test/a.ics' });
+        const v5 = await sendJson('POST', '/v5/hyperplanning', { url: 'https://example.test/a.ics' });
+        assert.notEqual(v6.status, 404);
+        assert.equal(v6.status, v5.status);
+        assert.equal((await getJson('/v6/hyperplanning')).status, 404);
+    });
+
+    test('every tic-tac-toe route moved to its named sub-route', async () => {
+        assert.equal((await sendJson('POST', '/v6/tic-tac-toe', { username: 'a', session: 'b' })).status, 404);
+        assert.equal((await sendJson('DELETE', '/v6/tic-tac-toe/g', { username: 'a', session: 'b' })).status, 404);
+        assert.equal((await sendJson('POST', '/v6/tic-tac-toe/play', { username: 'a' })).status, 400);
+        assert.equal((await sendJson('POST', '/v6/tic-tac-toe/forfeit', { username: 'a' })).status, 400);
+        assert.equal((await sendJson('POST', '/v5/tic-tac-toe/play', { username: 'a' })).status, 404);
+        assert.equal((await sendJson('POST', '/v5/tic-tac-toe', { username: 'a', session: 'b' })).status, 400);
     });
 });
 

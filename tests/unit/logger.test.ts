@@ -62,3 +62,18 @@ describe('redactPath', () => {
         assert.equal(redactQuery('/v5/chat/abc123?user=bob'), '/v5/chat/[redacted]?user');
     });
 });
+
+describe('redactPath sub-routes', () => {
+    test('named sub-routes stay readable', () => {
+        for (const route of ['clear', 'fetch', 'forfeit', 'list', 'play', 'private']) {
+            const path = `/v6/tic-tac-toe/${route}`;
+            assert.equal(redactPath(path), path, `${route} should not be redacted`);
+        }
+        assert.equal(redactPath('/v5/chat/private'), '/v5/chat/private');
+    });
+
+    test('identifiers are still masked', () => {
+        assert.equal(redactPath('/v5/chat/9f2c8ab1'), '/v5/chat/[redacted]');
+        assert.equal(redactPath('/v5/tic-tac-toe/NOPE42'), '/v5/tic-tac-toe/[redacted]');
+    });
+});
