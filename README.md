@@ -225,7 +225,7 @@ Higher quotas can be granted per client: `ADVANCED_`, `PRO_` and `BUSINESS_` var
 
 > _Rate-limit counters live in process memory, so each instance of a multi-instance deployment counts separately._
 
-> _Captcha and proof-of-work tokens are signed with `CHALLENGE_SECRET`. While it is unset each process invents its own key, so tokens stop verifying after a restart and are rejected by sibling instances — set it explicitly for any deployment running more than one process._
+> _Captcha and proof-of-work tokens are signed with `CHALLENGE_SECRET`. While it is unset each process invents its own key, so tokens stop verifying after a restart and are rejected by sibling instances — set it explicitly for any deployment running more than one process, with a full-entropy value such as `openssl rand -hex 32`._
 
 ## Versioning
 
