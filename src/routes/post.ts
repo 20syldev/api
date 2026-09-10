@@ -230,6 +230,97 @@ router.post('/:version/jwt', (req: Request, res: Response) => {
     }
 });
 
+// Clear a private chat
+router.post('/:version/chat/clear', (req: Request, res: Response) => {
+    const { username, session, token } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!token) {
+        error(res, 400, 'Please provide a valid token (&token={key}).');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.chat('clear', { username, token, session, storage: chatStorage }));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Play a tic-tac-toe move
+router.post('/:version/tic-tac-toe/play', (req: Request, res: Response) => {
+    const { username, move, session, game } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!move) {
+        error(res, 400, 'Please provide a valid move (&move={move})');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+    if (!game) {
+        error(res, 400, 'Please provide a game ID (&game={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.tic_tac_toe('play', { username, move, session, game, storage: ticTacToeStorage }));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
+// Forfeit a tic-tac-toe game
+router.post('/:version/tic-tac-toe/forfeit', (req: Request, res: Response) => {
+    const { username, session, game } = (req.body as Record<string, string>) || {};
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!username) {
+        error(res, 400, 'Please provide a username (?username={username})');
+        return;
+    }
+    if (!session) {
+        error(res, 400, 'Please provide a valid session ID (&session={ID})');
+        return;
+    }
+    if (!game) {
+        error(res, 400, 'Please provide a game ID (&game={ID})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.tic_tac_toe('forfeit', { username, session, game, storage: ticTacToeStorage }));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Store chat messages
 router.post('/:version/chat', (req: Request, res: Response) => {
     const { username, message, timestamp, session, token } = (req.body as Record<string, string>) || {};

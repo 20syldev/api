@@ -1,6 +1,7 @@
 import { type Request, type Response, Router } from 'express';
 
 import { ticTacToeStorage } from '../storage/index.js';
+import { since } from '../utils/helpers.js';
 import { error } from '../utils/response.js';
 
 const router = Router();
@@ -9,6 +10,10 @@ const router = Router();
 router.patch('/:version/tic-tac-toe/:game', (req: Request, res: Response) => {
     if (parseInt(req.version.slice(1)) < 4) {
         error(res, 405, 'PATCH is only supported in v4+.');
+        return;
+    }
+    if (since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${req.version}.`);
         return;
     }
 
