@@ -180,6 +180,32 @@ router.post('/:version/diff', (req: Request, res: Response) => {
     }
 });
 
+// Compute the Levenshtein distance between two strings
+router.post('/:version/levenshtein', (req: Request, res: Response) => {
+    const body = (req.body as Record<string, unknown>) || {};
+    const { str1, str2 } = body;
+    const { version } = req.params;
+
+    if (!since(req.version, 6)) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!str1 || typeof str1 !== 'string') {
+        error(res, 400, 'Please provide a first string (str1={string})');
+        return;
+    }
+    if (!str2 || typeof str2 !== 'string') {
+        error(res, 400, 'Please provide a second string (str2={string})');
+        return;
+    }
+
+    try {
+        res.jsonResponse(req.module.levenshtein(str1, str2));
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Decode a JSON Web Token without verifying the signature
 router.post('/:version/jwt', (req: Request, res: Response) => {
     const body = (req.body as Record<string, unknown>) || {};

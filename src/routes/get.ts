@@ -589,6 +589,11 @@ router.get('/:version/jwt', postOnly('jwt'));
 
 // Calculate Levenshtein distance
 router.get('/:version/levenshtein', (req: Request, res: Response) => {
+    if (since(req.version, 6)) {
+        error(res, 405, 'This endpoint only supports POST requests.');
+        return;
+    }
+
     const { str1, str2 } = req.query;
 
     if (!str1 || typeof str1 !== 'string') {
