@@ -264,8 +264,6 @@ const v6 = {
             },
         ],
     ),
-    patch: [],
-    delete: [],
 };
 
 export const versions: Record<string, VersionConfig> = {
