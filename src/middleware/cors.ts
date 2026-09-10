@@ -14,7 +14,14 @@ export function setupCors(app: Express): void {
     app.use(
         cors({
             methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-            exposedHeaders: ['X-Captcha-Text', 'X-Captcha-Token'],
+            exposedHeaders: [
+                'X-Captcha-Text',
+                'X-Captcha-Token',
+                'X-RateLimit-Limit',
+                'X-RateLimit-Remaining',
+                'X-RateLimit-Reset',
+                'Retry-After',
+            ],
         }),
     );
     app.use(express.urlencoded({ extended: true, limit: '10kb' }));

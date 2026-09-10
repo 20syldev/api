@@ -49,6 +49,7 @@ export function rateLimitMiddleware(req: Request, res: Response, next: NextFunct
     }
 
     if (++requests > Math.max(globalLimit, plan.hourly)) {
+        res.setHeader('Retry-After', Math.ceil((resetTime - now) / 1000));
         error(res, 429, 'Global rate limit exceeded.');
         return;
     }
@@ -65,6 +66,7 @@ export function rateLimitMiddleware(req: Request, res: Response, next: NextFunct
         burstTracker[ip]!.push(now);
 
         if (burstTracker[ip]!.length > plan.burst) {
+            res.setHeader('Retry-After', Math.ceil(RATE_LIMIT_WINDOW / 1000));
             error(res, 429, 'Too many requests, please slow down.');
             return;
         }
@@ -76,7 +78,14 @@ export function rateLimitMiddleware(req: Request, res: Response, next: NextFunct
     ipLimits[ip]![hour]![minute] = (ipLimits[ip]![hour]![minute] ?? 0) + 1;
 
     const hourTotal = Object.values(ipLimits[ip]![hour]!).reduce((sum, count) => sum + count, 0);
+    const hourEnds = Math.ceil(now / 3600000) * 3600000;
+
+    res.setHeader('X-RateLimit-Limit', plan.hourly);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, plan.hourly - hourTotal));
+    res.setHeader('X-RateLimit-Reset', Math.floor(hourEnds / 1000));
+
     if (hourTotal > plan.hourly) {
+        res.setHeader('Retry-After', Math.ceil((hourEnds - now) / 1000));
         error(res, 429, `You have exceeded the limit of ${plan.hourly} requests per hour.`);
         return;
     }
