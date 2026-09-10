@@ -129,29 +129,6 @@ router.get('/:version/algorithms', (req: Request, res: Response) => {
 // GET asymmetric error
 router.get('/:version/asymmetric', postOnly('asymmetric'));
 
-// Convert text to a different case format
-router.get('/:version/case', (req: Request, res: Response) => {
-    const { text, to } = req.query;
-    const { version } = req.params;
-
-    const caseConvertFn = (req.module as { caseConvert?: (t: string, to?: string) => unknown }).caseConvert;
-    if (!caseConvertFn) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-    if (!text || typeof text !== 'string') {
-        error(res, 400, 'Please provide a text (?text={text})');
-        return;
-    }
-
-    try {
-        const result = caseConvertFn(text, to as string | undefined);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
 // Generate an identicon or pixel-art avatar from a seed
 router.get('/:version/avatar', (req: Request, res: Response) => {
     const avatarFn = (req.module as { avatar?: (opts: AvatarOptions) => AvatarResult }).avatar;
@@ -287,6 +264,29 @@ router.get('/:version/captcha', (req: Request, res: Response) => {
     }
 });
 
+// Convert text to a different case format
+router.get('/:version/case', (req: Request, res: Response) => {
+    const { text, to } = req.query;
+    const { version } = req.params;
+
+    const caseConvertFn = (req.module as { caseConvert?: (t: string, to?: string) => unknown }).caseConvert;
+    if (!caseConvertFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+    if (!text || typeof text !== 'string') {
+        error(res, 400, 'Please provide a text (?text={text})');
+        return;
+    }
+
+    try {
+        const result = caseConvertFn(text, to as string | undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // GET chart error
 router.get('/:version/chart', postOnly('chart'));
 
@@ -392,6 +392,9 @@ router.get('/:version/cron', (req: Request, res: Response) => {
         error(res, 400, (err as Error).message);
     }
 });
+
+// GET csv error
+router.get('/:version/csv', postOnly('csv'));
 
 // RPG Dice roller
 router.get('/:version/dice', (req: Request, res: Response) => {
@@ -693,6 +696,25 @@ router.get('/:version/placeholder', (req: Request, res: Response) => {
     }
 });
 
+// Issue a proof-of-work challenge
+router.get('/:version/pow', (req: Request, res: Response) => {
+    const { difficulty } = req.query;
+    const { version } = req.params;
+
+    const powFn = (req.module as { pow?: (d?: number) => unknown }).pow;
+    if (!powFn) {
+        error(res, 404, `Endpoint not available in ${version}.`);
+        return;
+    }
+
+    try {
+        const result = powFn(difficulty !== undefined ? Number(difficulty) : undefined);
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Generate QR Code
 router.get('/:version/qrcode', async (req: Request, res: Response) => {
     const { url } = req.query;
@@ -729,25 +751,6 @@ router.get('/:version/qrcode', async (req: Request, res: Response) => {
 
 // GET read error
 router.get('/:version/read', postOnly('read'));
-
-// Issue a proof-of-work challenge
-router.get('/:version/pow', (req: Request, res: Response) => {
-    const { difficulty } = req.query;
-    const { version } = req.params;
-
-    const powFn = (req.module as { pow?: (d?: number) => unknown }).pow;
-    if (!powFn) {
-        error(res, 404, `Endpoint not available in ${version}.`);
-        return;
-    }
-
-    try {
-        const result = powFn(difficulty !== undefined ? Number(difficulty) : undefined);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
 
 // Test a regex pattern against a text
 router.get('/:version/regex', (req: Request, res: Response) => {
@@ -902,9 +905,6 @@ router.get('/:version/time', (req: Request, res: Response) => {
     }
 });
 
-// GET csv error
-router.get('/:version/csv', postOnly('csv'));
-
 // GET token error
 router.get('/:version/token', postOnly('token'));
 
@@ -931,6 +931,16 @@ router.get('/:version/url', (req: Request, res: Response) => {
     }
 });
 
+// Generate username
+router.get('/:version/username', (req: Request, res: Response) => {
+    try {
+        const result = req.module.username();
+        res.jsonResponse(result);
+    } catch (err) {
+        error(res, 400, (err as Error).message);
+    }
+});
+
 // Generate or parse a UUID
 router.get('/:version/uuid', (req: Request, res: Response) => {
     const { uuid: input, count } = req.query;
@@ -948,16 +958,6 @@ router.get('/:version/uuid', (req: Request, res: Response) => {
 
     try {
         const result = uuidFn(input, count !== undefined ? Number(count) : undefined);
-        res.jsonResponse(result);
-    } catch (err) {
-        error(res, 400, (err as Error).message);
-    }
-});
-
-// Generate username
-router.get('/:version/username', (req: Request, res: Response) => {
-    try {
-        const result = req.module.username();
         res.jsonResponse(result);
     } catch (err) {
         error(res, 400, (err as Error).message);
