@@ -2,14 +2,14 @@
 
 ## About
 
-`@20syldev/api` bundles 49 self-contained utilities: encryption, matrix math, SVG charts, CSV, JWT, TOTP, barcodes, fake data generation, text processing, validation and more. Install it and import — no configuration, no setup step, types included.
+`@20syldev/api` bundles 40+ self-contained utilities: encryption, matrix math, SVG charts, CSV, JWT, TOTP, barcodes, fake data generation, text processing, validation and more. Install it and import — no configuration, no setup step, types included.
 
 It works two ways:
 
 - **As a library** — import any module directly into your code.
 - **As a server** — a single import boots an Express app that exposes every module over HTTP.
 
-The HTTP surface is versioned from `v1` to `v5`, and every version stays mounted side by side, so a new release never changes the behaviour of the one you already target. The full endpoint reference lives on [docs.sylvain.sh](https://docs.sylvain.sh).
+The HTTP surface is versioned from `v4` to `v6`, and every version stays mounted side by side, so a new release never changes the behaviour of the one you already target. The full endpoint reference lives on [docs.sylvain.sh](https://docs.sylvain.sh).
 
 ## Requirements
 
@@ -34,10 +34,10 @@ $ npm install @20syldev/api
 
 ## Quick start
 
-The root import always resolves to the latest version. Use a subpath (`/v1` to `/v5`) to pin a specific one.
+The root import always resolves to the latest version. Use a subpath (`/v4` to `/v6`) to pin a specific one.
 
 ```js
-// Latest version, equivalent to '@20syldev/api/v5'
+// Latest version, equivalent to '@20syldev/api/v6'
 import { color, evaluate, username } from '@20syldev/api';
 
 // Or a specific version
@@ -82,7 +82,7 @@ The six names in **bold** are namespaces — they group related functions, calle
 
 Everything else is a plain function, called directly.
 
-Two names differ from their HTTP endpoint, because `case` and `url` collide with reserved or global identifiers:
+Two names differ from their HTTP endpoint, because `case` is a reserved word and `url` is a global identifier:
 
 | Endpoint | Import        |
 | -------- | ------------- |
@@ -229,15 +229,17 @@ Higher quotas can be granted per client: `ADVANCED_`, `PRO_` and `BUSINESS_` var
 
 ## Versioning
 
-| Version | Adds                                                                                                                                                                                  |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v4`    | 35 endpoints — the first fully typed version, with PATCH and DELETE routes                                                                                                            |
-| `v5`    | 51 endpoints — adds `base`, `case`, `csv`, `diff`, `evaluate`, `pow`, `read`, `semver`, `url`, `uuid`, asymmetric and symmetric crypto, charts, JWT, matrices and OTP                 |
-| `v6`    | 49 endpoints — the captcha answers with a signed token by default, `levenshtein` moves to POST, chat and tic-tac-toe carry their identifiers in the body, and `hyperplanning` is gone |
+| Version | What it changes                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `v4`    | The first fully typed version, and the one that introduced the PATCH and DELETE routes                                                                                   |
+| `v5`    | Adds `base`, `case`, `csv`, `diff`, `evaluate`, `pow`, `read`, `semver`, `url`, `uuid`, asymmetric and symmetric crypto, charts, JWT, matrices and OTP                   |
+| `v6`    | The captcha answers with a signed token by default, `levenshtein` moves to POST, chat and tic-tac-toe carry their identifiers in the body, `hyperplanning` is deprecated |
 
 Every version is fully typed. The package root always tracks the latest one.
 
 > _`v1`, `v2` and `v3` were removed in `6.0.0`, along with the untyped JavaScript they shared. Install `@20syldev/api@5.9.0` if you still need them._
+
+> _`hyperplanning` is deprecated: it still works on every version, but `v6` no longer lists it among its endpoints, and it will be removed entirely in `7.0.0`._
 
 ## Scripts
 
