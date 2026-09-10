@@ -2,7 +2,7 @@
 
 ## About
 
-`@20syldev/api` bundles 42 self-contained utilities: encryption, matrix math, SVG charts, CSV, JWT, TOTP, barcodes, fake data generation, text processing, validation and more. Install it and import — no configuration, no setup step, types included.
+`@20syldev/api` bundles 49 self-contained utilities: encryption, matrix math, SVG charts, CSV, JWT, TOTP, barcodes, fake data generation, text processing, validation and more. Install it and import — no configuration, no setup step, types included.
 
 It works two ways:
 
@@ -229,17 +229,15 @@ Higher quotas can be granted per client: `ADVANCED_`, `PRO_` and `BUSINESS_` var
 
 ## Versioning
 
-| Version | Adds                                                                                                                                                                          |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v1`    | algorithms, captcha, color, convert, domain, personal, qrcode, username, token                                                                                                |
-| `v2`    | chat, hash, tic-tac-toe                                                                                                                                                       |
-| `v3`    | levenshtein, time, hyperplanning                                                                                                                                              |
-| `v4`    | 24 endpoints — address, avatar, barcode, credit, cron, dice, encode, geo, ip, palette, password, placeholder, regex, statistics, text, validate… plus PATCH and DELETE routes |
-| `v5`    | case, evaluate, url, asymmetric, chart, csv, jwt, matrix, otp, symmetric                                                                                                      |
+| Version | Adds                                                                                                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `v4`    | 35 endpoints — the first fully typed version, with PATCH and DELETE routes                                                                                                            |
+| `v5`    | 51 endpoints — adds `base`, `case`, `csv`, `diff`, `evaluate`, `pow`, `read`, `semver`, `url`, `uuid`, asymmetric and symmetric crypto, charts, JWT, matrices and OTP                 |
+| `v6`    | 49 endpoints — the captcha answers with a signed token by default, `levenshtein` moves to POST, chat and tic-tac-toe carry their identifiers in the body, and `hyperplanning` is gone |
 
-`v4` and `v5` are fully typed. The package root always tracks the latest version.
+Every version is fully typed. The package root always tracks the latest one.
 
-> _`v1`, `v2` and `v3` share the same untyped JavaScript implementation and differ only by the endpoints they expose. They are **deprecated** and will be removed in `6.0.0` — new code should target `v5`._
+> _`v1`, `v2` and `v3` were removed in `6.0.0`, along with the untyped JavaScript they shared. Install `@20syldev/api@5.9.0` if you still need them._
 
 ## Scripts
 
